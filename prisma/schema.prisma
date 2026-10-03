@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum AgentRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum AgentStepType {
+  LLM
+  TOOL
+  MEMORY
+  APPROVAL
+}
+
+model Event {
+  id        String   @id
+  source    String
+  type      String
+  occurredAt DateTime
+
+  actor     Json?
+  content   Json?
+  metadata  Json
+
+  createdAt DateTime @default(now())
+
+  runs      AgentRun[]
+
+  @@index([source])
+  @@index([occurredAt])
+}
+
+model AgentRun {
+  id          String        @id
+  agentId     String
+  eventId     String?
+  status      AgentRunStatus
+  stepCount   Int           @default(0)
+  startedAt   DateTime
+  completedAt DateTime?
+  error       String?
+
+  event       Event?        @relation(fields: [eventId], references: [id])
+  steps       AgentStep[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([agentId])
+  @@index([eventId])
+  @@index([status])
+}
+
+model AgentStep {
+  id         String        @id
+  runId      String
+  type       AgentStepType
+
+  input      Json?
+  output     Json?
+  toolName   String?
+  toolResult Json?
+
+  createdAt  DateTime      @default(now())
+
+  run        AgentRun      @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([toolName])
+}

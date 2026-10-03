@@ -2,10 +2,10 @@ import "dotenv/config";
 
 import { google } from "@ai-sdk/google";
 
-import { decideNextAction } from "./decide";
-import { VercelAIProvider } from "./llm-provider";
-import type { Agent } from "../agents/types";
-import { createAgentRun } from "./create-run";
+import { decideNextAction } from "../decide";
+import { VercelAIProvider } from "../llm-provider";
+import type { Agent } from "../../agents/types";
+import { createAgentRun } from "../create-run";
 
 async function main() {
     const provider = new VercelAIProvider(

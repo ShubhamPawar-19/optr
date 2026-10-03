@@ -1,7 +1,7 @@
-import { addAgentStep } from "./add-step";
-import { createAgentRun } from "./create-run";
-import { startAgentRun } from "./state";
-import type { Agent } from "../agents/types";
+import { addAgentStep } from "../add-step";
+import { createAgentRun } from "../create-run";
+import { startAgentRun } from "../state";
+import type { Agent } from "../../agents/types";
 
 const agent: Agent = {
     id: "agent-001",

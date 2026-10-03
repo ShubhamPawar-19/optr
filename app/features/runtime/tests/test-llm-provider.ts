@@ -2,7 +2,7 @@ import "dotenv/config";
 
 import { google } from "@ai-sdk/google";
 
-import { VercelAIProvider } from "./llm-provider";
+import { VercelAIProvider } from "../llm-provider";
 
 async function main() {
     const provider = new VercelAIProvider(
