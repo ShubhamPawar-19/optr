@@ -1,4 +1,4 @@
-import { parseAgentDecision } from "./parse-decision";
+import { parseAgentDecision } from ".././parse-decision";
 
 const finalDecision = parseAgentDecision({
     type: "FINAL",

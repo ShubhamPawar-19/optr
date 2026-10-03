@@ -1,5 +1,5 @@
-import { createAgentRun } from "./create-run";
-import type { Agent } from "../agents/types";
+import { Agent } from "../../agents/types";
+import { createAgentRun } from "../create-run";
 
 const agent: Agent = {
     id: "agent-001",

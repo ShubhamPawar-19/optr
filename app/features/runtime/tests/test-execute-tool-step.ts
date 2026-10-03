@@ -1,7 +1,7 @@
-import { createAgentRun } from "./create-run";
-import { startAgentRun } from "./state";
-import { executeToolStep } from "./execute-tool-step";
-import type { Agent } from "../agents/types";
+import { createAgentRun } from ".././create-run";
+import { startAgentRun } from ".././state";
+import { executeToolStep } from ".././execute-tool-step";
+import type { Agent } from "../../agents/types";
 
 async function main() {
     const agent: Agent = {
