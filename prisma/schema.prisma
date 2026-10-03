@@ -64,6 +64,8 @@ model AgentRun {
   @@index([agentId])
   @@index([eventId])
   @@index([status])
+
+  @@unique([agentId, eventId])
 }
 
 model AgentStep {

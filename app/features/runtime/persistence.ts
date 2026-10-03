@@ -1,6 +1,27 @@
 import { db } from "../../lib/db";
 
+import type { NormalizedEvent } from "../events/types";
 import type { AgentRun, AgentStep } from "./types";
+
+export async function createPersistedEvent(
+    event: NormalizedEvent,
+) {
+    return db.event.upsert({
+        where: {
+            id: event.id,
+        },
+        update: {},
+        create: {
+            id: event.id,
+            source: event.source,
+            type: event.type,
+            occurredAt: event.occurredAt,
+            actor: event.actor,
+            content: event.content,
+            metadata: event.metadata as never,
+        },
+    });
+}
 
 export async function createPersistedRun(
     run: AgentRun,
