@@ -85,3 +85,24 @@ model AgentStep {
   @@index([runId])
   @@index([toolName])
 }
+
+model Property {
+  id          String   @id @default(cuid())
+  title       String
+  city        String
+  area        String
+  bedrooms    Int
+  bathrooms   Int
+  price       Int
+  currency    String   @default("AED")
+  description String
+  imageUrl    String?
+  available   Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+
+  @@index([city])
+  @@index([bedrooms])
+  @@index([price])
+  @@index([available])
+}

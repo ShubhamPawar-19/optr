@@ -8,7 +8,6 @@ import { resolveAgentForWhatsApp } from "@/app/features/agents/resolve-agent";
 import { createAgentRun } from "@/app/features/runtime/create-run";
 import { runAgent } from "@/app/features/runtime/run-agent";
 import { VercelAIProvider } from "@/app/features/runtime/llm-provider";
-import { google } from "@ai-sdk/google";
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -62,8 +61,8 @@ export async function POST(request: NextRequest) {
     );
 
     const provider = new VercelAIProvider(
-        google(agent.model),
-    );
+    agent.model,
+);
 
     const result = await runAgent(
         provider,

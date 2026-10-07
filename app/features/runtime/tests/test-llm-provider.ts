@@ -1,16 +1,16 @@
 import "dotenv/config";
 
-import { google } from "@ai-sdk/google";
-
 import { VercelAIProvider } from "../llm-provider";
 
 async function main() {
-    const provider = new VercelAIProvider(
-        google("gemini-3.8-flash"),
-    );
+    const model =
+        process.env.OPENROUTER_MODEL ??
+        "openrouter/free";
+
+    const provider = new VercelAIProvider(model);
 
     const response = await provider.generate({
-        model: "gemini-3.8-flash",
+        model,
 
         system: "You are an AI operator.",
 

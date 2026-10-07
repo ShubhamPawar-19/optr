@@ -1,5 +1,6 @@
 import type { OptrTool } from "./types";
 import { getCurrentTimeTool } from "./get-current-time";
+import { searchPropertiesTool } from "./search-properties";
 
 const toolRegistry = new Map<string, OptrTool>();
 
@@ -20,3 +21,4 @@ export function getAllTools(): OptrTool[] {
 }
 
 registerTool(getCurrentTimeTool);
+registerTool(searchPropertiesTool);

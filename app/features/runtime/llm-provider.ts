@@ -1,17 +1,19 @@
 import { generateText, type ModelMessage } from "ai";
-
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import type {
     LLMProvider,
     LLMRequest,
     LLMResponse,
 } from "./llm";
 
+const openrouter = createOpenRouter({
+    apiKey: process.env.OPENROUTER_API_KEY,
+});
+
 export class VercelAIProvider implements LLMProvider {
     constructor(
-        private readonly modelProvider: Parameters<
-            typeof generateText
-        >[0]["model"],
-    ) {}
+        private readonly modelName: string,
+    ) { }
 
     async generate(
         request: LLMRequest,
@@ -23,14 +25,14 @@ export class VercelAIProvider implements LLMProvider {
             }));
 
         const result = await generateText({
-            model: this.modelProvider,
+            model: openrouter(this.modelName),
             system: request.system,
             messages,
+            maxOutputTokens: 2048,
         });
 
         return {
             content: result.text,
-
             usage: {
                 inputTokens: result.usage.inputTokens,
                 outputTokens: result.usage.outputTokens,

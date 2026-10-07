@@ -1,16 +1,16 @@
 import "dotenv/config";
 
-import { google } from "@ai-sdk/google";
-
 import type { Agent } from "../../agents/types";
 import { createAgentRun } from "../create-run";
 import { runAgent } from "../run-agent";
 import { VercelAIProvider } from "../llm-provider";
 
 async function main() {
-    const provider = new VercelAIProvider(
-        google("gemini-3.8-flash"),
-    );
+    const model =
+        process.env.OPENROUTER_MODEL ??
+        "openrouter/free";
+
+    const provider = new VercelAIProvider(model);
 
     const agent: Agent = {
         id: "agent-test",
@@ -20,10 +20,22 @@ async function main() {
         description:
             "A test AI operator for OPTR.",
 
-        instructions:
-            "You are a helpful AI operator. Use tools when they are necessary.",
+        instructions: `
+You are a real estate AI operator.
 
-        model: "gemini-3.8-flash",
+Your job is to help customers find properties from the available inventory.
+
+Rules:
+- When the user asks about properties, ALWAYS use search_properties.
+- Never recommend properties from your own knowledge.
+- Never invent property listings.
+- Only mention properties returned by search_properties.
+- If the user provides city, bedrooms, or budget, pass those constraints to search_properties.
+- If the search returns no results, say that no matching properties were found.
+- Be concise and helpful.
+`,
+
+        model,
 
         temperature: 0,
 
@@ -34,11 +46,15 @@ async function main() {
                 name: "get_current_time",
                 enabled: true,
             },
+            {
+                name: "search_properties",
+                enabled: true,
+            },
         ],
     };
 
     const context = createAgentRun(agent, {
-        id: "event-test",
+        id: crypto.randomUUID(),
 
         source: "WEBHOOK",
 
@@ -48,7 +64,7 @@ async function main() {
 
         content: {
             type: "TEXT",
-            text: "What time is it right now?",
+            text: "I am looking for a 2 bedroom apartment in Dubai under AED 1.5 million."
         },
 
         metadata: {},
