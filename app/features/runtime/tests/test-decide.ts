@@ -6,9 +6,11 @@ import type { Agent } from "../../agents/types";
 import { createAgentRun } from "../create-run";
 
 async function main() {
-    const provider = new VercelAIProvider(
-    "gemini-3.8-flash",
-);
+    const model =
+        process.env.OPENROUTER_MODEL ??
+        "openrouter/free";
+
+    const provider = new VercelAIProvider(model);
 
     const agent: Agent = {
         id: "agent-test",
@@ -18,10 +20,17 @@ async function main() {
         description:
             "A test AI operator for OPTR.",
 
-        instructions:
-            "You are a helpful AI operator. Use tools when they are necessary.",
+        instructions: `
+You are a real estate AI operator.
 
-        model: "gemini-3.8-flash",
+When a user asks about properties,
+use the search_properties tool.
+
+Never invent properties.
+Only use properties returned by the tool.
+`,
+
+        model,
 
         temperature: 0,
 
@@ -29,14 +38,14 @@ async function main() {
 
         tools: [
             {
-                name: "get_current_time",
+                name: "search_properties",
                 enabled: true,
             },
         ],
     };
 
     const context = createAgentRun(agent, {
-        id: "event-test",
+        id: crypto.randomUUID(),
 
         source: "WEBHOOK",
 
@@ -46,15 +55,18 @@ async function main() {
 
         content: {
             type: "TEXT",
-            text: "What time is it right now?",
+            text: "I am looking for a 2 bedroom apartment in Dubai under AED 1.5 million.",
         },
 
         metadata: {},
     });
 
+    const userId = "test-user";
+
     const decision = await decideNextAction(
         provider,
         context,
+        userId,
     );
 
     console.log("Agent decision:");

@@ -35,9 +35,10 @@ export async function runAgent(
     try {
         while (context.run.stepCount < MAX_STEPS) {
             const decision = await decideNextAction(
-                provider,
-                context,
-            );
+    provider,
+    context,
+    userId,
+);
 
             const decisionStep = {
                 id: crypto.randomUUID(),

@@ -1,24 +1,30 @@
-import { getAllTools } from "../tools/registry";
+import { getAITools } from "./ai-tools";
 import type { LLMProvider } from "./llm";
-import { parseAgentDecision } from "./parse-decision";
+import type { AgentDecision } from "./decision";
 import type { RuntimeContext } from "./types";
 
-function buildDecisionPrompt(context: RuntimeContext): string {
-    const availableTools = getAllTools()
-        .filter((tool) =>
-            context.agent.tools.some(
-                (config) =>
-                    config.name === tool.name &&
-                    config.enabled,
-            ),
-        )
-        .map(
-            (tool) =>
-                `- ${tool.name}: ${tool.description}\nParameters: ${JSON.stringify(
-                    tool.parameters,
-                )}`,
-        )
-        .join("\n\n");
+export async function decideNextAction(
+    provider: LLMProvider,
+    context: RuntimeContext,
+    userId: string,
+): Promise<AgentDecision> {
+    const enabledToolNames = context.agent.tools
+        .filter((tool) => tool.enabled)
+        .map((tool) => tool.name);
+
+    const toolContext = {
+        agentId: context.agent.id,
+        userId,
+        runId: context.run.id,
+        event: context.event
+            ? { id: context.event.id }
+            : undefined,
+    };
+
+    const tools = getAITools(
+        enabledToolNames,
+        toolContext,
+    );
 
     const event = context.event
         ? JSON.stringify(context.event, null, 2)
@@ -39,50 +45,6 @@ function buildDecisionPrompt(context: RuntimeContext): string {
               )
             : "No previous steps.";
 
-    return `
-You are an AI operator.
-
-Your job is to decide the next action required to accomplish the user's task.
-
-You can either:
-
-1. Return a FINAL response when the task is complete.
-2. Use one of the available tools when more information or an action is required.
-
-AVAILABLE TOOLS:
-${availableTools || "No tools available."}
-
-CURRENT EVENT:
-${event}
-
-PREVIOUS STEPS:
-${previousSteps}
-
-Return ONLY valid JSON.
-
-For a final response:
-{
-  "type": "FINAL",
-  "response": "your response"
-}
-
-For a tool call:
-{
-  "type": "TOOL",
-  "toolName": "tool_name",
-  "input": {}
-}
-
-Do not return markdown.
-Do not wrap the JSON in backticks.
-Do not include any explanation outside the JSON.
-`;
-}
-
-export async function decideNextAction(
-    provider: LLMProvider,
-    context: RuntimeContext,
-) {
     const response = await provider.generate({
         model: context.agent.model,
 
@@ -91,20 +53,37 @@ export async function decideNextAction(
         messages: [
             {
                 role: "user",
-                content: buildDecisionPrompt(context),
+                content: `
+CURRENT EVENT:
+${event}
+
+PREVIOUS STEPS:
+${previousSteps}
+
+Decide what to do next.
+
+Use an available tool when you need information or need to perform an action.
+
+When the task is complete, respond naturally to the user.
+`,
             },
         ],
+
+        tools,
     });
 
-    let parsedResponse: unknown;
+    if (response.toolCalls?.length) {
+        const toolCall = response.toolCalls[0];
 
-    try {
-        parsedResponse = JSON.parse(response.content);
-    } catch {
-        throw new Error(
-            "LLM returned invalid JSON for agent decision",
-        );
+        return {
+            type: "TOOL",
+            toolName: toolCall.toolName,
+            input: toolCall.input,
+        };
     }
 
-    return parseAgentDecision(parsedResponse);
+    return {
+        type: "FINAL",
+        response: response.content,
+    };
 }
