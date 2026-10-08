@@ -46,6 +46,7 @@ export interface AgentStep {
 
 export interface RuntimeContext {
     agent: Agent;
+    businessId: string;
     event?: NormalizedEvent;
     conversationId?: string;
     run: AgentRun;

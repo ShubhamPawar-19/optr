@@ -7,6 +7,7 @@ async function main() {
     const agent: Agent = {
         id: "agent-001",
         name: "Test Agent",
+        businessId: "test-business",
         description: "Agent for testing the runtime",
         instructions: "Help the user with their request.",
         model: "gemini-2.5-flash",
@@ -34,6 +35,7 @@ async function main() {
         {},
         {
             agentId: agent.id,
+            businessId: "test-business",
             userId: "test-user",
             runId: runningRun.id,
         },
@@ -54,6 +56,7 @@ async function main() {
             {
                 agentId: agent.id,
                 userId: "test-user",
+                businessId: "test-business",
                 runId: runningRun.id,
             },
         );

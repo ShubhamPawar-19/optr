@@ -1,18 +1,12 @@
 export interface Agent {
     id: string;
-
+    businessId: string;
     name: string;
-
     description?: string;
-
     instructions: string;
-
     model: string;
-
     temperature?: number;
-
     isActive: boolean;
-
     tools: AgentToolConfig[];
 }
 

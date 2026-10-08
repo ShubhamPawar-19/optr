@@ -14,9 +14,10 @@ export async function decideNextAction(
         .map((tool) => tool.name);
 
     const toolContext = {
-        agentId: context.agent.id,
-        userId,
-        runId: context.run.id,
+    agentId: context.agent.id,
+    businessId: context.businessId,
+    userId,
+    runId: context.run.id,
         event: context.event
             ? { id: context.event.id }
             : undefined,

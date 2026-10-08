@@ -6,6 +6,7 @@ import type { Agent } from "../../agents/types";
 const agent: Agent = {
     id: "agent-001",
     name: "Test Agent",
+    businessId: "test-business",
     description: "Agent for testing the runtime",
     instructions: "Help the user with their request.",
     model: "gemini-2.5-flash",

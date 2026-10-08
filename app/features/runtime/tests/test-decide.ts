@@ -16,7 +16,7 @@ async function main() {
         id: "agent-test",
 
         name: "Test Operator",
-
+        businessId: "test-business",
         description:
             "A test AI operator for OPTR.",
 

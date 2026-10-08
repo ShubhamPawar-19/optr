@@ -2,14 +2,10 @@ import type { z } from "zod";
 
 export interface ToolContext {
     agentId: string;
-
+    businessId: string;
     userId: string;
-
     runId: string;
-
-    event?: {
-        id: string;
-    };
+    event?: { id: string };
 }
 
 export interface ToolResult {

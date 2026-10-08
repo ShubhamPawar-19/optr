@@ -6,6 +6,7 @@ async function main() {
         {},
         {
             agentId: "test-agent",
+            businessId: "test-business",
             userId: "test-user",
             runId: "test-run",
         },

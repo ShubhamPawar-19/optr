@@ -23,41 +23,45 @@ export const searchPropertiesTool: OptrTool<
 
     parameters: searchPropertiesSchema,
 
-    async execute(input: SearchPropertiesInput, _context) {
+    async execute(
+        input: SearchPropertiesInput,
+        context,
+    ) {
         const properties = await db.property.findMany({
             where: {
+                businessId: context.businessId,
                 available: true,
 
                 ...(input.city
                     ? {
-                          city: {
-                              contains: input.city,
-                              mode: "insensitive",
-                          },
-                      }
+                        city: {
+                            contains: input.city,
+                            mode: "insensitive",
+                        },
+                    }
                     : {}),
 
                 ...(input.area
                     ? {
-                          area: {
-                              contains: input.area,
-                              mode: "insensitive",
-                          },
-                      }
+                        area: {
+                            contains: input.area,
+                            mode: "insensitive",
+                        },
+                    }
                     : {}),
 
                 ...(input.bedrooms
                     ? {
-                          bedrooms: input.bedrooms,
-                      }
+                        bedrooms: input.bedrooms,
+                    }
                     : {}),
 
                 ...(input.maxPrice
                     ? {
-                          price: {
-                              lte: input.maxPrice,
-                          },
-                      }
+                        price: {
+                            lte: input.maxPrice,
+                        },
+                    }
                     : {}),
             },
 

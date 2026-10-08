@@ -2,6 +2,7 @@ import type { Agent } from "./types";
 
 const whatsappAgent: Agent = {
     id: "whatsapp-real-estate-agent",
+    businessId: "demo-business",
     name: "WhatsApp Real Estate Agent",
     description: "Handles real estate inquiries received through WhatsApp.",
 

@@ -1,7 +1,10 @@
 import { db } from "./db";
 
+const DEMO_BUSINESS_ID = "demo-business";
+
 const properties = [
     {
+        businessId: DEMO_BUSINESS_ID,
         title: "Modern 2 BHK Apartment in Dubai Marina",
         city: "Dubai",
         area: "Dubai Marina",
@@ -15,6 +18,7 @@ const properties = [
         available: true,
     },
     {
+        businessId: DEMO_BUSINESS_ID,
         title: "Luxury 2 BHK in Downtown Dubai",
         city: "Dubai",
         area: "Downtown Dubai",
@@ -28,6 +32,7 @@ const properties = [
         available: true,
     },
     {
+        businessId: DEMO_BUSINESS_ID,
         title: "Affordable 2 BHK in JVC",
         city: "Dubai",
         area: "Jumeirah Village Circle",
@@ -41,6 +46,7 @@ const properties = [
         available: true,
     },
     {
+        businessId: DEMO_BUSINESS_ID,
         title: "Premium 3 BHK in Business Bay",
         city: "Dubai",
         area: "Business Bay",
@@ -54,6 +60,7 @@ const properties = [
         available: true,
     },
     {
+        businessId: DEMO_BUSINESS_ID,
         title: "Family 1 BHK in Dubai Hills",
         city: "Dubai",
         area: "Dubai Hills Estate",

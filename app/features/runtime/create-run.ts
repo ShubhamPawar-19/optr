@@ -1,6 +1,6 @@
-import type { Agent } from "../agents/types";
 import type { NormalizedEvent } from "../events/types";
 import type { AgentRun, RuntimeContext } from "./types";
+import type { Agent } from "../agents/types";
 
 export function createAgentRun(
     agent: Agent,
@@ -18,6 +18,7 @@ export function createAgentRun(
 
     return {
         agent,
+        businessId: agent.businessId,
         event,
         conversationId,
         run,
