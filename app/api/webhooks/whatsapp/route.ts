@@ -4,13 +4,7 @@ import {
     type WhatsAppWebhookPayload,
 } from "@/app/features/events/gateways/whatsapp";
 import { resolveAgentForWhatsApp } from "@/app/features/agents/resolve-agent";
-import { createAgentRun } from "@/app/features/runtime/create-run";
-import { runAgent } from "@/app/features/runtime/run-agent";
-import { VercelAIProvider } from "@/app/features/runtime/llm-provider";
-import {
-    getOrCreateConversation,
-    createMessage,
-} from "@/app/features/conversations/service";
+import { processAgentEvent } from "@/app/features/agents/service";
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -58,68 +52,17 @@ export async function POST(request: NextRequest) {
 
     const agent = resolveAgentForWhatsApp();
 
-    const conversation = await getOrCreateConversation({
-        agentId: agent.id,
-        channel: "WHATSAPP",
-        externalId: event.conversation!.id,
-    });
-
-    await createMessage({
-        conversationId: conversation.id,
-        role: "USER",
-        content: event.content?.text ?? "",
-        externalId: event.id,
-    });
-
-    const runtimeContext = createAgentRun(
-        agent,
-        event,
-        conversation.id,
-    );
-
-    const provider = new VercelAIProvider(
-        agent.model,
-    );
-
-    const result = await runAgent(
-        provider,
-        runtimeContext,
-        "test-user",
-    );
-
-    if (result.run.status === "COMPLETED") {
-        const finalStep = [...result.steps]
-            .reverse()
-            .find(
-                (step) =>
-                    step.type === "LLM" &&
-                    typeof step.output === "object" &&
-                    step.output !== null &&
-                    "type" in step.output &&
-                    step.output.type === "FINAL" &&
-                    "response" in step.output &&
-                    typeof step.output.response === "string",
-            );
-
-            if (
-    finalStep &&
-    typeof finalStep.output === "object" &&
-    finalStep.output !== null &&
-    "response" in finalStep.output &&
-    typeof finalStep.output.response === "string"
-) {
-    await createMessage({
-        conversationId: conversation.id,
-        role: "ASSISTANT",
-        content: finalStep.output.response,
-    });
-}
-        
-    }
+    const { conversation, result } =
+        await processAgentEvent({
+            agent,
+            event,
+            userId: "test-user",
+        });
 
     return NextResponse.json({
         success: true,
         event,
+        conversation,
         run: result.run,
         steps: result.steps,
     });
