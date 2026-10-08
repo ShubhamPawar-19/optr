@@ -5,6 +5,7 @@ import type { AgentRun, RuntimeContext } from "./types";
 export function createAgentRun(
     agent: Agent,
     event?: NormalizedEvent,
+    conversationId?: string,
 ): RuntimeContext {
     const run: AgentRun = {
         id: crypto.randomUUID(),
@@ -18,6 +19,7 @@ export function createAgentRun(
     return {
         agent,
         event,
+        conversationId,
         run,
         steps: [],
     };

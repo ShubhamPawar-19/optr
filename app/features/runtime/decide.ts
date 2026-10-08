@@ -2,6 +2,7 @@ import { getAITools } from "./ai-tools";
 import type { LLMProvider } from "./llm";
 import type { AgentDecision } from "./decision";
 import type { RuntimeContext } from "./types";
+import { getConversationContext } from "../conversations/context";
 
 export async function decideNextAction(
     provider: LLMProvider,
@@ -33,17 +34,21 @@ export async function decideNextAction(
     const previousSteps =
         context.steps.length > 0
             ? JSON.stringify(
-                  context.steps.map((step) => ({
-                      type: step.type,
-                      toolName: step.toolName,
-                      input: step.input,
-                      output: step.output,
-                      toolResult: step.toolResult,
-                  })),
-                  null,
-                  2,
-              )
+                context.steps.map((step) => ({
+                    type: step.type,
+                    toolName: step.toolName,
+                    input: step.input,
+                    output: step.output,
+                    toolResult: step.toolResult,
+                })),
+                null,
+                2,
+            )
             : "No previous steps.";
+
+    const conversationMessages = context.conversationId
+        ? await getConversationContext(context.conversationId)
+        : [];
 
     const response = await provider.generate({
         model: context.agent.model,
@@ -51,8 +56,9 @@ export async function decideNextAction(
         system: context.agent.instructions,
 
         messages: [
+            ...conversationMessages,
             {
-                role: "user",
+                role: "user" as const,
                 content: `
 CURRENT EVENT:
 ${event}
