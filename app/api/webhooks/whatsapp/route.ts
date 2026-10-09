@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const event = normalizeWhatsAppEvent(payload);
 
-    const agent = resolveAgentForWhatsApp();
+    const agent = await resolveAgentForWhatsApp("demo-business");
 
     const { conversation, result } =
         await processAgentEvent({
