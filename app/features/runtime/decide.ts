@@ -13,20 +13,9 @@ export async function decideNextAction(
         .filter((tool) => tool.enabled)
         .map((tool) => tool.name);
 
-    const toolContext = {
-    agentId: context.agent.id,
-    businessId: context.businessId,
-    userId,
-    runId: context.run.id,
-        event: context.event
-            ? { id: context.event.id }
-            : undefined,
-    };
+    
 
-    const tools = getAITools(
-        enabledToolNames,
-        toolContext,
-    );
+    const tools = getAITools(enabledToolNames);
 
     const event = context.event
         ? JSON.stringify(context.event, null, 2)
