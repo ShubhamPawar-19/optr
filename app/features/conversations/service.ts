@@ -1,3 +1,4 @@
+
 import { db } from "../../lib/db";
 
 export async function getOrCreateConversation(params: {
@@ -7,7 +8,8 @@ export async function getOrCreateConversation(params: {
 }) {
     return db.conversation.upsert({
         where: {
-            channel_externalId: {
+            agentId_channel_externalId: {
+                agentId: params.agentId,
                 channel: params.channel,
                 externalId: params.externalId,
             },
@@ -39,12 +41,28 @@ export async function createMessage(params: {
     });
 }
 
+
 export async function getConversationMessages(
     conversationId: string,
+    agentId: string,
 ) {
+    const conversation = await db.conversation.findFirst({
+        where: {
+            id: conversationId,
+            agentId,
+        },
+        select: {
+            id: true,
+        },
+    });
+
+    if (!conversation) {
+        throw new Error("Conversation not found");
+    }
+
     return db.message.findMany({
         where: {
-            conversationId,
+            conversationId: conversation.id,
         },
         orderBy: {
             createdAt: "asc",

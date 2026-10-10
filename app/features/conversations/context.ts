@@ -1,10 +1,13 @@
+
 import { getConversationMessages } from "./service";
 
 export async function getConversationContext(
     conversationId: string,
+    agentId: string,
 ) {
     const messages = await getConversationMessages(
         conversationId,
+        agentId,
     );
 
     return messages.map((message) => ({

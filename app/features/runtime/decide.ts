@@ -13,7 +13,7 @@ export async function decideNextAction(
         .filter((tool) => tool.enabled)
         .map((tool) => tool.name);
 
-    
+
 
     const tools = getAITools(enabledToolNames);
 
@@ -37,7 +37,10 @@ export async function decideNextAction(
             : "No previous steps.";
 
     const conversationMessages = context.conversationId
-        ? await getConversationContext(context.conversationId)
+        ? await getConversationContext(
+            context.conversationId,
+            context.agent.id,
+        )
         : [];
 
     const response = await provider.generate({
