@@ -26,12 +26,20 @@ export type AgentStepType =
     | "MEMORY"
     | "APPROVAL";
 
+export type AgentStepStatus = "SUCCEEDED" | "FAILED";
+
 export interface AgentStep {
     id: string;
 
     runId: string;
 
     type: AgentStepType;
+
+    status: AgentStepStatus;
+
+    durationMs?: number;
+
+    error?: string;
 
     input?: unknown;
 

@@ -14,6 +14,7 @@ import {
 } from "./state";
 import { executeToolStep } from "./execute-tool-step";
 import type { RuntimeContext } from "./types";
+import type { AgentDecision } from "./decision";
 
 const MAX_STEPS = 10;
 
@@ -34,16 +35,44 @@ export async function runAgent(
 
     try {
         while (context.run.stepCount < MAX_STEPS) {
-            const decision = await decideNextAction(
-                provider,
-                context,
-                userId,
-            );
+            const llmStartedAt = Date.now();
+            let decision: AgentDecision;
+
+            try {
+                decision = await decideNextAction(
+                    provider,
+                    context,
+                    userId,
+                );
+            } catch (error) {
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : "Unknown LLM execution error";
+
+                const failedStep = {
+                    id: crypto.randomUUID(),
+                    runId: context.run.id,
+                    type: "LLM" as const,
+                    status: "FAILED" as const,
+                    durationMs: Date.now() - llmStartedAt,
+                    error: message,
+                    input: context.event,
+                    createdAt: new Date(),
+                };
+
+                context = addAgentStep(context, failedStep);
+                await createPersistedStep(failedStep);
+
+                throw error;
+            }
 
             const decisionStep = {
                 id: crypto.randomUUID(),
                 runId: context.run.id,
                 type: "LLM" as const,
+                status: "SUCCEEDED" as const,
+                durationMs: Date.now() - llmStartedAt,
                 input: context.event,
                 output: decision,
                 createdAt: new Date(),
@@ -98,9 +127,13 @@ export async function runAgent(
 
             await createPersistedStep(newStep);
 
-            await updatePersistedRun(
-                context.run,
-            );
+            await updatePersistedRun(context.run);
+
+            if (newStep.status === "FAILED") {
+                throw new Error(
+                    newStep.error ?? "Tool execution failed",
+                );
+            }
         }
 
         throw new Error(

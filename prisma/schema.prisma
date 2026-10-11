@@ -26,6 +26,11 @@ enum AgentStepType {
   APPROVAL
 }
 
+enum AgentStepStatus {
+  SUCCEEDED
+  FAILED
+}
+
 model Event {
   id         String   @id
   source     String
@@ -71,6 +76,10 @@ model AgentStep {
   runId String
   type  AgentStepType
 
+  status     AgentStepStatus @default(SUCCEEDED)
+  durationMs Int?
+  error      String?
+
   input      Json?
   output     Json?
   toolName   String?
@@ -82,6 +91,7 @@ model AgentStep {
 
   @@index([runId])
   @@index([toolName])
+  @@index([status])
 }
 
 model Property {

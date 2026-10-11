@@ -40,6 +40,7 @@ export async function createPersistedRun(
     });
 }
 
+
 export async function createPersistedStep(
     step: AgentStep,
 ) {
@@ -48,6 +49,9 @@ export async function createPersistedStep(
             id: step.id,
             runId: step.runId,
             type: step.type,
+            status: step.status,
+            durationMs: step.durationMs,
+            error: step.error,
             input: step.input as never,
             output: step.output as never,
             toolName: step.toolName,
