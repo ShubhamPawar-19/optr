@@ -33,6 +33,8 @@ runtimeContext = addAgentStep(runtimeContext, {
         iso: new Date().toISOString(),
     },
     createdAt: new Date(),
+    status: "SUCCEEDED",
+    durationMs: 0,
 });
 
 console.log("Run status:", runtimeContext.run.status);
