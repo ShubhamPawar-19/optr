@@ -76,3 +76,18 @@ export async function updatePersistedRun(
         },
     });
 }
+
+
+export async function findPersistedRunByEvent(
+    agentId: string,
+    eventId: string,
+) {
+    return db.agentRun.findUnique({
+        where: {
+            agentId_eventId: {
+                agentId,
+                eventId,
+            },
+        },
+    });
+}

@@ -8,6 +8,12 @@ import { processAgentEvent } from "@/app/features/agents/service";
 import { resolveWhatsAppBusiness } from "@/app/features/agents/resolve-whatsapp-business";
 import { sendWhatsAppMessage } from "@/app/features/events/gateways/whatsapp/send-message";
 import { verifyWhatsAppSignature } from "@/app/features/events/gateways/whatsapp/verify-signature";
+import {
+    isWhatsAppWebhookPayload,
+    parseWhatsAppPayload,
+} from "./parse-payload";
+import { parseWhatsAppTimestamp } from "./validate-timestamp";
+
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -48,8 +54,27 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const body = JSON.parse(rawBody);
+    const parsed = parseWhatsAppPayload(rawBody);
 
+    if (!parsed.success) {
+        console.error("WhatsApp webhook received malformed JSON");
+
+        return NextResponse.json(
+            { error: "Invalid JSON payload" },
+            { status: 400 },
+        );
+    }
+
+    if (!isWhatsAppWebhookPayload(parsed.body)) {
+        console.error("WhatsApp webhook received an invalid payload structure");
+
+        return NextResponse.json(
+            { error: "Invalid webhook payload structure" },
+            { status: 400 },
+        );
+    }
+
+    const body = parsed.body;
     const phoneNumberId =
         body.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
 
@@ -61,8 +86,23 @@ export async function POST(request: NextRequest) {
         from: message?.from,
     });
     // Ignore webhook events that do not contain an incoming message.
-    if (!phoneNumberId || !message?.id || !message?.from) {
+    if (
+        !phoneNumberId?.trim() ||
+        !message?.id?.trim() ||
+        !message?.from?.trim()
+    ) {
         return NextResponse.json({ success: true, ignored: true });
+    }
+
+    const timestamp = parseWhatsAppTimestamp(message.timestamp);
+
+    if (!timestamp) {
+        console.error("WhatsApp webhook received an invalid message timestamp");
+
+        return NextResponse.json(
+            { error: "Invalid message timestamp" },
+            { status: 400 },
+        );
     }
 
     const businessId = await resolveWhatsAppBusiness(phoneNumberId);
@@ -80,7 +120,7 @@ export async function POST(request: NextRequest) {
         from: message.from,
         name: body.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.profile?.name,
         text: message.type === "text" ? message.text?.body : undefined,
-        timestamp: new Date(Number(message.timestamp) * 1000).toISOString(),
+        timestamp,
     };
 
     const event = normalizeWhatsAppEvent(payload);
@@ -88,11 +128,18 @@ export async function POST(request: NextRequest) {
 
     console.time("WhatsApp processAgentEvent");
 
-    const { conversation, result } = await processAgentEvent({
+    const { duplicate, conversation, result } = await processAgentEvent({
         agent,
         event,
         userId: message.from,
     });
+
+    if (duplicate) {
+        return NextResponse.json({
+            success: true,
+            duplicate: true,
+        });
+    }
 
     if (!conversation) {
         console.error("WhatsApp agent run returned no conversation");
@@ -125,10 +172,10 @@ export async function POST(request: NextRequest) {
 
     const reply =
         finalStep &&
-        typeof finalStep.output === "object" &&
-        finalStep.output !== null &&
-        "response" in finalStep.output &&
-        typeof finalStep.output.response === "string"
+            typeof finalStep.output === "object" &&
+            finalStep.output !== null &&
+            "response" in finalStep.output &&
+            typeof finalStep.output.response === "string"
             ? finalStep.output.response
             : undefined;
 
@@ -152,21 +199,16 @@ export async function POST(request: NextRequest) {
         console.warn("No final text response found for WhatsApp reply");
     }
 
-    console.dir(
-        {
-            runStatus: result.run.status,
-            steps: result.steps.map((step) => ({
-                status: step.status,
-                output: step.output,
-            })),
-        },
-        { depth: null },
-    );
-    return NextResponse.json({
-        success: true,
-        event,
-        conversation,
-        run: result.run,
-        steps: result.steps,
+    console.log("WhatsApp agent run summary:", {
+        runId: result.run.id,
+        runStatus: result.run.status,
+        stepsCount: result.steps.length,
+        succeededSteps: result.steps.filter(
+            (step) => step.status === "SUCCEEDED",
+        ).length,
+        failedSteps: result.steps.filter(
+            (step) => step.status === "FAILED",
+        ).length,
     });
+    return NextResponse.json({ success: true });
 }

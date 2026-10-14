@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:whatsapp-signature": "node --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test app/features/events/gateways/whatsapp/verify-signature.test.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.87",

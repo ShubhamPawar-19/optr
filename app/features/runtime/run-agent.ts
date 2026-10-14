@@ -15,6 +15,8 @@ import {
 import { executeToolStep } from "./execute-tool-step";
 import type { RuntimeContext } from "./types";
 import type { AgentDecision } from "./decision";
+import { DuplicateAgentRunError } from "./duplicate-run-error";
+import { isDuplicateRunError } from "./is-duplicate-run-error";
 
 const MAX_STEPS = 10;
 
@@ -22,18 +24,34 @@ export async function runAgent(
     provider: LLMProvider,
     initialContext: RuntimeContext,
     userId: string,
+    onRunClaimed?: () => Promise<void>,
 ): Promise<RuntimeContext> {
     let context = {
         ...initialContext,
         run: startAgentRun(initialContext.run),
     };
+
     if (context.event) {
         await createPersistedEvent(context.event);
     }
 
-    await createPersistedRun(context.run);
-
     try {
+        try {
+            await createPersistedRun(context.run);
+        } catch (error) {
+            if (
+                context.run.eventId &&
+                isDuplicateRunError(error)
+            ) {
+                throw new DuplicateAgentRunError();
+            }
+
+            throw error;
+        }
+
+        // Run ownership is established before processing the event.
+        await onRunClaimed?.();
+
         while (context.run.stepCount < MAX_STEPS) {
             const llmStartedAt = Date.now();
             let decision: AgentDecision;
@@ -78,24 +96,16 @@ export async function runAgent(
                 createdAt: new Date(),
             };
 
-            context = addAgentStep(
-                context,
-                decisionStep,
-            );
-
+            context = addAgentStep(context, decisionStep);
             await createPersistedStep(decisionStep);
 
             if (decision.type === "FINAL") {
                 context = {
                     ...context,
-                    run: completeAgentRun(
-                        context.run,
-                    ),
+                    run: completeAgentRun(context.run),
                 };
 
-                await updatePersistedRun(
-                    context.run,
-                );
+                await updatePersistedRun(context.run);
 
                 return context;
             }
@@ -106,14 +116,11 @@ export async function runAgent(
                 userId,
                 runId: context.run.id,
                 event: context.event
-                    ? {
-                        id: context.event.id,
-                    }
+                    ? { id: context.event.id }
                     : undefined,
             };
 
-            const previousStepCount =
-                context.steps.length;
+            const previousStepCount = context.steps.length;
 
             context = await executeToolStep(
                 context,
@@ -122,11 +129,9 @@ export async function runAgent(
                 toolContext,
             );
 
-            const newStep =
-                context.steps[previousStepCount];
+            const newStep = context.steps[previousStepCount];
 
             await createPersistedStep(newStep);
-
             await updatePersistedRun(context.run);
 
             if (newStep.status === "FAILED") {
@@ -140,6 +145,10 @@ export async function runAgent(
             `Agent exceeded maximum step limit of ${MAX_STEPS}`,
         );
     } catch (error) {
+        if (error instanceof DuplicateAgentRunError) {
+            throw error;
+        }
+
         const message =
             error instanceof Error
                 ? error.message
@@ -147,15 +156,10 @@ export async function runAgent(
 
         context = {
             ...context,
-            run: failAgentRun(
-                context.run,
-                message,
-            ),
+            run: failAgentRun(context.run, message),
         };
 
-        await updatePersistedRun(
-            context.run,
-        );
+        await updatePersistedRun(context.run);
 
         return context;
     }
