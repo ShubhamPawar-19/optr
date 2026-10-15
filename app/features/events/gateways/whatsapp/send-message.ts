@@ -1,3 +1,4 @@
+
 type SendWhatsAppMessageParams = {
     to: string;
     text: string;
@@ -39,10 +40,16 @@ export async function sendWhatsAppMessage({
 
     if (!response.ok) {
         console.error("WhatsApp send failed:", data);
+
         throw new Error(
             `WhatsApp send failed with status ${response.status}`,
         );
     }
+
+    console.log(
+        "WhatsApp API response:",
+        JSON.stringify(data, null, 2),
+    );
 
     return data;
 }

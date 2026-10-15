@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-    normalizeWhatsAppEvent,
-    type WhatsAppWebhookPayload,
-} from "@/app/features/events/gateways/whatsapp";
-import { resolveAgentForWhatsApp } from "@/app/features/agents/resolve-agent";
-import { processAgentEvent } from "@/app/features/agents/service";
+import type { WhatsAppWebhookPayload } from "@/app/features/events/gateways/whatsapp";
 import { resolveWhatsAppBusiness } from "@/app/features/agents/resolve-whatsapp-business";
-import { sendWhatsAppMessage } from "@/app/features/events/gateways/whatsapp/send-message";
 import { verifyWhatsAppSignature } from "@/app/features/events/gateways/whatsapp/verify-signature";
+import { inngest } from "@/app/lib/inngest/client";
 import {
     isWhatsAppWebhookPayload,
     parseWhatsAppPayload,
 } from "./parse-payload";
 import { parseWhatsAppTimestamp } from "./validate-timestamp";
-
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -33,12 +27,8 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-        {
-            error: "Verification failed",
-        },
-        {
-            status: 403,
-        },
+        { error: "Verification failed" },
+        { status: 403 },
     );
 }
 
@@ -48,6 +38,7 @@ export async function POST(request: NextRequest) {
 
     if (!verifyWhatsAppSignature(rawBody, signature)) {
         console.error("WhatsApp webhook signature verification failed");
+
         return NextResponse.json(
             { error: "Invalid webhook signature" },
             { status: 401 },
@@ -75,23 +66,27 @@ export async function POST(request: NextRequest) {
     }
 
     const body = parsed.body;
-    const phoneNumberId =
-        body.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
+    const value = body.entry?.[0]?.changes?.[0]?.value;
+    const phoneNumberId = value?.metadata?.phone_number_id;
+    const message = value?.messages?.[0];
 
-    const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
     console.log("WhatsApp webhook received:", {
         phoneNumberId,
         hasMessage: Boolean(message?.id),
         messageType: message?.type,
         from: message?.from,
     });
-    // Ignore webhook events that do not contain an incoming message.
+
+    // Ignore status updates and payloads without an incoming message.
     if (
         !phoneNumberId?.trim() ||
         !message?.id?.trim() ||
         !message?.from?.trim()
     ) {
-        return NextResponse.json({ success: true, ignored: true });
+        return NextResponse.json({
+            success: true,
+            ignored: true,
+        });
     }
 
     const timestamp = parseWhatsAppTimestamp(message.timestamp);
@@ -109,6 +104,7 @@ export async function POST(request: NextRequest) {
 
     if (!businessId) {
         console.error("Unmapped or inactive WhatsApp channel:", phoneNumberId);
+
         return NextResponse.json(
             { error: "WhatsApp channel not configured" },
             { status: 404 },
@@ -118,97 +114,34 @@ export async function POST(request: NextRequest) {
     const payload: WhatsAppWebhookPayload = {
         messageId: message.id,
         from: message.from,
-        name: body.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.profile?.name,
+        name: value?.contacts?.[0]?.profile?.name,
         text: message.type === "text" ? message.text?.body : undefined,
         timestamp,
     };
 
-    const event = normalizeWhatsAppEvent(payload);
-    const agent = await resolveAgentForWhatsApp(businessId);
-
-    console.time("WhatsApp processAgentEvent");
-
-    const { duplicate, conversation, result } = await processAgentEvent({
-        agent,
-        event,
-        userId: message.from,
-    });
-
-    if (duplicate) {
-        return NextResponse.json({
-            success: true,
-            duplicate: true,
+    try {
+        await inngest.send({
+            name: "optr/whatsapp.message.received",
+            data: {
+                phoneNumberId,
+                messageId: payload.messageId,
+                from: payload.from,
+                name: payload.name,
+                text: payload.text,
+                timestamp: payload.timestamp,
+            },
         });
-    }
+    } catch (error) {
+        console.error("Failed to enqueue WhatsApp message:", error);
 
-    if (!conversation) {
-        console.error("WhatsApp agent run returned no conversation");
         return NextResponse.json(
-            { error: "Conversation was not created" },
+            { error: "Failed to queue message for processing" },
             { status: 500 },
         );
     }
 
-    console.timeEnd("WhatsApp processAgentEvent");
-
-    console.log("WhatsApp agent run completed:", {
-        conversationId: conversation.id,
-        runId: result.run.id,
-        stepsCount: result.steps.length,
+    return NextResponse.json({
+        success: true,
+        queued: true,
     });
-    const finalStep = [...result.steps].reverse().find((step) => {
-        const output: unknown = step.output;
-
-        return (
-            step.status === "SUCCEEDED" &&
-            typeof output === "object" &&
-            output !== null &&
-            "type" in output &&
-            output.type === "FINAL" &&
-            "response" in output &&
-            typeof output.response === "string"
-        );
-    });
-
-    const reply =
-        finalStep &&
-            typeof finalStep.output === "object" &&
-            finalStep.output !== null &&
-            "response" in finalStep.output &&
-            typeof finalStep.output.response === "string"
-            ? finalStep.output.response
-            : undefined;
-
-    console.log("Final WhatsApp reply found:", {
-        hasReply: typeof reply === "string" && reply.trim().length > 0,
-        replyLength: typeof reply === "string" ? reply.length : 0,
-    });
-
-    if (typeof reply === "string" && reply.trim()) {
-        try {
-            const sendResult = await sendWhatsAppMessage({
-                to: message.from,
-                text: reply,
-            });
-
-            console.log("WhatsApp reply sent:", sendResult);
-        } catch (error) {
-            console.error("WhatsApp send failed:", error);
-        }
-    } else {
-        console.warn("No final text response found for WhatsApp reply");
-    }
-
-    console.log("WhatsApp agent run summary:", {
-        runId: result.run.id,
-        runStatus: result.run.status,
-        stepsCount: result.steps.length,
-        succeededSteps: result.steps.filter(
-            (step) => step.status === "SUCCEEDED",
-        ).length,
-        failedSteps: result.steps.filter(
-            (step) => step.status === "FAILED",
-        ).length,
-    });
-    return NextResponse.json({ success: true });
 }
