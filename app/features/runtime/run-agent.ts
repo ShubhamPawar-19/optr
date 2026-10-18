@@ -1,3 +1,4 @@
+
 import type { LLMProvider } from "./llm";
 import { decideNextAction } from "./decide";
 import { addAgentStep } from "./add-step";
@@ -26,6 +27,13 @@ export async function runAgent(
     userId: string,
     onRunClaimed?: () => Promise<void>,
 ): Promise<RuntimeContext> {
+    console.log("[OPTR Runtime Entry]", {
+        runId: initialContext.run.id,
+        conversationId: initialContext.conversationId,
+        eventId: initialContext.event?.id,
+        eventText: initialContext.event?.content?.text,
+    });
+
     let context = {
         ...initialContext,
         run: startAgentRun(initialContext.run),
@@ -120,6 +128,16 @@ export async function runAgent(
                     : undefined,
             };
 
+            console.log("[OPTR Decision Debug]", {
+                decisionType: decision.type,
+                toolName: decision.type === "TOOL"
+                    ? decision.toolName
+                    : undefined,
+                input: decision.type === "TOOL"
+                    ? decision.input
+                    : undefined,
+            });
+
             const previousStepCount = context.steps.length;
 
             context = await executeToolStep(
@@ -128,6 +146,12 @@ export async function runAgent(
                 decision.input,
                 toolContext,
             );
+
+            console.log("[OPTR Tool Debug]", {
+                toolName: decision.toolName,
+                input: decision.input,
+                result: context.steps[context.steps.length - 1]?.toolResult,
+            });
 
             const newStep = context.steps[previousStepCount];
 
