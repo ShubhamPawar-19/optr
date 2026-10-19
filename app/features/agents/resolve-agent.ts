@@ -29,7 +29,8 @@ export async function resolveAgentForWhatsApp(
         isActive: agent.isActive,
         tools: [
             { name: "get_current_time", enabled: true },
-            { name: "search_properties", enabled: true },
+            { name: "search_data", enabled: true },
+            { name: "list_datasets", enabled: true },
         ],
     };
 }

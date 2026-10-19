@@ -1,14 +1,17 @@
-import { searchPropertiesTool } from "../features/tools/search-properties";
+
+import { searchDataTool } from "../features/tools/search-data";
 
 async function main() {
-    const result = await searchPropertiesTool.execute(
+    const result = await searchDataTool.execute(
         {
-            city: "Dubai",
-            bedrooms: 2,
+            datasetName: "Properties",
+            query: "",
+            filters: [],
+            limit: 10,
         },
         {
             agentId: "test-agent",
-            businessId: "test-business",
+            businessId: "demo-business",
             userId: "test-user",
             runId: "test-run",
         },
@@ -17,7 +20,8 @@ async function main() {
     console.dir(result, { depth: null });
 }
 
-main().catch((error) => {
-    console.error(error);
-    process.exit(1);
-});
+main()
+    .catch((error) => {
+        console.error(error);
+        process.exitCode = 1;
+    });

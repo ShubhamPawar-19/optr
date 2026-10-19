@@ -53,6 +53,33 @@ export async function decideNextAction(
         enabledToolNames,
     });
 
+    // Ensure dataset discovery happens before the first dataset search.
+    const hasDiscoveredDatasets = context.steps.some(
+        (step) =>
+            step.type === "TOOL" &&
+            step.toolName === "list_datasets" &&
+            step.status === "SUCCEEDED",
+    );
+
+    const hasDatasetSearch = context.steps.some(
+        (step) =>
+            step.type === "TOOL" &&
+            step.toolName === "search_data",
+    );
+
+    if (
+        enabledToolNames.includes("list_datasets") &&
+        enabledToolNames.includes("search_data") &&
+        !hasDiscoveredDatasets &&
+        !hasDatasetSearch
+    ) {
+        return {
+            type: "TOOL",
+            toolName: "list_datasets",
+            input: {},
+        };
+    }
+
     const response = await provider.generate({
         model: context.agent.model,
 
