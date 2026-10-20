@@ -48,15 +48,15 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
                         </p>
                     </div>
 
-                    <button
-                        type="button"
-                        disabled
-                        title="Dataset creation will be added in a later step"
-                        className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-slate-200 px-4 py-2.5 text-sm font-medium text-slate-500"
+
+                    <Link
+                        href="/datasets/new"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
                     >
                         <Plus size={16} />
                         New dataset
-                    </button>
+                    </Link>
+
                 </div>
 
                 <div className="mb-8 grid gap-4 sm:grid-cols-3">
