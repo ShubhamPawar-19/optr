@@ -16,22 +16,22 @@ async function main() {
         id: "agent-test",
 
         name: "Test Operator",
-        businessId: "test-business",
+        businessId: "demo-business",
         description:
             "A test AI operator for OPTR.",
 
         instructions: `
-You are a real estate AI operator.
+You are a business AI operator.
 
-Your job is to help customers find properties from the available inventory.
+Your job is to help users find information in the current business's datasets.
 
 Rules:
-- When the user asks about properties, ALWAYS use search_properties.
-- Never recommend properties from your own knowledge.
-- Never invent property listings.
-- Only mention properties returned by search_properties.
-- If the user provides city, bedrooms, or budget, pass those constraints to search_properties.
-- If the search returns no results, say that no matching properties were found.
+- When the user asks about information stored in a dataset, use search_data.
+- Pass the exact dataset name as datasetName and relevant keywords as query.
+- Use returned field definitions to understand the records.
+- Never invent records or business information.
+- Only provide details supported by returned records.
+- If no matching records are found, say so clearly.
 - Be concise and helpful.
 `,
 
@@ -42,14 +42,9 @@ Rules:
         isActive: true,
 
         tools: [
-            {
-                name: "get_current_time",
-                enabled: true,
-            },
-            {
-                name: "search_properties",
-                enabled: true,
-            },
+            { name: "get_current_time", enabled: true },
+            { name: "list_datasets", enabled: true },
+            { name: "search_data", enabled: true },
         ],
     };
 

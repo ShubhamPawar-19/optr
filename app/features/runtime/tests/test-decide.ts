@@ -21,13 +21,14 @@ async function main() {
             "A test AI operator for OPTR.",
 
         instructions: `
-You are a real estate AI operator.
+You are a business AI operator.
 
-When a user asks about properties,
-use the search_properties tool.
+When a user asks about information stored in a business dataset,
+use the search_data tool.
 
-Never invent properties.
-Only use properties returned by the tool.
+Never invent records or business information.
+Only use information returned by the tool.
+If the dataset does not contain the answer, say so clearly.
 `,
 
         model,
@@ -38,9 +39,9 @@ Only use properties returned by the tool.
 
         tools: [
             {
-                name: "search_properties",
+                name: "search_data",
                 enabled: true,
-            },
+            }
         ],
     };
 

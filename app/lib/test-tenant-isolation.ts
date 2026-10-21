@@ -1,93 +1,152 @@
 
 import { db } from "./db";
-import { searchPropertiesTool } from "../features/tools/search-properties";
+import { searchDataTool } from "../features/tools/search-data";
 
 const BUSINESS_A = "demo-business";
 const BUSINESS_B = "tenant-isolation-test-business";
-const TEST_PROPERTY_ID = "tenant-isolation-test-property";
+const DATASET_NAME = "Tenant Isolation Test Dataset";
+const TEST_RECORD_MARKER = "PRIVATE-BUSINESS-B-RECORD";
 
 async function main() {
-    await db.business.upsert({
-        where: { id: BUSINESS_B },
-        update: {},
-        create: {
-            id: BUSINESS_B,
-            name: "Tenant Isolation Test Business",
-        },
-    });
-
-    await db.property.upsert({
-        where: { id: TEST_PROPERTY_ID },
-        update: {
-            businessId: BUSINESS_B,
-            title: "PRIVATE TEST PROPERTY - BUSINESS B",
-            available: true,
-        },
-        create: {
-            id: TEST_PROPERTY_ID,
-            businessId: BUSINESS_B,
-            title: "PRIVATE TEST PROPERTY - BUSINESS B",
-            city: "Dubai",
-            area: "Tenant Isolation Test",
-            bedrooms: 2,
-            bathrooms: 2,
-            price: 500000,
-            currency: "AED",
-            description: "Temporary property used to test tenant isolation.",
-            available: true,
-        },
-    });
+    let datasetId: string | undefined;
 
     try {
-        const resultA = await searchPropertiesTool.execute(
-            {},
-            {
-                agentId: "test-agent-a",
-                businessId: BUSINESS_A,
-                userId: "test-user",
-                runId: "tenant-test-a",
+        await db.business.upsert({
+            where: { id: BUSINESS_B },
+            update: {},
+            create: {
+                id: BUSINESS_B,
+                name: "Tenant Isolation Test Business",
             },
-        );
-
-        const resultB = await searchPropertiesTool.execute(
-            {},
-            {
-                agentId: "test-agent-b",
-                businessId: BUSINESS_B,
-                userId: "test-user",
-                runId: "tenant-test-b",
-            },
-        );
-
-        if (!resultA.success || !resultB.success) {
-            throw new Error("A property search failed.");
-        }
-
-        const propertiesA = resultA.data as Array<{ id: string; title: string }>;
-        const propertiesB = resultB.data as Array<{ id: string; title: string }>;
-
-        const leakedIntoA = propertiesA.some(
-            (property) => property.id === TEST_PROPERTY_ID,
-        );
-
-        const visibleToB = propertiesB.some(
-            (property) => property.id === TEST_PROPERTY_ID,
-        );
-
-        console.log("Business A property count:", propertiesA.length);
-        console.log("Business B property count:", propertiesB.length);
-        console.log("Test property visible to Business A:", leakedIntoA);
-        console.log("Test property visible to Business B:", visibleToB);
-
-        if (leakedIntoA || !visibleToB) {
-            throw new Error("TENANT ISOLATION TEST FAILED");
-        }
-
-        console.log("PASS: Business A cannot access Business B's property.");
-    } finally {
-        await db.property.deleteMany({
-            where: { id: TEST_PROPERTY_ID },
         });
+
+        const dataset = await db.dataset.upsert({
+            where: {
+                businessId_name: {
+                    businessId: BUSINESS_B,
+                    name: DATASET_NAME,
+                },
+            },
+            update: {},
+            create: {
+                businessId: BUSINESS_B,
+                name: DATASET_NAME,
+                fields: {
+                    create: [
+                        {
+                            key: "marker",
+                            label: "Marker",
+                            type: "TEXT",
+                            isSearchable: true,
+                        },
+                    ],
+                },
+            },
+        });
+
+        datasetId = dataset.id;
+
+        await db.datasetRecord.create({
+            data: {
+                datasetId,
+                data: {
+                    marker: TEST_RECORD_MARKER,
+                    description: "Private test record",
+                },
+            },
+        });
+
+        const contextA = {
+            agentId: "test-agent-a",
+            businessId: BUSINESS_A,
+            userId: "test-user",
+            runId: "tenant-test-a",
+        };
+
+        const contextB = {
+            agentId: "test-agent-b",
+            businessId: BUSINESS_B,
+            userId: "test-user",
+            runId: "tenant-test-b",
+        };
+
+        const resultA = await searchDataTool.execute(
+            {
+                datasetName: DATASET_NAME,
+                query: TEST_RECORD_MARKER,
+                filters: [],
+                limit: 10,
+            },
+            contextA,
+        );
+
+        const resultB = await searchDataTool.execute(
+            {
+                datasetName: DATASET_NAME,
+                query: TEST_RECORD_MARKER,
+                filters: [],
+                limit: 10,
+            },
+            contextB,
+        );
+
+        // Business A must not be able to find Business B's dataset.
+        if (resultA.success) {
+            throw new Error(
+                "FAIL: Business A accessed Business B's dataset.",
+            );
+        }
+
+        console.log(
+            "PASS: Business A cannot access Business B's dataset.",
+        );
+
+        // Business B must be able to find and read its own dataset.
+        if (!resultB.success || !resultB.data) {
+            console.error("Business B result:");
+            console.dir(resultB, { depth: null });
+
+            throw new Error(
+                "FAIL: Business B could not access its own dataset.",
+            );
+        }
+
+        const dataB = resultB.data as {
+            records: Array<{ data: Record<string, unknown> }>;
+        };
+
+        const visibleToB = dataB.records.some(
+            (record) => record.data.marker === TEST_RECORD_MARKER,
+        );
+
+        if (!visibleToB) {
+            throw new Error(
+                "FAIL: Business B could not retrieve its own record.",
+            );
+        }
+
+        console.log(
+            "PASS: Business B can access its own dataset record.",
+        );
+    } finally {
+        if (datasetId) {
+            await db.datasetRecord.deleteMany({
+                where: { datasetId },
+            });
+
+            await db.dataset.deleteMany({
+                where: { id: datasetId },
+            });
+        }
+
+        await db.business.deleteMany({
+            where: {
+                id: BUSINESS_B,
+                datasets: { none: {} },
+                agents: { none: {} },
+            },
+        });
+
         await db.$disconnect();
     }
 }

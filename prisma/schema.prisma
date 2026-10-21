@@ -176,6 +176,7 @@ model Business {
   agents     Agent[]
   properties Property[]
   whatsAppChannels WhatsAppChannel[]
+  datasets Dataset[]
 }
 
 
@@ -190,4 +191,62 @@ model WhatsAppChannel {
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@index([businessId])
+}
+
+enum DatasetFieldType {
+  TEXT
+  NUMBER
+  BOOLEAN
+  DATE
+  SINGLE_SELECT
+  MULTI_SELECT
+  URL
+  MEDIA
+}
+
+model Dataset {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  business Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  fields   DatasetField[]
+  records  DatasetRecord[]
+
+  @@unique([businessId, name])
+  @@index([businessId])
+}
+
+model DatasetField {
+  id          String           @id @default(cuid())
+  datasetId   String
+  key         String
+  label       String
+  type        DatasetFieldType
+  isRequired  Boolean          @default(false)
+  isSearchable Boolean         @default(true)
+  options     Json?
+  position    Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@unique([datasetId, key])
+  @@index([datasetId, position])
+}
+
+model DatasetRecord {
+  id        String   @id @default(cuid())
+  datasetId String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@index([datasetId, createdAt])
 }

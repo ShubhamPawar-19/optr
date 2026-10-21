@@ -22,6 +22,7 @@ import {
   Users,
   Workflow,
   Zap,
+  Database,
 } from "lucide-react";
 
 const navigation = [
@@ -30,6 +31,7 @@ const navigation = [
   { label: "Conversations", icon: MessageCircle },
   { label: "Properties", icon: Building2 },
   { label: "Executions", icon: Activity },
+  { label: "Datasets", icon: Database },
 ];
 
 const workspaceNavigation = [
@@ -237,12 +239,17 @@ export default function Home() {
                   return (
                     <a
                       key={item.label}
-                      href={item.label === "Overview" ? "#overview" : "#"}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition ${
-                        item.active
+                      href={
+                        item.label === "Overview"
+                          ? "#overview"
+                          : item.label === "Datasets"
+                            ? "/datasets"
+                            : "#"
+                      }
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition ${item.active
                           ? "bg-slate-950 text-white shadow-sm"
                           : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-                      }`}
+                        }`}
                     >
                       <Icon size={17} />
                       <span className="flex-1">{item.label}</span>
@@ -376,9 +383,8 @@ export default function Home() {
                         {metric.value}
                       </span>
                       <span
-                        className={`mb-1 inline-flex items-center gap-1 text-xs font-semibold ${
-                          metric.positive ? "text-emerald-700" : "text-rose-700"
-                        }`}
+                        className={`mb-1 inline-flex items-center gap-1 text-xs font-semibold ${metric.positive ? "text-emerald-700" : "text-rose-700"
+                          }`}
                       >
                         {metric.positive ? (
                           <ArrowUpRight size={14} />
@@ -534,13 +540,12 @@ export default function Home() {
                         className="flex items-start gap-3 rounded-lg py-3"
                       >
                         <div
-                          className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${
-                            execution.tone === "green"
+                          className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${execution.tone === "green"
                               ? "bg-emerald-50 text-emerald-600"
                               : execution.tone === "amber"
                                 ? "bg-amber-50 text-amber-600"
                                 : "bg-blue-50 text-blue-600"
-                          }`}
+                            }`}
                         >
                           {execution.tone === "green" ? (
                             <CheckCircle2 size={16} />
