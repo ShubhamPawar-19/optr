@@ -23,21 +23,22 @@ export interface RecordValidationError {
 
 export type RecordValidationResult =
   | {
-      success: true;
-      data: Record<string, unknown>;
-      errors: [];
-    }
+    success: true;
+    data: Record<string, unknown>;
+    errors: [];
+  }
   | {
-      success: false;
-      errors: RecordValidationError[];
-    };
+    success: false;
+    errors: RecordValidationError[];
+  };
 
 function isEmpty(value: unknown): boolean {
   return (
     value === undefined ||
     value === null ||
     value === "" ||
-    (typeof value === "string" && value.trim() === "")
+    (typeof value === "string" && value.trim() === "") ||
+    (Array.isArray(value) && value.length === 0)
   );
 }
 
@@ -62,6 +63,15 @@ function getAllowedOptions(options: unknown): string[] {
 
     return [];
   });
+}
+
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 function validateFieldValue(
@@ -108,15 +118,9 @@ function validateFieldValue(
         return "Must be a URL string.";
       }
 
-      try {
-        const url = new URL(value);
-
-        return url.protocol === "http:" || url.protocol === "https:"
-          ? null
-          : "URL must use HTTP or HTTPS.";
-      } catch {
-        return "Must be a valid HTTP or HTTPS URL.";
-      }
+      return isValidHttpUrl(value)
+        ? null
+        : "Must be a valid HTTP or HTTPS URL.";
     }
 
     case "SINGLE_SELECT": {
@@ -154,12 +158,31 @@ function validateFieldValue(
         : "One or more values are not configured options.";
     }
 
-    case "MEDIA":
-      return typeof value === "string" ||
-        (Array.isArray(value) &&
-          value.every((item) => typeof item === "string"))
-        ? null
-        : "Must be a media reference or an array of media references.";
+    case "MEDIA": {
+      if (typeof value === "string") {
+        return isValidHttpUrl(value)
+          ? null
+          : "Must be a valid HTTP or HTTPS URL.";
+      }
+
+      if (Array.isArray(value)) {
+        if (!value.every((item) => typeof item === "string")) {
+          return "Must be a media reference or an array of media references.";
+        }
+
+        if (value.length === 0) {
+          return "Must contain at least one media reference.";
+        }
+
+        if (!value.every(isValidHttpUrl)) {
+          return "Every media reference must be a valid HTTP or HTTPS URL.";
+        }
+
+        return null;
+      }
+
+      return "Must be a media reference or an array of media references.";
+    }
 
     default:
       return "Unsupported field type.";

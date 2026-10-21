@@ -39,10 +39,15 @@ export function EditRecordForm({
 
       if (field.type === "BOOLEAN") {
         initial[field.key] = value === true;
-      } else if (field.type === "MULTI_SELECT") {
+      } else if (
+        field.type === "MULTI_SELECT" ||
+        field.type === "MEDIA"
+      ) {
         initial[field.key] = Array.isArray(value)
           ? value.filter((item): item is string => typeof item === "string")
-          : [];
+          : field.type === "MEDIA" && typeof value === "string"
+            ? value
+            : [];
       } else if (value !== null && value !== undefined) {
         if (field.type === "DATE" && typeof value === "string") {
           initial[field.key] = value.slice(0, 10);
@@ -90,6 +95,30 @@ export function EditRecordForm({
           return;
         }
       }
+
+      if (field.type === "MEDIA") {
+        const urls =
+          typeof value === "string"
+            ? value.split("\n").map((u) => u.trim()).filter(Boolean)
+            : Array.isArray(value)
+              ? value
+              : [];
+
+        const invalidUrl = urls.find((url) => {
+          try {
+            const parsed = new URL(url);
+            return parsed.protocol !== "https:" && parsed.protocol !== "http:";
+          } catch {
+            return true;
+          }
+        });
+
+        if (invalidUrl) {
+          event.preventDefault();
+          setClientError(`"${field.label}" contains an invalid HTTP or HTTPS URL.`);
+          return;
+        }
+      }
     }
   }
 
@@ -105,6 +134,15 @@ export function EditRecordForm({
         data[field.key] = Number(value);
       } else if (field.type === "BOOLEAN") {
         data[field.key] = value === true;
+      } else if (field.type === "MEDIA") {
+        const urls =
+          typeof value === "string"
+            ? value.split("\n").map((url) => url.trim()).filter(Boolean)
+            : Array.isArray(value)
+              ? value
+              : [];
+
+        data[field.key] = urls;
       } else {
         data[field.key] = value;
       }
@@ -131,8 +169,8 @@ export function EditRecordForm({
           const value = values[field.key];
           const options = Array.isArray(field.options)
             ? field.options.filter(
-                (option): option is string => typeof option === "string",
-              )
+              (option): option is string => typeof option === "string",
+            )
             : [];
 
           return (
@@ -265,17 +303,30 @@ export function EditRecordForm({
               )}
 
               {field.type === "MEDIA" && (
-                <input
-                  id={field.key}
-                  type="url"
-                  placeholder="https://example.com/media"
-                  className={inputClass}
-                  required={field.isRequired}
-                  value={typeof value === "string" ? value : ""}
-                  onChange={(event) =>
-                    updateValue(field.key, event.target.value)
-                  }
-                />
+                <div>
+                  <textarea
+                    id={field.key}
+                    placeholder={
+                      "https://example.com/property-1.jpg\nhttps://example.com/property-2.jpg"
+                    }
+                    rows={4}
+                    className={inputClass}
+                    required={field.isRequired}
+                    value={
+                      typeof value === "string"
+                        ? value
+                        : Array.isArray(value)
+                          ? value.join("\n")
+                          : ""
+                    }
+                    onChange={(event) =>
+                      updateValue(field.key, event.target.value)
+                    }
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    Enter one image URL per line. Use publicly accessible image URLs.
+                  </p>
+                </div>
               )}
 
               {serverState.fieldErrors

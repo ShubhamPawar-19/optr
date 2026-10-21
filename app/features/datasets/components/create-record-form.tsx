@@ -32,6 +32,21 @@ export function CreateRecordForm({
     setClientError("");
   }
 
+  function parseMediaUrls(value: FieldValue | undefined): string[] {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value === "string" && value.trim()) {
+      return value
+        .split("\n")
+        .map((url) => url.trim())
+        .filter(Boolean);
+    }
+
+    return [];
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     setClientError("");
 
@@ -55,6 +70,28 @@ export function CreateRecordForm({
           return;
         }
       }
+
+      if (field.type === "MEDIA" && typeof value === "string") {
+        const urls = value
+          .split("\n")
+          .map((url) => url.trim())
+          .filter(Boolean);
+
+        const invalidUrl = urls.find((url) => {
+          try {
+            const parsed = new URL(url);
+            return parsed.protocol !== "https:" && parsed.protocol !== "http:";
+          } catch {
+            return true;
+          }
+        });
+
+        if (invalidUrl) {
+          event.preventDefault();
+          setClientError(`"${field.label}" contains an invalid HTTP or HTTPS URL.`);
+          return;
+        }
+      }
     }
   }
 
@@ -65,11 +102,22 @@ export function CreateRecordForm({
       const value = values[field.key];
 
       if (value === undefined || value === "") continue;
-
       if (field.type === "NUMBER") {
         data[field.key] = Number(value);
       } else if (field.type === "BOOLEAN") {
         data[field.key] = value === true;
+      } else if (field.type === "MEDIA") {
+        const urls =
+          typeof value === "string"
+            ? value
+              .split("\n")
+              .map((url) => url.trim())
+              .filter(Boolean)
+            : Array.isArray(value)
+              ? value
+              : [];
+
+        data[field.key] = urls;
       } else {
         data[field.key] = value;
       }
@@ -97,8 +145,8 @@ export function CreateRecordForm({
             const value = values[field.key];
             const options = Array.isArray(field.options)
               ? field.options.filter(
-                  (option): option is string => typeof option === "string",
-                )
+                (option): option is string => typeof option === "string",
+              )
               : [];
 
             const inputClass =
@@ -229,17 +277,30 @@ export function CreateRecordForm({
                 )}
 
                 {field.type === "MEDIA" && (
-                  <input
-                    id={field.key}
-                    type="url"
-                    placeholder="https://example.com/media"
-                    className={inputClass}
-                    required={field.isRequired}
-                    value={typeof value === "string" ? value : ""}
-                    onChange={(event) =>
-                      updateValue(field.key, event.target.value)
-                    }
-                  />
+                  <div>
+                    <textarea
+                      id={field.key}
+                      placeholder={
+                        "https://example.com/property-1.jpg\nhttps://example.com/property-2.jpg"
+                      }
+                      rows={4}
+                      className={inputClass}
+                      required={field.isRequired}
+                      value={
+                        typeof value === "string"
+                          ? value
+                          : Array.isArray(value)
+                            ? value.join("\n")
+                            : ""
+                      }
+                      onChange={(event) =>
+                        updateValue(field.key, event.target.value)
+                      }
+                    />
+                    <p className="mt-1 text-xs text-slate-500">
+                      Enter one image URL per line. Use publicly accessible image URLs.
+                    </p>
+                  </div>
                 )}
 
                 {field.type === "MULTI_SELECT" && (
