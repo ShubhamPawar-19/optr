@@ -70,9 +70,9 @@ export const processWhatsAppMessage = inngest.createFunction(
             const output: unknown = finalStep?.output;
             const reply =
                 typeof output === "object" &&
-                output !== null &&
-                "response" in output &&
-                typeof output.response === "string"
+                    output !== null &&
+                    "response" in output &&
+                    typeof output.response === "string"
                     ? output.response
                     : null;
 

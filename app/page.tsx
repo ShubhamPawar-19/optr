@@ -29,9 +29,9 @@ const navigation = [
   { label: "Overview", icon: LayoutDashboard, active: true },
   { label: "Leads", icon: Users, count: "12" },
   { label: "Conversations", icon: MessageCircle },
-  { label: "Properties", icon: Building2 },
   { label: "Executions", icon: Activity },
   { label: "Datasets", icon: Database },
+  { label: "Contacts", icon: Users },
 ];
 
 const workspaceNavigation = [
@@ -242,13 +242,15 @@ export default function Home() {
                       href={
                         item.label === "Overview"
                           ? "#overview"
-                          : item.label === "Datasets"
-                            ? "/datasets"
-                            : "#"
+                          : item.label === "Contacts"
+                            ? "/contacts"
+                            : item.label === "Datasets"
+                              ? "/datasets"
+                              : "#"
                       }
                       className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition ${item.active
-                          ? "bg-slate-950 text-white shadow-sm"
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                        ? "bg-slate-950 text-white shadow-sm"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                         }`}
                     >
                       <Icon size={17} />
@@ -541,10 +543,10 @@ export default function Home() {
                       >
                         <div
                           className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${execution.tone === "green"
-                              ? "bg-emerald-50 text-emerald-600"
-                              : execution.tone === "amber"
-                                ? "bg-amber-50 text-amber-600"
-                                : "bg-blue-50 text-blue-600"
+                            ? "bg-emerald-50 text-emerald-600"
+                            : execution.tone === "amber"
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-blue-50 text-blue-600"
                             }`}
                         >
                           {execution.tone === "green" ? (

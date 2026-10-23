@@ -139,8 +139,14 @@ If the request is complete or no tool is needed, respond naturally to the user.
         };
     }
 
+    const finalResponse = response.content.trim();
+
     return {
         type: "FINAL",
-        response: response.content,
+        response: finalResponse || (
+            "I couldn't find matching properties for that request just yet. " +
+            "Could you share your preferred budget and number of bedrooms " +
+            "for your apartment in Abu Dhabi?"
+        ),
     };
 }

@@ -1,14 +1,17 @@
 
 import type { NormalizedEvent } from "../events/types";
-import { getOrCreateConversation, createMessage } from "../conversations/service";
 import {
-    findPersistedRunByEvent,
-} from "../runtime/persistence";
+    getOrCreateConversation,
+    createMessage,
+} from "../conversations/service";
+import { findPersistedRunByEvent } from "../runtime/persistence";
 import { createAgentRun } from "../runtime/create-run";
 import { runAgent } from "../runtime/run-agent";
 import { VercelAIProvider } from "../runtime/llm-provider";
 import type { Agent } from "./types";
 import { DuplicateAgentRunError } from "../runtime/duplicate-run-error";
+import { db } from "@/app/lib/db";
+import { getOrCreateContact } from "../contacts/service";
 
 export async function processAgentEvent(params: {
     agent: Agent;
@@ -32,11 +35,34 @@ export async function processAgentEvent(params: {
 
     const conversation = event.conversation
         ? await getOrCreateConversation({
-            agentId: agent.id,
-            channel: event.source,
-            externalId: event.conversation.id,
-        })
+              agentId: agent.id,
+              channel: event.source,
+              externalId: event.conversation.id,
+          })
         : undefined;
+
+    if (
+        conversation &&
+        event.source === "WHATSAPP" &&
+        event.actor?.phone
+    ) {
+        const contact = await getOrCreateContact({
+            businessId: agent.businessId,
+            channel: event.source,
+            externalId: event.actor.phone,
+            name: event.actor.name,
+        });
+
+        await db.conversation.updateMany({
+            where: {
+                id: conversation.id,
+                agentId: agent.id,
+            },
+            data: {
+                contactId: contact.id,
+            },
+        });
+    }
 
     const runtimeContext = createAgentRun(
         agent,
