@@ -12,6 +12,7 @@ import type { Agent } from "./types";
 import { DuplicateAgentRunError } from "../runtime/duplicate-run-error";
 import { db } from "@/app/lib/db";
 import { getOrCreateContact } from "../contacts/service";
+import { extractContactProfile } from "../contacts/extraction/service";
 
 export async function processAgentEvent(params: {
     agent: Agent;
@@ -41,6 +42,8 @@ export async function processAgentEvent(params: {
           })
         : undefined;
 
+    let contactId: string | undefined;
+
     if (
         conversation &&
         event.source === "WHATSAPP" &&
@@ -52,6 +55,8 @@ export async function processAgentEvent(params: {
             externalId: event.actor.phone,
             name: event.actor.name,
         });
+
+        contactId = contact.id;
 
         await db.conversation.updateMany({
             where: {
@@ -125,6 +130,36 @@ export async function processAgentEvent(params: {
                 conversationId: conversation.id,
                 role: "ASSISTANT",
                 content: finalStep.output.response,
+            });
+        }
+    }
+
+    // Extract customer facts after the agent run completes.
+    // Extraction failures must not break the completed agent flow.
+    if (
+        event.source === "WHATSAPP" &&
+        conversation &&
+        contactId &&
+        result.run.status === "COMPLETED"
+    ) {
+        try {
+            const extractionResult = await extractContactProfile({
+                businessId: agent.businessId,
+                contactId,
+                conversationId: conversation.id,
+                model: agent.model,
+            });
+
+            console.info("[contact-extraction]", {
+                contactId,
+                conversationId: conversation.id,
+                ...extractionResult,
+            });
+        } catch (error) {
+            console.error("[contact-extraction] Failed", {
+                contactId,
+                conversationId: conversation.id,
+                error,
             });
         }
     }

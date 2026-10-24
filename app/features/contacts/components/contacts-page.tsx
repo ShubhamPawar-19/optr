@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search, Users, MessageCircle, Mail, Phone, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 type Contact = {
   id: string;
@@ -129,7 +130,10 @@ export function ContactsPage({ contacts }: ContactsPageProps) {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredContacts.map((contact) => (
-                    <tr key={contact.id} className="transition hover:bg-slate-50/70">
+                    <tr
+                      key={contact.id}
+                      className="cursor-pointer transition hover:bg-indigo-50/50"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-sm font-semibold text-indigo-700">
@@ -139,9 +143,12 @@ export function ContactsPage({ contacts }: ContactsPageProps) {
                               .toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-medium text-slate-900">
+                            <Link
+                              href={`/contacts/${contact.id}`}
+                              className="font-medium text-slate-900 transition hover:text-indigo-600"
+                            >
                               {contact.name || "Unknown contact"}
-                            </p>
+                            </Link>
                             <p className="mt-1 text-xs text-slate-400">
                               ID: {contact.id.slice(0, 12)}
                             </p>
@@ -181,7 +188,13 @@ export function ContactsPage({ contacts }: ContactsPageProps) {
                         }).format(new Date(contact.updatedAt))}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <ArrowUpRight className="ml-auto h-4 w-4 text-slate-300" />
+                        <Link
+                          href={`/contacts/${contact.id}`}
+                          aria-label={`Open profile for ${contact.name || contact.phone || "contact"}`}
+                          className="inline-flex rounded-lg p-2 text-slate-400 transition hover:bg-indigo-100 hover:text-indigo-600"
+                        >
+                          <ArrowUpRight className="h-4 w-4" />
+                        </Link>
                       </td>
                     </tr>
                   ))}
