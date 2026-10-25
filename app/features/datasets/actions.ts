@@ -7,6 +7,7 @@ import type { DatasetFieldType } from "@/app/generated/prisma/client";
 import { deleteDatasetRecord } from "./services/delete-dataset-record";
 import { createDataset } from "./services/create-dataset";
 import { createDatasetRecord } from "./services/create-dataset-record";
+import { updateDatasetSchema } from "./services/update-dataset-schema";
 
 const DEMO_BUSINESS_ID = "demo-business";
 
@@ -240,6 +241,98 @@ export async function deleteDatasetRecordAction(
 
   revalidatePath(`/datasets/${datasetId}`);
   revalidatePath("/datasets");
+
+  redirect(`/datasets/${datasetId}`);
+}
+
+export type UpdateDatasetSchemaActionState = {
+  error?: string;
+};
+
+export async function updateDatasetSchemaAction(
+  _previousState: UpdateDatasetSchemaActionState,
+  formData: FormData,
+): Promise<UpdateDatasetSchemaActionState> {
+  const datasetId = formData.get("datasetId");
+  const fieldsJson = formData.get("fields");
+
+  if (
+    typeof datasetId !== "string" ||
+    !datasetId.trim() ||
+    typeof fieldsJson !== "string"
+  ) {
+    return { error: "Invalid form submission." };
+  }
+
+  let rawFields: unknown;
+
+  try {
+    rawFields = JSON.parse(fieldsJson);
+  } catch {
+    return { error: "Invalid schema configuration." };
+  }
+
+  if (!Array.isArray(rawFields) || rawFields.length === 0) {
+    return { error: "A dataset must have at least one field." };
+  }
+
+  const fields = [];
+
+  for (const rawField of rawFields) {
+    if (
+      !rawField ||
+      typeof rawField !== "object" ||
+      Array.isArray(rawField)
+    ) {
+      return { error: "Invalid field configuration." };
+    }
+
+    const field = rawField as Record<string, unknown>;
+
+    if (
+      typeof field.label !== "string" ||
+      typeof field.key !== "string" ||
+      typeof field.type !== "string" ||
+      !FIELD_TYPES.has(field.type) ||
+      typeof field.isRequired !== "boolean" ||
+      typeof field.isSearchable !== "boolean" ||
+      (field.id !== undefined && typeof field.id !== "string")
+    ) {
+      return { error: "One or more fields have invalid values." };
+    }
+
+    if (
+      field.options !== undefined &&
+      (!Array.isArray(field.options) ||
+        !field.options.every((option) => typeof option === "string"))
+    ) {
+      return { error: "Invalid select options." };
+    }
+
+    fields.push({
+      id: field.id as string | undefined,
+      label: field.label,
+      key: field.key,
+      type: field.type as DatasetFieldType,
+      isRequired: field.isRequired,
+      isSearchable: field.isSearchable,
+      options: field.options as string[] | undefined,
+    });
+  }
+
+  const result = await updateDatasetSchema({
+    businessId: DEMO_BUSINESS_ID,
+    datasetId,
+    fields,
+  });
+
+  if (!result.success) {
+    return { error: result.message };
+  }
+
+  revalidatePath("/datasets");
+  revalidatePath(`/datasets/${datasetId}`);
+  revalidatePath(`/datasets/${datasetId}/records`);
 
   redirect(`/datasets/${datasetId}`);
 }
