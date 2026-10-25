@@ -1,13 +1,20 @@
 "use client";
 
+import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  ArrowDownUp,
   ArrowUpRight,
+  CalendarClock,
+  CheckCircle2,
   Filter,
-  Search,
-  Users,
   MessageCircle,
+  Search,
+  SlidersHorizontal,
+  Target,
+  User,
+  X,
 } from "lucide-react";
 
 type LeadField = {
@@ -41,24 +48,36 @@ type LeadsPageProps = {
   fields: LeadField[];
 };
 
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 function displayValue(value: string | null | undefined, type: string) {
-  if (value === null || value === undefined || value.trim() === "") {
-    return <span className="text-slate-400">—</span>;
+  if (value == null || value.trim() === "") {
+    return <span className="text-slate-300">—</span>;
   }
 
   if (type === "BOOLEAN") {
-    if (value.toLowerCase() === "true") {
-      return (
-        <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-          Yes
-        </span>
-      );
-    }
+    const yes = value.toLowerCase() === "true";
+    const no = value.toLowerCase() === "false";
 
-    if (value.toLowerCase() === "false") {
+    if (yes || no) {
       return (
-        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-          No
+        <span
+          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+            yes ? "text-emerald-700" : "text-slate-500"
+          }`}
+        >
+          <span
+            className={`size-1.5 rounded-full ${
+              yes ? "bg-emerald-500" : "bg-slate-300"
+            }`}
+          />
+          {yes ? "Yes" : "No"}
         </span>
       );
     }
@@ -70,161 +89,386 @@ function displayValue(value: string | null | undefined, type: string) {
         href={value}
         target="_blank"
         rel="noreferrer"
-        className="text-indigo-600 hover:underline"
         onClick={(event) => event.stopPropagation()}
+        className="inline-flex items-center gap-1 font-medium text-indigo-600 transition hover:text-indigo-800 hover:underline hover:underline-offset-4"
       >
         Open link
+        <ArrowUpRight size={12} />
       </a>
     );
   }
 
-  return <span className="text-slate-700">{value}</span>;
+  return (
+    <span
+      className="block max-w-[240px] truncate text-slate-700"
+      title={value}
+    >
+      {value}
+    </span>
+  );
+}
+
+function SummaryMetric({
+  label,
+  value,
+  description,
+  icon: Icon,
+  accent,
+}: {
+  label: string;
+  value: number;
+  description: string;
+  icon: typeof Target;
+  accent: "indigo" | "teal" | "amber";
+}) {
+  const accents = {
+    indigo: {
+      icon: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+      marker: "bg-indigo-500",
+      glow: "from-indigo-50/70",
+    },
+    teal: {
+      icon: "bg-teal-50 text-teal-700 ring-teal-100",
+      marker: "bg-teal-500",
+      glow: "from-teal-50/70",
+    },
+    amber: {
+      icon: "bg-amber-50 text-amber-700 ring-amber-100",
+      marker: "bg-amber-500",
+      glow: "from-amber-50/70",
+    },
+  }[accent];
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-slate-300/80 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div
+        className={`pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b ${accents.glow} to-transparent opacity-80`}
+      />
+
+      <div className="relative flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-slate-500">{label}</p>
+          <p className="mt-1.5 text-2xl font-semibold tracking-tight text-slate-950 tabular-nums">
+            {value.toLocaleString("en-IN")}
+          </p>
+        </div>
+
+        <div
+          className={`flex size-9 shrink-0 items-center justify-center rounded-lg ring-1 ${accents.icon}`}
+        >
+          <Icon size={18} strokeWidth={1.8} />
+        </div>
+      </div>
+
+      <div className="relative mt-3 flex items-center gap-2 border-t border-slate-200 pt-3">
+        <span className={`size-1.5 shrink-0 rounded-full ${accents.marker}`} />
+        <p className="text-xs text-slate-500">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
 export function LeadsPage({ contacts, fields }: LeadsPageProps) {
   const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState<"recent" | "oldest">("recent");
 
   const filteredContacts = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    if (!query) return contacts;
+    const result = contacts.filter((contact) => {
+      if (!query) return true;
 
-    return contacts.filter((contact) => {
-      const contactDetails = [
+      const details = [
         contact.name,
         contact.phone,
         contact.email,
+        ...contact.profileValues.map((item) => item.value),
       ];
 
-      const fieldValues = contact.profileValues.map((item) => item.value);
-
-      return [...contactDetails, ...fieldValues].some((value) =>
-        value?.toLowerCase().includes(query),
-      );
+      return details.some((value) => value?.toLowerCase().includes(query));
     });
-  }, [contacts, search]);
+
+    return [...result].sort((a, b) => {
+      const difference =
+        new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+
+      return sortOrder === "recent" ? -difference : difference;
+    });
+  }, [contacts, search, sortOrder]);
 
   const totalConversations = contacts.reduce(
     (total, contact) => total + contact._count.conversations,
     0,
   );
 
+  const leadsWithConversations = contacts.filter(
+    (contact) => contact._count.conversations > 0,
+  ).length;
+
   return (
-    <main className="min-h-screen bg-slate-50/70 px-5 py-8 text-slate-950 sm:px-8 lg:px-10">
-      <div className="mx-auto max-w-[1600px] space-y-7">
-        <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-sm font-medium text-indigo-600">
-              Workspace / Leads
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Leads
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              Explore your contacts and the information your agents extract
-              from conversations. Configure the fields that matter to your
-              business.
-            </p>
+    <main className="min-h-screen bg-[#F5F7FB] text-slate-950">
+      <div className="mx-auto max-w-[1680px] px-4 pb-10 sm:px-7 lg:px-10">
+        {/* Sticky workspace header */}
+        <header className="sticky top-0 z-30 -mx-4 flex min-h-[72px] flex-wrap items-center justify-between gap-4 border-b border-slate-300 bg-[#F5F7FB]/95 px-4 py-3 backdrop-blur-md sm:-mx-7 sm:px-7 lg:-mx-10 lg:px-10">
+          <div className="flex min-w-0 items-center gap-3">
+            <SidebarToggle />
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <span>Workspace</span>
+                <span className="text-slate-300">/</span>
+                <span className="font-medium text-slate-600">Leads</span>
+              </div>
+
+              <h1 className="mt-1 text-lg font-semibold tracking-tight text-slate-950">
+                Lead management
+              </h1>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             <Link
               href="/contacts/fields"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
             >
-              <Filter className="h-4 w-4" />
-              Configure fields
+              <SlidersHorizontal size={15} />
+              <span className="hidden sm:inline">Manage fields</span>
+              <span className="sm:hidden">Fields</span>
             </Link>
+
             <Link
               href="/contacts"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-slate-950 px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
             >
-              <Users className="h-4 w-4" />
-              Contacts
+              <User size={15} />
+              <span>Contacts</span>
+              <ArrowUpRight size={14} />
             </Link>
           </div>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-3">
-          <StatCard
+        {/* Page introduction */}
+        <section className="flex flex-col justify-between gap-4 pb-5 pt-7 sm:flex-row sm:items-end sm:pb-6 sm:pt-8">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 shadow-sm">
+              <span className="size-1.5 rounded-full bg-indigo-500" />
+              Lead workspace
+            </div>
+
+            <h2 className="text-[26px] font-semibold tracking-[-0.045em] text-slate-950 sm:text-[32px]">
+              Turn conversations into customers.
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-[15px]">
+              Manage your leads, review captured information, and keep track of
+              every conversation in one place.
+            </p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2 pb-1 text-xs text-slate-500">
+            <CheckCircle2 size={15} className="text-emerald-600" />
+            <span>Live workspace data</span>
+          </div>
+        </section>
+
+        {/* Compact metric cards */}
+        <section
+          aria-label="Lead overview"
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        >
+          <SummaryMetric
             label="Total leads"
             value={contacts.length}
-            detail="Contacts in this workspace"
-            icon={<Users className="h-5 w-5" />}
+            description="Contacts in this workspace"
+            icon={User}
+            accent="indigo"
           />
-          <StatCard
+
+          <SummaryMetric
             label="Conversations"
             value={totalConversations}
-            detail="Across all contacts"
-            icon={<MessageCircle className="h-5 w-5" />}
+            description={`${leadsWithConversations.toLocaleString("en-IN")} ${
+              leadsWithConversations === 1 ? "lead has" : "leads have"
+            } conversations`}
+            icon={MessageCircle}
+            accent="teal"
           />
-          <StatCard
+
+          <SummaryMetric
             label="Tracked fields"
             value={fields.length}
-            detail="Active extraction fields"
-            icon={<Filter className="h-5 w-5" />}
+            description="Configured contact attributes"
+            icon={SlidersHorizontal}
+            accent="amber"
           />
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="font-semibold text-slate-900">All leads</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Search by contact details or any extracted field value.
-              </p>
+        {/* Lead data workspace */}
+        <section className="mt-6 overflow-hidden rounded-xl border border-slate-300/80 bg-white shadow-sm sm:mt-7">
+          {/* Table title and actions */}
+          <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-9 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600">
+                <Target size={17} />
+              </div>
+
+              <div>
+                <h3 className="text-base font-semibold tracking-tight text-slate-950">
+                  All leads
+                </h3>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Your contacts and their captured information
+                </p>
+              </div>
             </div>
 
-            <div className="relative w-full sm:max-w-sm">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search leads..."
-                aria-label="Search leads"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-50"
-              />
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+              <div className="relative sm:w-[290px]">
+                <Search
+                  size={16}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search leads..."
+                  aria-label="Search leads"
+                  className="h-10 w-full rounded-lg border border-slate-300 bg-slate-50/70 pl-9 pr-9 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:bg-white focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-50"
+                />
+
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    aria-label="Clear search"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSortOrder((current) =>
+                    current === "recent" ? "oldest" : "recent",
+                  )
+                }
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                title="Change update-date sort order"
+              >
+                <ArrowDownUp size={15} className="text-slate-400" />
+                {sortOrder === "recent" ? "Most recent" : "Oldest first"}
+              </button>
             </div>
           </div>
 
+          {/* Result summary */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-3 sm:px-6">
+            <p className="text-xs text-slate-500">
+              Showing{" "}
+              <span className="font-semibold text-slate-800">
+                {filteredContacts.length.toLocaleString("en-IN")}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-slate-800">
+                {contacts.length.toLocaleString("en-IN")}
+              </span>{" "}
+              leads
+              {search && (
+                <span className="text-slate-400"> · Matching your search</span>
+              )}
+            </p>
+
+            <div className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+              <CalendarClock size={14} className="text-slate-400" />
+              <span>
+                Updated{" "}
+                {sortOrder === "recent" ? "most recently first" : "oldest first"}
+              </span>
+            </div>
+          </div>
+
+          {/* Table / empty state */}
           {filteredContacts.length === 0 ? (
-            <div className="px-6 py-16 text-center">
-              <Users className="mx-auto h-8 w-8 text-slate-300" />
-              <h3 className="mt-3 font-medium text-slate-900">
-                {contacts.length === 0 ? "No leads yet" : "No matching leads"}
-              </h3>
-              <p className="mt-2 text-sm text-slate-500">
+            <div className="flex min-h-[280px] flex-col items-center justify-center px-6 py-12 text-center">
+              <div className="flex size-14 items-center justify-center rounded-xl border border-slate-300 bg-slate-50 text-slate-500">
+                {contacts.length === 0 ? (
+                  <Target size={23} strokeWidth={1.7} />
+                ) : (
+                  <Search size={23} strokeWidth={1.7} />
+                )}
+              </div>
+
+              <h4 className="mt-4 text-sm font-semibold text-slate-900">
                 {contacts.length === 0
-                  ? "Contacts will appear here as people interact with your agents."
-                  : "Try another search term."}
+                  ? "Your leads will appear here"
+                  : "No matching leads"}
+              </h4>
+
+              <p className="mt-1.5 max-w-sm text-sm leading-6 text-slate-500">
+                {contacts.length === 0
+                  ? "When people interact with your agents, their contact details and captured information will show up here."
+                  : "We couldn't find any leads matching that search. Try a different name, phone number, email, or field value."}
               </p>
+
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                >
+                  <X size={14} />
+                  Clear search
+                </button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1000px] text-left text-sm">
-                <thead className="bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500">
-                  <tr>
-                    <th className="sticky left-0 z-10 bg-slate-50 px-5 py-4 font-medium">
+              <table className="w-full min-w-[1000px] table-auto text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50/60 text-[11px] font-semibold uppercase tracking-[0.075em] text-slate-500">
+                    <th className="sticky left-0 z-20 min-w-[230px] border-r border-slate-200 bg-slate-50 px-5 py-3.5 sm:px-6">
                       Contact
                     </th>
-                    <th className="px-5 py-4 font-medium">Phone / Email</th>
+
+                    <th className="min-w-[205px] px-5 py-3.5">
+                      Contact details
+                    </th>
+
                     {fields.map((field) => (
                       <th
                         key={field.id}
-                        className="whitespace-nowrap px-5 py-4 font-medium"
+                        className="min-w-[155px] whitespace-nowrap px-5 py-3.5"
                       >
                         {field.label}
                       </th>
                     ))}
-                    <th className="px-5 py-4 font-medium">Conversations</th>
-                    <th className="whitespace-nowrap px-5 py-4 font-medium">
-                      Updated
+
+                    <th className="min-w-[145px] px-5 py-3.5">
+                      Conversations
                     </th>
-                    <th className="px-5 py-4 font-medium" />
+
+                    <th className="min-w-[140px] whitespace-nowrap px-5 py-3.5">
+                      Last updated
+                    </th>
+
+                    <th className="w-12 px-3 py-3.5" />
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-200/80">
                   {filteredContacts.map((contact) => {
                     const valuesByField = new Map(
                       contact.profileValues.map((item) => [
@@ -233,72 +477,106 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                       ]),
                     );
 
+                    const displayName =
+                      contact.name?.trim() ||
+                      contact.phone ||
+                      "Unknown contact";
+
+                    const initials =
+                      displayName === "Unknown contact"
+                        ? "?"
+                        : getInitials(displayName);
+
                     return (
                       <tr
                         key={contact.id}
-                        className="transition hover:bg-indigo-50/40"
+                        className="group transition-colors hover:bg-indigo-50/40"
                       >
-                        <td className="sticky left-0 z-10 bg-white px-5 py-4 hover:bg-indigo-50/40">
+                        <td className="sticky left-0 z-10 border-r border-slate-200 bg-white px-5 py-3.5 transition-colors group-hover:bg-[#F8F9FF] sm:px-6">
                           <Link
                             href={`/contacts/${contact.id}`}
-                            className="group flex min-w-[180px] items-center gap-3"
+                            className="flex min-w-[190px] items-center gap-3"
                           >
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-sm font-semibold text-indigo-700">
-                              {(contact.name || contact.phone || "?")
-                                .trim()
-                                .slice(0, 1)
-                                .toUpperCase()}
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-xs font-semibold text-indigo-700">
+                              {initials}
                             </div>
-                            <div>
-                              <p className="font-medium text-slate-900 group-hover:text-indigo-600">
-                                {contact.name || "Unknown contact"}
+
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold text-slate-800 transition group-hover:text-indigo-700">
+                                {displayName}
                               </p>
-                              <p className="mt-1 text-xs text-slate-400">
-                                {contact.id.slice(0, 12)}
+
+                              <p className="mt-1 text-[11px] text-slate-400">
+                                ID {contact.id.slice(0, 8)}
                               </p>
                             </div>
                           </Link>
                         </td>
 
-                        <td className="min-w-[190px] px-5 py-4">
-                          <div className="space-y-1">
-                            <p className="text-slate-700">
+                        <td className="px-5 py-3.5">
+                          <div className="space-y-1.5">
+                            <p className="whitespace-nowrap text-[13px] font-medium text-slate-700">
                               {contact.phone || "—"}
                             </p>
-                            <p className="text-xs text-slate-500">
-                              {contact.email || ""}
-                            </p>
+
+                            {contact.email ? (
+                              <p
+                                className="max-w-[190px] truncate text-xs text-slate-400"
+                                title={contact.email}
+                              >
+                                {contact.email}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-slate-300">No email</p>
+                            )}
                           </div>
                         </td>
 
                         {fields.map((field) => (
-                          <td key={field.id} className="min-w-[150px] px-5 py-4">
-                            {displayValue(valuesByField.get(field.id), field.type)}
+                          <td key={field.id} className="px-5 py-3.5">
+                            {displayValue(
+                              valuesByField.get(field.id),
+                              field.type,
+                            )}
                           </td>
                         ))}
 
-                        <td className="px-5 py-4">
-                          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700">
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            {contact._count.conversations}
+                        <td className="px-5 py-3.5">
+                          <span
+                            className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
+                              contact._count.conversations > 0
+                                ? "border-teal-200 bg-teal-50 text-teal-700"
+                                : "border-slate-200 bg-slate-50 text-slate-500"
+                            }`}
+                          >
+                            <MessageCircle
+                              size={14}
+                              className={
+                                contact._count.conversations > 0
+                                  ? "text-teal-600"
+                                  : "text-slate-400"
+                              }
+                            />
+                            <span className="tabular-nums">
+                              {contact._count.conversations}
+                            </span>
                           </span>
                         </td>
 
-                        <td className="whitespace-nowrap px-5 py-4 text-slate-500">
-                          {new Intl.DateTimeFormat("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          }).format(new Date(contact.updatedAt))}
+                        <td className="whitespace-nowrap px-5 py-3.5">
+                          <span className="text-[13px] text-slate-600">
+                            {formatDate(contact.updatedAt)}
+                          </span>
                         </td>
 
-                        <td className="px-5 py-4">
+                        <td className="px-3 py-3.5 text-right">
                           <Link
                             href={`/contacts/${contact.id}`}
-                            aria-label={`Open ${contact.name || "contact"} profile`}
-                            className="inline-flex rounded-lg p-2 text-slate-400 transition hover:bg-indigo-100 hover:text-indigo-600"
+                            aria-label={`Open ${displayName}`}
+                            title="Open contact"
+                            className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-slate-400 transition hover:border-slate-300 hover:bg-white hover:text-indigo-600 hover:shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
                           >
-                            <ArrowUpRight className="h-4 w-4" />
+                            <ArrowUpRight size={16} />
                           </Link>
                         </td>
                       </tr>
@@ -309,43 +587,46 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
             </div>
           )}
 
-          <footer className="flex flex-col gap-2 border-t border-slate-100 px-5 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              Showing {filteredContacts.length} of {contacts.length} leads
-            </span>
-            <span>Sorted by recently updated</span>
+          {/* Workspace footer */}
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white px-5 py-3.5 sm:px-6">
+            <p className="text-xs text-slate-400">
+              {filteredContacts.length > 0 ? (
+                <>
+                  Displaying{" "}
+                  <span className="font-semibold text-slate-600">
+                    {filteredContacts.length.toLocaleString("en-IN")}
+                  </span>{" "}
+                  {filteredContacts.length === 1 ? "contact" : "contacts"}
+                </>
+              ) : (
+                "No contacts to display"
+              )}
+            </p>
+
+            <Link
+              href="/contacts/fields"
+              className="inline-flex items-center gap-1.5 rounded-md text-xs font-medium text-slate-500 transition hover:text-indigo-700"
+            >
+              <Filter size={13} />
+              Customize fields
+              <ArrowUpRight size={12} />
+            </Link>
           </footer>
         </section>
+
+        {/* Bottom helper */}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-slate-400">
+          <p>
+            Lead information is organized using your configured contact fields.
+          </p>
+          <Link
+            href="/contacts/fields"
+            className="font-medium text-slate-500 transition hover:text-indigo-600"
+          >
+            Configure your data <span aria-hidden="true">→</span>
+          </Link>
+        </div>
       </div>
     </main>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  detail,
-  icon,
-}: {
-  label: string;
-  value: number;
-  detail: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-            {value.toLocaleString("en-IN")}
-          </p>
-        </div>
-        <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600">
-          {icon}
-        </div>
-      </div>
-      <p className="mt-3 text-xs text-slate-400">{detail}</p>
-    </div>
   );
 }

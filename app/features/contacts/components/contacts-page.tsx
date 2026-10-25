@@ -1,8 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, Users, MessageCircle, Mail, Phone, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import {
+  Search,
+  Users,
+  MessageCircle,
+  Mail,
+  Phone,
+  ArrowUpRight,
+  X,
+  ContactRound,
+} from "lucide-react";
+import { SidebarToggle } from "@/app/components/sidebar-toggle";
 
 type Contact = {
   id: string;
@@ -20,6 +30,23 @@ type ContactsPageProps = {
   contacts: Contact[];
 };
 
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
 export function ContactsPage({ contacts }: ContactsPageProps) {
   const [search, setSearch] = useState("");
 
@@ -29,215 +56,325 @@ export function ContactsPage({ contacts }: ContactsPageProps) {
     if (!query) return contacts;
 
     return contacts.filter((contact) =>
-      [contact.name, contact.phone, contact.email]
-        .some((value) => value?.toLowerCase().includes(query)),
+      [contact.name, contact.phone, contact.email].some((value) =>
+        value?.toLowerCase().includes(query),
+      ),
     );
   }, [contacts, search]);
 
-  const totalConversations = contacts.reduce(
-    (total, contact) => total + contact._count.conversations,
-    0,
-  );
-
   return (
-    <main className="min-h-screen bg-slate-50/70 px-6 py-8 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <main className="min-h-screen bg-[#F5F7FB] text-slate-950">
+      <div className="mx-auto max-w-[1680px] px-4 pb-10 sm:px-7 lg:px-10">
+        {/* Compact page toolbar */}
+        <div className="flex items-center gap-3 pt-5 sm:pt-6">
+          <SidebarToggle />
+
+          <div className="h-5 w-px bg-slate-200" />
+
+          <span className="text-xs font-medium text-slate-400">
+            Workspace
+          </span>
+
+          <span className="text-xs text-slate-300">/</span>
+
+          <span className="text-xs font-medium text-slate-700">
+            Contacts
+          </span>
+        </div>
+
+        {/* Compact page heading */}
+        <section className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:py-7">
           <div>
-            <p className="text-sm font-medium text-indigo-600">Workspace / Contacts</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-[28px]">
               Contacts
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              A unified directory of people interacting with your agents across channels.
+
+            <p className="mt-1.5 text-sm text-slate-500">
+              Find people, review their details, and open their conversation
+              history.
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500 shadow-sm">
-            <Users className="h-4 w-4" />
-            Contact directory
-          </div>
-        </header>
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard
-            label="Total contacts"
-            value={contacts.length}
-            detail="People in this workspace"
-            icon={<Users className="h-5 w-5" />}
-          />
-          <StatCard
-            label="Linked conversations"
-            value={totalConversations}
-            detail="Across listed contacts"
-            icon={<MessageCircle className="h-5 w-5" />}
-          />
-          <StatCard
-            label="With contact details"
-            value={contacts.filter((contact) => contact.phone || contact.email).length}
-            detail="Phone or email available"
-            icon={<Phone className="h-5 w-5" />}
-          />
+          <div className="flex shrink-0 items-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 sm:self-auto">
+            <Users size={17} className="text-indigo-600" />
+
+            <span className="text-lg font-semibold tabular-nums text-slate-950">
+              {contacts.length.toLocaleString("en-IN")}
+            </span>
+
+            <span className="text-sm text-slate-500">
+              {contacts.length === 1 ? "contact" : "contacts"}
+            </span>
+          </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="font-semibold text-slate-900">All contacts</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Search people by name, phone number, or email.
-              </p>
+        {/* Contact directory */}
+        <section className="mt-0 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.035)]">
+          {/* Directory heading and search */}
+          <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <Users size={19} />
+              </div>
+
+              <div>
+                <h2 className="text-base font-semibold tracking-tight text-slate-950">
+                  Contact directory
+                </h2>
+
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Find people by name, phone number, or email address.
+                </p>
+              </div>
             </div>
 
-            <div className="relative w-full sm:max-w-sm">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <div className="relative w-full lg:max-w-[320px]">
+              <Search
+                size={16}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search contacts..."
                 aria-label="Search contacts"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-50"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-9 pr-9 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-50"
               />
+
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label="Clear search"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
           </div>
 
+          {/* Result summary */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3 sm:px-6">
+            <p className="text-xs text-slate-500">
+              Showing{" "}
+              <span className="font-semibold text-slate-800">
+                {filteredContacts.length.toLocaleString("en-IN")}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-slate-800">
+                {contacts.length.toLocaleString("en-IN")}
+              </span>{" "}
+              contacts
+              {search && (
+                <span className="text-slate-400">
+                  {" "}· Matching your search
+                </span>
+              )}
+            </p>
+
+            <span className="text-xs text-slate-500">
+              Sorted by recently updated
+            </span>
+          </div>
+
+          {/* Empty state */}
           {filteredContacts.length === 0 ? (
-            <div className="flex flex-col items-center px-6 py-16 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                <Users className="h-6 w-6" />
+            <div className="flex min-h-[280px] flex-col items-center justify-center px-6 py-12 text-center">
+              <div className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-500">
+                {contacts.length === 0 ? (
+                  <Users size={23} strokeWidth={1.7} />
+                ) : (
+                  <Search size={23} strokeWidth={1.7} />
+                )}
               </div>
-              <h3 className="mt-4 font-medium text-slate-900">
-                {contacts.length === 0 ? "No contacts yet" : "No matching contacts"}
-              </h3>
-              <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+
+              <h3 className="mt-4 text-sm font-semibold text-slate-900">
                 {contacts.length === 0
-                  ? "Contacts will appear here when an incoming WhatsApp conversation is linked to a person."
-                  : "Try another name, phone number, or email address."}
+                  ? "Your contacts will appear here"
+                  : "No matching contacts"}
+              </h3>
+
+              <p className="mt-1.5 max-w-sm text-sm leading-6 text-slate-500">
+                {contacts.length === 0
+                  ? "Contacts appear here when incoming conversations are linked to people in your workspace."
+                  : "Try another name, phone number, or email address to find the contact you're looking for."}
               </p>
+
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                >
+                  <X size={14} />
+                  Clear search
+                </button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Contact</th>
-                    <th className="px-6 py-4 font-medium">Contact details</th>
-                    <th className="px-6 py-4 font-medium">Conversations</th>
-                    <th className="px-6 py-4 font-medium">Last updated</th>
-                    <th className="px-6 py-4 font-medium">
-                      <span className="sr-only">Contact ID</span>
+              <table className="w-full min-w-[800px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-white text-[11px] font-semibold uppercase tracking-[0.075em] text-slate-400">
+                    <th className="min-w-[250px] px-5 py-3.5 sm:px-6">
+                      Contact
+                    </th>
+
+                    <th className="min-w-[250px] px-5 py-3.5">
+                      Contact details
+                    </th>
+
+                    <th className="min-w-[150px] px-5 py-3.5">
+                      Conversations
+                    </th>
+
+                    <th className="min-w-[145px] whitespace-nowrap px-5 py-3.5">
+                      Last updated
+                    </th>
+
+                    <th className="w-12 px-3 py-3.5">
+                      <span className="sr-only">Open contact</span>
                     </th>
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-slate-100">
-                  {filteredContacts.map((contact) => (
-                    <tr
-                      key={contact.id}
-                      className="cursor-pointer transition hover:bg-indigo-50/50"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-sm font-semibold text-indigo-700">
-                            {(contact.name || contact.phone || "?")
-                              .trim()
-                              .slice(0, 1)
-                              .toUpperCase()}
+                  {filteredContacts.map((contact) => {
+                    const displayName =
+                      contact.name?.trim() ||
+                      contact.phone ||
+                      "Unknown contact";
+
+                    const initials =
+                      displayName === "Unknown contact"
+                        ? "?"
+                        : getInitials(displayName);
+
+                    return (
+                      <tr
+                        key={contact.id}
+                        className="group transition-colors hover:bg-indigo-50/30"
+                      >
+                        <td className="px-5 py-3.5 sm:px-6">
+                          <Link
+                            href={`/contacts/${contact.id}`}
+                            className="flex min-w-[210px] items-center gap-3"
+                          >
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-xs font-semibold text-indigo-700">
+                              {initials}
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold text-slate-800 transition group-hover:text-indigo-700">
+                                {displayName}
+                              </p>
+
+                              <p className="mt-1 text-[11px] text-slate-400">
+                                ID {contact.id.slice(0, 8)}
+                              </p>
+                            </div>
+                          </Link>
+                        </td>
+
+                        <td className="px-5 py-3.5">
+                          <div className="space-y-2">
+                            {contact.phone ? (
+                              <p className="flex items-center gap-2 whitespace-nowrap text-[13px] font-medium text-slate-700">
+                                <Phone
+                                  size={14}
+                                  className="shrink-0 text-slate-400"
+                                />
+                                {contact.phone}
+                              </p>
+                            ) : null}
+
+                            {contact.email ? (
+                              <p
+                                className="flex max-w-[230px] items-center gap-2 truncate text-xs text-slate-500"
+                                title={contact.email}
+                              >
+                                <Mail
+                                  size={14}
+                                  className="shrink-0 text-slate-400"
+                                />
+                                <span className="truncate">
+                                  {contact.email}
+                                </span>
+                              </p>
+                            ) : null}
+
+                            {!contact.phone && !contact.email ? (
+                              <span className="text-xs text-slate-400">
+                                No contact details
+                              </span>
+                            ) : null}
                           </div>
-                          <div>
-                            <Link
-                              href={`/contacts/${contact.id}`}
-                              className="font-medium text-slate-900 transition hover:text-indigo-600"
-                            >
-                              {contact.name || "Unknown contact"}
-                            </Link>
-                            <p className="mt-1 text-xs text-slate-400">
-                              ID: {contact.id.slice(0, 12)}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="space-y-1.5">
-                          {contact.phone ? (
-                            <p className="flex items-center gap-2 text-slate-600">
-                              <Phone className="h-3.5 w-3.5 text-slate-400" />
-                              {contact.phone}
-                            </p>
-                          ) : null}
-                          {contact.email ? (
-                            <p className="flex items-center gap-2 text-slate-600">
-                              <Mail className="h-3.5 w-3.5 text-slate-400" />
-                              {contact.email}
-                            </p>
-                          ) : null}
-                          {!contact.phone && !contact.email ? (
-                            <span className="text-slate-400">No details added</span>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700">
-                          <MessageCircle className="h-3.5 w-3.5" />
-                          {contact._count.conversations}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-500">
-                        {new Intl.DateTimeFormat("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        }).format(new Date(contact.updatedAt))}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Link
-                          href={`/contacts/${contact.id}`}
-                          aria-label={`Open profile for ${contact.name || contact.phone || "contact"}`}
-                          className="inline-flex rounded-lg p-2 text-slate-400 transition hover:bg-indigo-100 hover:text-indigo-600"
-                        >
-                          <ArrowUpRight className="h-4 w-4" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+
+                        <td className="px-5 py-3.5">
+                          <span
+                            className={`inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium ${
+                              contact._count.conversations > 0
+                                ? "bg-teal-50 text-teal-700"
+                                : "bg-slate-50 text-slate-500"
+                            }`}
+                          >
+                            <MessageCircle
+                              size={14}
+                              className={
+                                contact._count.conversations > 0
+                                  ? "text-teal-600"
+                                  : "text-slate-400"
+                              }
+                            />
+
+                            <span className="tabular-nums">
+                              {contact._count.conversations}
+                            </span>
+                          </span>
+                        </td>
+
+                        <td className="whitespace-nowrap px-5 py-3.5 text-[13px] text-slate-600">
+                          {formatDate(contact.updatedAt)}
+                        </td>
+
+                        <td className="px-3 py-3.5 text-right">
+                          <Link
+                            href={`/contacts/${contact.id}`}
+                            aria-label={`Open profile for ${displayName}`}
+                            title="Open contact"
+                            className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-slate-400 transition hover:border-slate-200 hover:bg-white hover:text-indigo-600 hover:shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+                          >
+                            <ArrowUpRight size={16} />
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
 
-          <footer className="flex items-center justify-between border-t border-slate-100 px-5 py-4 text-xs text-slate-500">
-            <span>
-              Showing {filteredContacts.length} of {contacts.length} contacts
+          {/* Directory footer */}
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-white px-5 py-3.5 sm:px-6">
+            <p className="text-xs text-slate-400">
+              Displaying{" "}
+              <span className="font-semibold text-slate-600">
+                {filteredContacts.length.toLocaleString("en-IN")}
+              </span>{" "}
+              {filteredContacts.length === 1 ? "contact" : "contacts"}
+            </p>
+
+            <span className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+              <ContactRound size={13} />
+              OPTR contact directory
             </span>
-            <span>Sorted by recently updated</span>
           </footer>
         </section>
       </div>
     </main>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  detail,
-  icon,
-}: {
-  label: string;
-  value: number;
-  detail: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-            {value.toLocaleString("en-IN")}
-          </p>
-        </div>
-        <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600">{icon}</div>
-      </div>
-      <p className="mt-3 text-xs text-slate-400">{detail}</p>
-    </div>
   );
 }
