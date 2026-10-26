@@ -178,7 +178,7 @@ export const searchDataTool: OptrTool<typeof searchDataSchema> = {
 
     description:
         "Search records in a dataset belonging to the current business. " +
-        "Use the exact dataset name returned by list_datasets. " +
+        "Use the dataset ID or exact dataset name returned by list_datasets. " +
         "For customer requirements, use structured filters whenever possible. " +
         "Each filter has a field, operator, and typed value. " +
         "Use eq for exact matches, contains for text matching, and gt/gte/lt/lte " +
@@ -194,10 +194,15 @@ export const searchDataTool: OptrTool<typeof searchDataSchema> = {
         const dataset = await db.dataset.findFirst({
             where: {
                 businessId: context.businessId,
-                name: {
-                    equals: input.datasetName,
-                    mode: "insensitive",
-                },
+                OR: [
+                    { id: input.datasetName },
+                    {
+                        name: {
+                            equals: input.datasetName,
+                            mode: "insensitive",
+                        },
+                    },
+                ],
             },
             include: {
                 fields: {
@@ -223,10 +228,9 @@ export const searchDataTool: OptrTool<typeof searchDataSchema> = {
 
             return {
                 success: false,
-                error: `Dataset "${input.datasetName}" was not found. Available datasets: ${
-                    availableDatasets.map((item) => item.name).join(", ") ||
+                error: `Dataset "${input.datasetName}" was not found. Available datasets: ${availableDatasets.map((item) => item.name).join(", ") ||
                     "none"
-                }.`,
+                    }.`,
             };
         }
 
@@ -296,10 +300,10 @@ export const searchDataTool: OptrTool<typeof searchDataSchema> = {
                         Prisma.sql`
                             jsonb_typeof(${jsonValue}) = 'number'
                             AND ${jsonbNumberComparison(
-                                jsonValue,
-                                filter.operator,
-                                filter.value,
-                            )}
+                            jsonValue,
+                            filter.operator,
+                            filter.value,
+                        )}
                         `,
                     );
                     break;
@@ -327,10 +331,10 @@ export const searchDataTool: OptrTool<typeof searchDataSchema> = {
                         Prisma.sql`
                             jsonb_typeof(${jsonValue}) = 'string'
                             AND ${dateComparison(
-                                textValue,
-                                filter.operator,
-                                filter.value,
-                            )}
+                            textValue,
+                            filter.operator,
+                            filter.value,
+                        )}
                         `,
                     );
                     break;
@@ -450,8 +454,8 @@ export const searchDataTool: OptrTool<typeof searchDataSchema> = {
                             ? "structured_and_keyword"
                             : "structured"
                         : terms.length > 0
-                          ? "keyword"
-                          : "all",
+                            ? "keyword"
+                            : "all",
                 filtersApplied: input.filters,
                 note:
                     "Structured filters and keyword matching are executed in PostgreSQL. " +
