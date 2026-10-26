@@ -70,6 +70,39 @@ describe("isWhatsAppWebhookPayload", () => {
         );
     });
 
+    it("accepts a contact with a WhatsApp ID", () => {
+        assert.equal(
+            isWhatsAppWebhookPayload({
+                entry: [{
+                    changes: [{
+                        value: {
+                            contacts: [{
+                                wa_id: "919999999999",
+                                profile: { name: "Test User" },
+                            }],
+                        },
+                    }],
+                }],
+            }),
+            true,
+        );
+    });
+
+    it("rejects a contact with a non-string WhatsApp ID", () => {
+        assert.equal(
+            isWhatsAppWebhookPayload({
+                entry: [{
+                    changes: [{
+                        value: {
+                            contacts: [{ wa_id: 12345 }],
+                        },
+                    }],
+                }],
+            }),
+            false,
+        );
+    });
+
     it("rejects a string instead of an entry array", () => {
         assert.equal(
             isWhatsAppWebhookPayload({ entry: "unexpected" }),

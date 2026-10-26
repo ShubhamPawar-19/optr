@@ -1,4 +1,3 @@
-
 import type { NormalizedEvent } from "../events/types";
 import {
     getOrCreateConversation,
@@ -30,6 +29,7 @@ export async function processAgentEvent(params: {
         return {
             duplicate: true as const,
             conversation: undefined,
+            assistantMessageId: null,
             result: undefined,
         };
     }
@@ -100,12 +100,21 @@ export async function processAgentEvent(params: {
             return {
                 duplicate: true as const,
                 conversation: undefined,
+                assistantMessageId: null,
                 result: undefined,
             };
         }
 
         throw error;
     }
+
+    if (result.run.status === "FAILED") {
+        throw new Error(
+            result.run.error ?? "Agent run failed",
+        );
+    }
+
+    let assistantMessageId: string | null = null;
 
     if (conversation && result.run.status === "COMPLETED") {
         const finalStep = [...result.steps].reverse().find(
@@ -119,23 +128,29 @@ export async function processAgentEvent(params: {
                 typeof step.output.response === "string",
         );
 
+        const output: unknown = finalStep?.output;
+
         if (
-            finalStep &&
-            typeof finalStep.output === "object" &&
-            finalStep.output !== null &&
-            "response" in finalStep.output &&
-            typeof finalStep.output.response === "string"
+            typeof output === "object" &&
+            output !== null &&
+            "response" in output &&
+            typeof output.response === "string"
         ) {
-            await createMessage({
+            const assistantMessage = await createMessage({
                 conversationId: conversation.id,
                 role: "ASSISTANT",
-                content: finalStep.output.response,
+                content: output.response,
+                outboundStatus:
+                    event.source === "WHATSAPP"
+                        ? "PENDING"
+                        : undefined,
             });
+
+            assistantMessageId = assistantMessage.id;
         }
     }
 
-    // Extract customer facts after the agent run completes.
-    // Extraction failures must not break the completed agent flow.
+    // Contact extraction is best-effort and must not fail the agent flow.
     if (
         event.source === "WHATSAPP" &&
         conversation &&
@@ -167,6 +182,7 @@ export async function processAgentEvent(params: {
     return {
         duplicate: false as const,
         conversation,
+        assistantMessageId,
         result,
     };
 }

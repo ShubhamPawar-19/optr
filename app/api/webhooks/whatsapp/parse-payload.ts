@@ -1,3 +1,4 @@
+
 export type WhatsAppPayloadParseResult =
     | { success: true; body: unknown }
     | { success: false };
@@ -43,7 +44,16 @@ export type ValidWhatsAppWebhookPayload = {
                         body?: string;
                     };
                 }>;
+                statuses?: Array<{
+                    id?: string;
+                    status?: string;
+                    timestamp?: string;
+                    errors?: Array<{
+                        message?: string;
+                    }>;
+                }>;
                 contacts?: Array<{
+                    wa_id?: string;
                     profile?: {
                         name?: string;
                     };
@@ -109,6 +119,35 @@ export function isWhatsAppWebhookPayload(
             }
 
             if (
+                payloadValue.statuses !== undefined &&
+                (!isArray(payloadValue.statuses) ||
+                    !payloadValue.statuses.every((status) => {
+                        if (!isRecord(status)) {
+                            return false;
+                        }
+
+                        return (
+                            (status.id === undefined ||
+                                typeof status.id === "string") &&
+                            (status.status === undefined ||
+                                typeof status.status === "string") &&
+                            (status.timestamp === undefined ||
+                                typeof status.timestamp === "string") &&
+                            (status.errors === undefined ||
+                                (isArray(status.errors) &&
+                                    status.errors.every(
+                                        (error) =>
+                                            isRecord(error) &&
+                                            (error.message === undefined ||
+                                                typeof error.message === "string"),
+                                    )))
+                        );
+                    }))
+            ) {
+                return false;
+            }
+
+            if (
                 payloadValue.contacts !== undefined &&
                 (!isArray(payloadValue.contacts) ||
                     !payloadValue.contacts.every((contact) => {
@@ -117,10 +156,12 @@ export function isWhatsAppWebhookPayload(
                         }
 
                         return (
-                            contact.profile === undefined ||
-                            (isRecord(contact.profile) &&
-                                (contact.profile.name === undefined ||
-                                    typeof contact.profile.name === "string"))
+                            (contact.wa_id === undefined ||
+                                typeof contact.wa_id === "string") &&
+                            (contact.profile === undefined ||
+                                (isRecord(contact.profile) &&
+                                    (contact.profile.name === undefined ||
+                                        typeof contact.profile.name === "string")))
                         );
                     }))
             ) {

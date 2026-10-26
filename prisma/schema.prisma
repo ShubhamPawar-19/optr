@@ -19,6 +19,16 @@ enum AgentRunStatus {
   FAILED
 }
 
+enum OutboundMessageStatus {
+  PENDING
+  SENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  UNKNOWN
+}
+
 enum AgentStepType {
   LLM
   TOOL
@@ -146,12 +156,21 @@ model Message {
   content String
 
   externalId String?
-  createdAt  DateTime @default(now())
+
+  outboundStatus OutboundMessageStatus?
+  outboundError  String?
+  sendStartedAt  DateTime?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  readAt         DateTime?
+
+  createdAt DateTime @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, externalId])
   @@index([conversationId, createdAt])
+  @@index([outboundStatus, createdAt])
 }
 
 model Agent {
@@ -330,17 +349,30 @@ model ContactProfileValue {
   @@index([contactFieldId])
 }
 
-
 model ContactProfileValueHistory {
-  id                   String   @id @default(cuid())
+  id                    String   @id @default(cuid())
   contactProfileValueId String
-  previousValue        String?
-  newValue             String?
-  source               String   @default("INFERRED")
-  evidence             String?
-  changedAt            DateTime @default(now())
+  previousValue         String?
+  newValue              String?
+  source                String   @default("INFERRED")
+  evidence              String?
+  changedAt             DateTime @default(now())
 
-  profileValue ContactProfileValue @relation( fields: [contactProfileValueId], references: [id], onDelete: Cascade )
+  profileValue ContactProfileValue @relation(fields: [contactProfileValueId], references: [id], onDelete: Cascade)
 
   @@index([contactProfileValueId, changedAt])
+}
+
+model WhatsAppPendingStatus {
+  id          String    @id @default(cuid())
+  externalId  String
+  status      String
+  timestamp   BigInt
+  error       String?
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@unique([externalId, status, timestamp])
+  @@index([externalId, processedAt])
+  @@index([createdAt])
 }

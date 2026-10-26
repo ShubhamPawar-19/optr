@@ -1,13 +1,18 @@
-
 type SendWhatsAppMessageParams = {
     to: string;
     text: string;
 };
 
+type WhatsAppSendResponse = {
+    messages: Array<{
+        id: string;
+    }>;
+};
+
 export async function sendWhatsAppMessage({
     to,
     text,
-}: SendWhatsAppMessageParams) {
+}: SendWhatsAppMessageParams): Promise<WhatsAppSendResponse> {
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
@@ -36,20 +41,36 @@ export async function sendWhatsAppMessage({
         },
     );
 
-    const data = await response.json();
+    const data: unknown = await response.json().catch(() => null);
 
     if (!response.ok) {
-        console.error("WhatsApp send failed:", data);
+        console.error("WhatsApp send failed:", {
+            status: response.status,
+            data,
+        });
 
         throw new Error(
             `WhatsApp send failed with status ${response.status}`,
         );
     }
 
-    console.log(
-        "WhatsApp API response:",
-        JSON.stringify(data, null, 2),
-    );
+    if (
+        typeof data !== "object" ||
+        data === null ||
+        !("messages" in data) ||
+        !Array.isArray(data.messages) ||
+        typeof data.messages[0] !== "object" ||
+        data.messages[0] === null ||
+        !("id" in data.messages[0]) ||
+        typeof data.messages[0].id !== "string" ||
+        !data.messages[0].id.trim()
+    ) {
+        throw new Error(
+            "WhatsApp returned a successful response without a valid message ID",
+        );
+    }
 
-    return data;
+    return {
+        messages: [{ id: data.messages[0].id }],
+    };
 }

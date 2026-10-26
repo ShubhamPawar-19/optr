@@ -4,6 +4,11 @@ import { resolveAgentForWhatsApp } from "@/app/features/agents/resolve-agent";
 import { processAgentEvent } from "@/app/features/agents/service";
 import { sendWhatsAppMessage } from "@/app/features/events/gateways/whatsapp/send-message";
 import { normalizeWhatsAppEvent } from "@/app/features/events/gateways/whatsapp";
+import {
+    claimOutboundMessage,
+    reconcilePendingWhatsAppStatuses,
+    updateOutboundMessage,
+} from "@/app/features/conversations/service";
 
 export const processWhatsAppMessage = inngest.createFunction(
     {
@@ -48,7 +53,11 @@ export const processWhatsAppMessage = inngest.createFunction(
             });
 
             if (processed.duplicate) {
-                return { duplicate: true, reply: null };
+                return {
+                    duplicate: true,
+                    reply: null,
+                    assistantMessageId: null,
+                };
             }
 
             const finalStep = [...(processed.result?.steps ?? [])]
@@ -70,32 +79,83 @@ export const processWhatsAppMessage = inngest.createFunction(
             const output: unknown = finalStep?.output;
             const reply =
                 typeof output === "object" &&
-                    output !== null &&
-                    "response" in output &&
-                    typeof output.response === "string"
+                output !== null &&
+                "response" in output &&
+                typeof output.response === "string"
                     ? output.response
                     : null;
 
-            return { duplicate: false, reply };
+            return {
+                duplicate: false,
+                reply,
+                assistantMessageId: processed.assistantMessageId,
+            };
         });
 
-        if (result.duplicate || !result.reply?.trim()) {
+        if (
+            result.duplicate ||
+            !result.reply?.trim() ||
+            !result.assistantMessageId
+        ) {
             return {
                 duplicate: result.duplicate,
                 sent: false,
             };
         }
 
-        await step.run("send-whatsapp-reply", async () => {
-            await sendWhatsAppMessage({
-                to: payload.from,
-                text: result.reply!,
-            });
+        const sendResult = await step.run("send-whatsapp-reply", async () => {
+            const claimed = await claimOutboundMessage(
+                result.assistantMessageId!,
+            );
+
+            if (!claimed) {
+                return { sent: false, reason: "not-claimable" as const };
+            }
+
+            try {
+                const response = await sendWhatsAppMessage({
+                    to: payload.from,
+                    text: result.reply!,
+                });
+
+                const externalId = response.messages[0].id;
+
+                await updateOutboundMessage({
+                    messageId: result.assistantMessageId!,
+                    status: "SENT",
+                    externalId,
+                });
+
+                await reconcilePendingWhatsAppStatuses(externalId);
+
+                return { sent: true as const };
+            } catch (error) {
+                try {
+                    await updateOutboundMessage({
+                        messageId: result.assistantMessageId!,
+                        status: "UNKNOWN",
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : "Unknown WhatsApp send outcome",
+                    });
+                } catch (persistenceError) {
+                    console.error(
+                        "[whatsapp-outbound] Failed to persist uncertain send",
+                        persistenceError,
+                    );
+                }
+
+                throw error;
+            }
         });
 
         return {
             duplicate: false,
-            sent: true,
+            sent: sendResult.sent,
+            ...(sendResult.sent
+                ? {}
+                : { reason: sendResult.reason }),
         };
     },
 );

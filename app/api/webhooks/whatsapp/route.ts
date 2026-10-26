@@ -1,17 +1,21 @@
+
 import { NextRequest, NextResponse } from "next/server";
-import type { WhatsAppWebhookPayload } from "@/app/features/events/gateways/whatsapp";
 import { resolveWhatsAppBusiness } from "@/app/features/agents/resolve-whatsapp-business";
 import { verifyWhatsAppSignature } from "@/app/features/events/gateways/whatsapp/verify-signature";
+import {
+    savePendingWhatsAppStatus,
+    updateOutboundMessageFromWhatsAppStatus,
+} from "@/app/features/conversations/service";
 import { inngest } from "@/app/lib/inngest/client";
 import {
     isWhatsAppWebhookPayload,
     parseWhatsAppPayload,
 } from "./parse-payload";
-import { parseWhatsAppTimestamp } from "./validate-timestamp";
+import { extractIncomingWhatsAppMessages } from "./extract-incoming-messages";
+import { extractWhatsAppStatusUpdates } from "./extract-status-updates";
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
-
     const mode = searchParams.get("hub.mode");
     const token = searchParams.get("hub.verify_token");
     const challenge = searchParams.get("hub.challenge");
@@ -21,9 +25,7 @@ export async function GET(request: NextRequest) {
         token === process.env.WHATSAPP_VERIFY_TOKEN &&
         challenge
     ) {
-        return new NextResponse(challenge, {
-            status: 200,
-        });
+        return new NextResponse(challenge, { status: 200 });
     }
 
     return NextResponse.json(
@@ -38,7 +40,6 @@ export async function POST(request: NextRequest) {
 
     if (!verifyWhatsAppSignature(rawBody, signature)) {
         console.error("WhatsApp webhook signature verification failed");
-
         return NextResponse.json(
             { error: "Invalid webhook signature" },
             { status: 401 },
@@ -49,7 +50,6 @@ export async function POST(request: NextRequest) {
 
     if (!parsed.success) {
         console.error("WhatsApp webhook received malformed JSON");
-
         return NextResponse.json(
             { error: "Invalid JSON payload" },
             { status: 400 },
@@ -58,90 +58,102 @@ export async function POST(request: NextRequest) {
 
     if (!isWhatsAppWebhookPayload(parsed.body)) {
         console.error("WhatsApp webhook received an invalid payload structure");
-
         return NextResponse.json(
             { error: "Invalid webhook payload structure" },
             { status: 400 },
         );
     }
 
-    const body = parsed.body;
-    const value = body.entry?.[0]?.changes?.[0]?.value;
-    const phoneNumberId = value?.metadata?.phone_number_id;
-    const message = value?.messages?.[0];
+    const extracted = extractIncomingWhatsAppMessages(parsed.body);
 
-    console.log("WhatsApp webhook received:", {
-        phoneNumberId,
-        hasMessage: Boolean(message?.id),
-        messageType: message?.type,
-        from: message?.from,
-    });
-
-    // Ignore status updates and payloads without an incoming message.
-    if (
-        !phoneNumberId?.trim() ||
-        !message?.id?.trim() ||
-        !message?.from?.trim()
-    ) {
-        return NextResponse.json({
-            success: true,
-            ignored: true,
-        });
-    }
-
-    const timestamp = parseWhatsAppTimestamp(message.timestamp);
-
-    if (!timestamp) {
+    if (!extracted.success) {
         console.error("WhatsApp webhook received an invalid message timestamp");
-
         return NextResponse.json(
             { error: "Invalid message timestamp" },
             { status: 400 },
         );
     }
 
-    const businessId = await resolveWhatsAppBusiness(phoneNumberId);
+    const incomingMessages = extracted.messages;
+    const statusUpdates = extractWhatsAppStatusUpdates(parsed.body);
 
-    if (!businessId) {
-        console.error("Unmapped or inactive WhatsApp channel:", phoneNumberId);
+    // Resolve channels for incoming messages before enqueueing any of them.
+    const businessIds = new Map<string, string>();
 
-        return NextResponse.json(
-            { error: "WhatsApp channel not configured" },
-            { status: 404 },
-        );
+    for (const { phoneNumberId } of incomingMessages) {
+        if (businessIds.has(phoneNumberId)) {
+            continue;
+        }
+
+        const businessId = await resolveWhatsAppBusiness(phoneNumberId);
+
+        if (!businessId) {
+            console.error("Unmapped or inactive WhatsApp channel:", phoneNumberId);
+            return NextResponse.json(
+                { error: "WhatsApp channel not configured" },
+                { status: 404 },
+            );
+        }
+
+        businessIds.set(phoneNumberId, businessId);
     }
 
-    const payload: WhatsAppWebhookPayload = {
-        messageId: message.id,
-        from: message.from,
-        name: value?.contacts?.[0]?.profile?.name,
-        text: message.type === "text" ? message.text?.body : undefined,
-        timestamp,
-    };
+    let updatedStatuses = 0;
+    let pendingStatuses = 0;
+    let ignoredStatuses = 0;
 
     try {
-        await inngest.send({
-            name: "optr/whatsapp.message.received",
-            data: {
-                phoneNumberId,
-                messageId: payload.messageId,
-                from: payload.from,
-                name: payload.name,
-                text: payload.text,
-                timestamp: payload.timestamp,
-            },
-        });
-    } catch (error) {
-        console.error("Failed to enqueue WhatsApp message:", error);
+        // Delivery callbacks update persisted messages only; they never invoke the agent.
+        for (const statusUpdate of statusUpdates) {
+            const result = await updateOutboundMessageFromWhatsAppStatus({
+                externalId: statusUpdate.messageId,
+                status: statusUpdate.status,
+                timestamp: statusUpdate.timestamp,
+                error: statusUpdate.errorMessage,
+            });
 
+            if (result.updated) {
+                updatedStatuses += 1;
+            } else if (result.reason === "message-not-found") {
+                await savePendingWhatsAppStatus({
+                    externalId: statusUpdate.messageId,
+                    status: statusUpdate.status,
+                    timestamp: statusUpdate.timestamp,
+                    error: statusUpdate.errorMessage,
+                });
+
+                pendingStatuses += 1;
+            } else {
+                ignoredStatuses += 1;
+            }
+        }
+
+        for (const { phoneNumberId, payload } of incomingMessages) {
+            await inngest.send({
+                name: "optr/whatsapp.message.received",
+                data: {
+                    phoneNumberId,
+                    messageId: payload.messageId,
+                    from: payload.from,
+                    name: payload.name,
+                    text: payload.text,
+                    timestamp: payload.timestamp,
+                },
+            });
+        }
+    } catch (error) {
+        console.error("Failed to process WhatsApp webhook:", error);
         return NextResponse.json(
-            { error: "Failed to queue message for processing" },
+            { error: "Failed to process WhatsApp webhook" },
             { status: 500 },
         );
     }
 
     return NextResponse.json({
         success: true,
-        queued: true,
+        queued: incomingMessages.length,
+        updatedStatuses,
+        pendingStatuses,
+        ignoredStatuses,
     });
 }
