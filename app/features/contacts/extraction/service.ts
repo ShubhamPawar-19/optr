@@ -1,4 +1,3 @@
-
 import { generateObject } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { db } from "@/app/lib/db";
@@ -10,6 +9,8 @@ import {
 const openrouter = createOpenRouter({
     apiKey: process.env.OPENROUTER_API_KEY,
 });
+
+const MAX_CUSTOMER_MESSAGES = 12;
 
 type ConfiguredField = {
     id: string;
@@ -40,10 +41,13 @@ function validateValue(
         case "MEDIA":
             return value;
 
-        case "NUMBER":
-            return Number.isFinite(Number(value))
-                ? String(Number(value))
+        case "NUMBER": {
+            const number = Number(value);
+
+            return Number.isFinite(number)
+                ? String(number)
                 : null;
+        }
 
         case "BOOLEAN": {
             const normalized = value.toLowerCase();
@@ -86,8 +90,8 @@ function validateValue(
 
         case "SINGLE_SELECT":
         case "MULTI_SELECT":
-            // Select options need an explicit options definition.
-            // Do not guess which values are allowed.
+            // Do not save select values until configured options
+            // are available and validated.
             return null;
     }
 }
@@ -146,19 +150,33 @@ export async function extractContactProfile(params: {
         return { extracted: 0, changed: 0 };
     }
 
-    const messages = await db.message.findMany({
+    const allMessages = await db.message.findMany({
         where: { conversationId },
         orderBy: { createdAt: "asc" },
         select: { role: true, content: true },
     });
 
-    if (messages.length === 0) {
+    // Only customer-authored messages can establish customer facts.
+    // Keep the most recent messages to control prompt size.
+    const customerMessages = allMessages
+        .filter((message) => message.role === "USER")
+        .slice(-MAX_CUSTOMER_MESSAGES);
+
+    if (customerMessages.length === 0) {
         return { extracted: 0, changed: 0 };
     }
 
     const existingValues = await db.contactProfileValue.findMany({
-        where: { contactId, contactFieldId: { in: fields.map((f) => f.id) } },
-        select: { contactFieldId: true, value: true },
+        where: {
+            contactId,
+            contactFieldId: {
+                in: fields.map((field) => field.id),
+            },
+        },
+        select: {
+            contactFieldId: true,
+            value: true,
+        },
     });
 
     const currentValues = new Map(
@@ -168,50 +186,74 @@ export async function extractContactProfile(params: {
         ]),
     );
 
+    const extractionModel =
+        process.env.OPTR_EXTRACTION_MODEL?.trim() || model;
+
     const result = await generateObject({
-        model: openrouter(model),
+        model: openrouter(extractionModel),
         schema: contactExtractionSchema,
-        maxOutputTokens: 1000,
-        system: `Extract structured facts about the customer from the conversation.
+        maxOutputTokens: 4000,
+        temperature: 0,
+        system: `Extract structured customer profile facts from customer messages.
+
+Return one JSON object matching the supplied schema.
 
 Rules:
-- Extract only facts explicitly supported by the conversation.
-- Do not infer missing facts or treat assistant suggestions as customer-confirmed facts.
-- Use the configured field key exactly.
-- Each evidence value must be a short verbatim excerpt from a customer message.
-- Do not extract a fact if there is no clear customer-message evidence.
-- Return an empty facts array when no reliable facts are present.
-- Values must be strings. For dates, use YYYY-MM-DD when explicitly known.
-- For boolean fields, use true or false only when the customer clearly confirms the fact.
-- For multi-select fields, use a JSON array encoded as a string.
-- Existing values are context, not evidence for new facts.
-- Do not return a field merely because its existing value is known.`,
+- Extract only facts explicitly stated by the customer.
+- Do not infer missing facts.
+- Do not treat assistant messages, suggestions, or questions as customer-confirmed facts.
+- Return the exact configured field key in the "fieldKey" property.
+- Never use "key" instead of "fieldKey".
+- Preserve the configured field key's spelling and capitalization.
+- Each evidence value must be a short, exact excerpt from a customer message.
+- Do not invent, paraphrase, or combine evidence from different messages.
+- Return an empty facts array if no reliable facts can be extracted.
+- Every value must be a string.
+- Represent numbers as strings containing the numeric value only.
+- Represent booleans as "true" or "false" only when explicitly confirmed.
+- Represent dates as YYYY-MM-DD only when the date is explicitly known.
+- For select fields, return only an explicitly stated value; the application may reject values that are not configured.
+- Existing values are context only, not evidence for a new fact.
+- Do not return a fact solely because it appears in existing values.
+- Prefer the customer's latest explicit statement when it clearly updates an earlier value.
+- Do not extract appointment times or scheduling intentions unless they match an explicitly configured profile field.
+- Do not include explanations outside the structured result.`,
         prompt: JSON.stringify({
             fields: fields.map((field) => ({
-                key: field.key,
+                fieldKey: field.key,
                 label: field.label,
                 description: field.description,
                 type: field.type,
                 existingValue: currentValues.get(field.id) ?? null,
             })),
-            conversation: messages.map((message) => ({
-                role: message.role,
+            customerMessages: customerMessages.map((message) => ({
+                role: "USER",
                 content: message.content,
             })),
         }),
     });
 
+    // Normalize keys for lookup, but retain the actual configured
+    // field object and ID for database writes.
     const fieldByKey = new Map(
-        fields.map((field) => [field.key, field]),
+        fields.map((field) => [
+            field.key.trim().toLowerCase(),
+            field,
+        ]),
     );
 
     const changed = await db.$transaction(async (tx) => {
         let changedCount = 0;
 
         for (const fact of result.object.facts) {
-            const field = fieldByKey.get(fact.fieldKey);
+            const normalizedKey = fact.fieldKey.trim().toLowerCase();
+            const field = fieldByKey.get(normalizedKey);
 
-            if (!field || !isCustomerEvidence(fact, messages)) {
+            if (!field || !isCustomerEvidence(fact, customerMessages)) {
+                continue;
+            }
+
+            if (typeof fact.value !== "string" || !fact.value.trim()) {
                 continue;
             }
 
@@ -282,6 +324,10 @@ function isCustomerEvidence(
     messages: { role: string; content: string }[],
 ): boolean {
     const evidence = fact.evidence.trim();
+
+    if (!evidence) {
+        return false;
+    }
 
     return messages.some(
         (message) =>
