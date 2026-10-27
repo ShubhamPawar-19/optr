@@ -128,15 +128,23 @@ export async function runAgent(
                     : undefined,
             };
 
-            console.log("[OPTR Decision Debug]", {
-                decisionType: decision.type,
-                toolName: decision.type === "TOOL"
-                    ? decision.toolName
-                    : undefined,
-                input: decision.type === "TOOL"
-                    ? decision.input
-                    : undefined,
-            });
+            
+            console.dir(
+                {
+                    label: "OPTR Decision Debug",
+                    decisionType: decision.type,
+                    toolName:
+                        decision.type === "TOOL"
+                            ? decision.toolName
+                            : undefined,
+                    input:
+                        decision.type === "TOOL"
+                            ? decision.input
+                            : undefined,
+                },
+                { depth: null },
+            );
+
 
             const previousStepCount = context.steps.length;
 
@@ -147,11 +155,17 @@ export async function runAgent(
                 toolContext,
             );
 
-            console.log("[OPTR Tool Debug]", {
-                toolName: decision.toolName,
-                input: decision.input,
-                result: context.steps[context.steps.length - 1]?.toolResult,
-            });
+            
+            console.dir(
+                {
+                    label: "OPTR Tool Debug",
+                    toolName: decision.toolName,
+                    input: decision.input,
+                    result: context.steps[context.steps.length - 1]?.toolResult,
+                },
+                { depth: null },
+            );
+
 
             const newStep = context.steps[previousStepCount];
 

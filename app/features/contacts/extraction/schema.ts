@@ -5,8 +5,8 @@ export const contactFactSchema = z
     .object({
         fieldKey: z.string().min(1).optional(),
         key: z.string().min(1).optional(),
-        value: z.string().optional(),
-        evidence: z.string().min(1),
+        value: z.string().trim().min(1),
+        evidence: z.string().trim().min(1),
     })
     .transform((fact, ctx) => {
         const fieldKey = fact.fieldKey?.trim() || fact.key?.trim();

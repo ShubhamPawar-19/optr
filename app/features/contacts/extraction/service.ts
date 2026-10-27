@@ -208,8 +208,13 @@ Rules:
 - Each evidence value must be a short, exact excerpt from a customer message.
 - Do not invent, paraphrase, or combine evidence from different messages.
 - Return an empty facts array if no reliable facts can be extracted.
+- Every fact must include a non-empty value and a non-empty evidence excerpt.
 - Every value must be a string.
-- Represent numbers as strings containing the numeric value only.
+- For NUMBER fields, return the complete normalized numeric value as a string, without currency symbols or separators.
+- Normalize quantities expressed in words or abbreviated units. For example, "AED 2.5 million" becomes "2500000", "2 million" becomes "2000000", and "1.75 million" becomes "1750000".
+- Never return only the numeric fragment from the evidence when it represents a larger quantity.
+- For TEXT fields, return the customer's stated preference as a concise value, preserving its meaning.
+- Use evidence as the exact excerpt from the customer's message that supports the extracted value.
 - Represent booleans as "true" or "false" only when explicitly confirmed.
 - Represent dates as YYYY-MM-DD only when the date is explicitly known.
 - For select fields, return only an explicitly stated value; the application may reject values that are not configured.
@@ -232,7 +237,22 @@ Rules:
             })),
         }),
     });
-
+    console.dir(
+        {
+            label: "[OPTR Extraction Debug]",
+            configuredFields: fields.map((field) => ({
+                key: field.key,
+                label: field.label,
+                type: field.type,
+            })),
+            existingValues: fields.map((field) => ({
+                key: field.key,
+                value: currentValues.get(field.id) ?? null,
+            })),
+            extractedFacts: result.object.facts,
+        },
+        { depth: null },
+    );
     // Normalize keys for lookup, but retain the actual configured
     // field object and ID for database writes.
     const fieldByKey = new Map(
@@ -249,7 +269,20 @@ Rules:
             const normalizedKey = fact.fieldKey.trim().toLowerCase();
             const field = fieldByKey.get(normalizedKey);
 
-            if (!field || !isCustomerEvidence(fact, customerMessages)) {
+            if (!field) {
+                console.warn("[OPTR Extraction Skipped]", {
+                    reason: "FIELD_NOT_FOUND",
+                    fieldKey: fact.fieldKey,
+                });
+                continue;
+            }
+
+            if (!isCustomerEvidence(fact, customerMessages)) {
+                console.warn("[OPTR Extraction Skipped]", {
+                    reason: "EVIDENCE_NOT_FOUND",
+                    fieldKey: fact.fieldKey,
+                    evidence: fact.evidence,
+                });
                 continue;
             }
 
@@ -260,6 +293,12 @@ Rules:
             const value = validateValue(field, fact.value);
 
             if (value === null) {
+                console.warn("[OPTR Extraction Skipped]", {
+                    reason: "INVALID_VALUE",
+                    fieldKey: fact.fieldKey,
+                    fieldType: field.type,
+                    extractedValue: fact.value,
+                });
                 continue;
             }
 
