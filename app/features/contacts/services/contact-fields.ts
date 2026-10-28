@@ -16,6 +16,14 @@ const VALID_FIELD_TYPES = new Set<string>([
   "MEDIA",
 ]);
 
+export type ContactFieldResult =
+  | { success: true; fieldId: string }
+  | {
+      success: false;
+      code: "INVALID_INPUT" | "KEY_TAKEN" | "NOT_FOUND" | "IN_USE";
+      message: string;
+    };
+
 export type ContactFieldInput = {
   label: string;
   key: string;
@@ -32,13 +40,6 @@ export type UpdateContactFieldInput = {
   isRequired: boolean;
 };
 
-export type ContactFieldResult =
-  | { success: true; fieldId: string }
-  | {
-      success: false;
-      code: "INVALID_INPUT" | "KEY_TAKEN" | "NOT_FOUND";
-      message: string;
-    };
 
 export async function listContactFields(businessId: string) {
   return db.contactField.findMany({
@@ -205,6 +206,64 @@ export async function setContactFieldActive(input: {
   });
 
   return { success: true, fieldId: existing.id };
+}
+
+export async function deleteContactField(input: {
+  businessId: string;
+  fieldId: string;
+}): Promise<ContactFieldResult> {
+  const { businessId, fieldId } = input;
+
+  if (!businessId.trim() || !fieldId.trim()) {
+    return {
+      success: false,
+      code: "INVALID_INPUT",
+      message: "Invalid contact field.",
+    };
+  }
+
+  return db.$transaction(async (tx) => {
+    const existing = await tx.contactField.findFirst({
+      where: {
+        id: fieldId,
+        businessId,
+      },
+      select: {
+        id: true,
+        _count: {
+          select: {
+            values: true,
+          },
+        },
+      },
+    });
+
+    if (!existing) {
+      return {
+        success: false,
+        code: "NOT_FOUND",
+        message: "Contact field not found.",
+      };
+    }
+
+    if (existing._count.values > 0) {
+      return {
+        success: false,
+        code: "IN_USE",
+        message:
+          "This field has saved contact data or history. Deactivate it instead to preserve that information.",
+      };
+    }
+
+    await tx.contactField.delete({
+      where: { id: existing.id },
+    });
+
+    return {
+      success: true,
+      fieldId: existing.id,
+    };
+  });
 }
 
 async function getNextPosition(businessId: string): Promise<number> {

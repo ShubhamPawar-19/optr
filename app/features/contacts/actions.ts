@@ -7,6 +7,7 @@ import {
   createContactField,
   updateContactField,
   setContactFieldActive,
+  deleteContactField,
 } from "./services/contact-fields";
 
 const DEMO_BUSINESS_ID = "demo-business";
@@ -155,4 +156,34 @@ export async function toggleContactFieldAction(
   return {
     success: isActive ? "Contact field activated." : "Contact field deactivated.",
   };
+}
+
+export async function deleteContactFieldAction(
+  _previousState: ContactFieldActionState,
+  formData: FormData,
+): Promise<ContactFieldActionState> {
+  const fieldId = readString(formData, "fieldId");
+
+  if (!fieldId) {
+    return { error: "Invalid contact field." };
+  }
+
+  try {
+    const result = await deleteContactField({
+      businessId: DEMO_BUSINESS_ID,
+      fieldId,
+    });
+
+    if (!result.success) {
+      return { error: result.message };
+    }
+
+    revalidatePath("/contacts");
+    revalidatePath("/contacts/fields");
+
+    return { success: "Contact field deleted successfully." };
+  } catch (error) {
+    console.error("Failed to delete contact field:", error);
+    return { error: "Unable to delete this field. Please try again." };
+  }
 }

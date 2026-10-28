@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState, useActionState, useEffect } from "react";
 import {
   Plus,
   Pencil,
@@ -14,6 +14,7 @@ import {
   ArrowUpRight,
   CircleHelp,
   Layers3,
+  Trash2,
   ListFilter,
 } from "lucide-react";
 
@@ -22,7 +23,9 @@ import {
   updateContactFieldAction,
   toggleContactFieldAction,
   type ContactFieldActionState,
+  deleteContactFieldAction,
 } from "../actions";
+import { ContactFieldActions } from "./contact-field-actions";
 
 const FIELD_TYPES = [
   "TEXT",
@@ -209,11 +212,10 @@ export function ContactFieldsPage({
               type="button"
               onClick={() => setShowCreate((value) => !value)}
               aria-expanded={showCreate}
-              className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium shadow-sm transition ${
-                showCreate
-                  ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  : "bg-slate-950 text-white hover:bg-slate-800"
-              }`}
+              className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium shadow-sm transition ${showCreate
+                ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                : "bg-slate-950 text-white hover:bg-slate-800"
+                }`}
             >
               {showCreate ? <X size={16} /> : <Plus size={16} />}
               {showCreate ? "Cancel" : "Add field"}
@@ -321,12 +323,8 @@ export function ContactFieldsPage({
 }
 
 function FieldRow({ field }: { field: ContactField }) {
-  const [editing, setEditing] = useState(false);
 
-  const [toggleState, toggleAction, togglePending] = useActionState(
-    toggleContactFieldAction,
-    initialState,
-  );
+  const [editing, setEditing] = useState(false);
 
   if (editing) {
     return (
@@ -359,20 +357,18 @@ function FieldRow({ field }: { field: ContactField }) {
 
   return (
     <div
-      className={`group rounded-xl border bg-white p-4 transition duration-200 sm:p-5 ${
-        field.isActive
-          ? "border-slate-200 hover:border-slate-300 hover:shadow-[0_4px_14px_rgba(15,23,42,0.04)]"
-          : "border-slate-200/80 bg-slate-50/60"
-      }`}
+      className={`group rounded-xl border bg-white p-4 transition duration-200 sm:p-5 ${field.isActive
+        ? "border-slate-200 hover:border-slate-300 hover:shadow-[0_4px_14px_rgba(15,23,42,0.04)]"
+        : "border-slate-200/80 bg-slate-50/60"
+        }`}
     >
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div className="flex min-w-0 flex-1 gap-3.5">
           <div
-            className={`flex size-10 shrink-0 items-center justify-center rounded-xl border ${
-              field.isActive
-                ? "border-indigo-100 bg-indigo-50 text-indigo-600"
-                : "border-slate-200 bg-white text-slate-400"
-            }`}
+            className={`flex size-10 shrink-0 items-center justify-center rounded-xl border ${field.isActive
+              ? "border-indigo-100 bg-indigo-50 text-indigo-600"
+              : "border-slate-200 bg-white text-slate-400"
+              }`}
           >
             <Database size={18} strokeWidth={1.8} />
           </div>
@@ -380,24 +376,21 @@ function FieldRow({ field }: { field: ContactField }) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3
-                className={`text-sm font-semibold ${
-                  field.isActive ? "text-slate-900" : "text-slate-500"
-                }`}
+                className={`text-sm font-semibold ${field.isActive ? "text-slate-900" : "text-slate-500"
+                  }`}
               >
                 {field.label}
               </h3>
 
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium ${
-                  field.isActive
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-slate-100 text-slate-500"
-                }`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium ${field.isActive
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-slate-100 text-slate-500"
+                  }`}
               >
                 <span
-                  className={`size-1.5 rounded-full ${
-                    field.isActive ? "bg-emerald-500" : "bg-slate-400"
-                  }`}
+                  className={`size-1.5 rounded-full ${field.isActive ? "bg-emerald-500" : "bg-slate-400"
+                    }`}
                 />
                 {field.isActive ? "Active" : "Inactive"}
               </span>
@@ -446,62 +439,11 @@ function FieldRow({ field }: { field: ContactField }) {
             </div>
           </div>
         </div>
-
-        <div className="flex shrink-0 items-center gap-2 border-t border-slate-100 pt-3 sm:border-0 sm:pt-0">
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
-          >
-            <Pencil size={13} />
-            Edit
-          </button>
-
-          <form action={toggleAction}>
-            <input type="hidden" name="fieldId" value={field.id} />
-            <input
-              type="hidden"
-              name="isActive"
-              value={String(!field.isActive)}
-            />
-
-            <button
-              type="submit"
-              disabled={togglePending}
-              className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                field.isActive
-                  ? "border-slate-200 bg-white text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
-                  : "border-emerald-200 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-50"
-              }`}
-            >
-              <Power size={13} />
-              {togglePending
-                ? "Saving..."
-                : field.isActive
-                  ? "Deactivate"
-                  : "Activate"}
-            </button>
-          </form>
-        </div>
+        <ContactFieldActions
+          field={field}
+          onEdit={() => setEditing(true)}
+        />
       </div>
-
-      {toggleState.error && (
-        <p
-          role="alert"
-          className="mt-4 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-700"
-        >
-          {toggleState.error}
-        </p>
-      )}
-
-      {toggleState.success && (
-        <p
-          role="status"
-          className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700"
-        >
-          {toggleState.success}
-        </p>
-      )}
     </div>
   );
 }
@@ -526,6 +468,12 @@ function FieldForm({
     mode === "create" ? createContactFieldAction : updateContactFieldAction;
 
   const [state, formAction, pending] = useActionState(action, initialState);
+
+  useEffect(() => {
+    if (mode === "edit" && state.success) {
+      onCancel();
+    }
+  }, [mode, state.success, onCancel]);
 
   function updateLabel(value: string) {
     setLabel(value);

@@ -262,95 +262,132 @@ Rules:
         ]),
     );
 
-    const changed = await db.$transaction(async (tx) => {
-        let changedCount = 0;
+        let changed: number;
 
-        for (const fact of result.object.facts) {
-            const normalizedKey = fact.fieldKey.trim().toLowerCase();
-            const field = fieldByKey.get(normalizedKey);
+    console.time("[Contact Extraction] Profile transaction");
 
-            if (!field) {
-                console.warn("[OPTR Extraction Skipped]", {
-                    reason: "FIELD_NOT_FOUND",
-                    fieldKey: fact.fieldKey,
-                });
-                continue;
-            }
+    try {
+        changed = await db.$transaction(
+            async (tx) => {
+                let changedCount = 0;
 
-            if (!isCustomerEvidence(fact, customerMessages)) {
-                console.warn("[OPTR Extraction Skipped]", {
-                    reason: "EVIDENCE_NOT_FOUND",
-                    fieldKey: fact.fieldKey,
-                    evidence: fact.evidence,
-                });
-                continue;
-            }
+                for (const fact of result.object.facts) {
+                    const normalizedKey = fact.fieldKey
+                        .trim()
+                        .toLowerCase();
 
-            if (typeof fact.value !== "string" || !fact.value.trim()) {
-                continue;
-            }
+                    const field = fieldByKey.get(normalizedKey);
 
-            const value = validateValue(field, fact.value);
+                    if (!field) {
+                        console.warn("[OPTR Extraction Skipped]", {
+                            reason: "FIELD_NOT_FOUND",
+                            fieldKey: fact.fieldKey,
+                        });
+                        continue;
+                    }
 
-            if (value === null) {
-                console.warn("[OPTR Extraction Skipped]", {
-                    reason: "INVALID_VALUE",
-                    fieldKey: fact.fieldKey,
-                    fieldType: field.type,
-                    extractedValue: fact.value,
-                });
-                continue;
-            }
+                    if (!isCustomerEvidence(fact, customerMessages)) {
+                        console.warn("[OPTR Extraction Skipped]", {
+                            reason: "EVIDENCE_NOT_FOUND",
+                            fieldKey: fact.fieldKey,
+                            evidence: fact.evidence,
+                        });
+                        continue;
+                    }
 
-            const previous = await tx.contactProfileValue.findUnique({
-                where: {
-                    contactId_contactFieldId: {
-                        contactId,
-                        contactFieldId: field.id,
-                    },
-                },
-            });
+                    if (
+                        typeof fact.value !== "string" ||
+                        !fact.value.trim()
+                    ) {
+                        console.warn("[OPTR Extraction Skipped]", {
+                            reason: "MISSING_VALUE",
+                            fieldKey: fact.fieldKey,
+                        });
+                        continue;
+                    }
 
-            if (previous?.value === value) {
-                continue;
-            }
+                    const value = validateValue(field, fact.value);
 
-            const profileValue = await tx.contactProfileValue.upsert({
-                where: {
-                    contactId_contactFieldId: {
-                        contactId,
-                        contactFieldId: field.id,
-                    },
-                },
-                create: {
-                    contactId,
-                    contactFieldId: field.id,
-                    value,
-                    source: "INFERRED",
-                    evidence: fact.evidence,
-                },
-                update: {
-                    value,
-                    source: "INFERRED",
-                    evidence: fact.evidence,
-                },
-            });
+                    if (value === null) {
+                        console.warn("[OPTR Extraction Skipped]", {
+                            reason: "INVALID_VALUE",
+                            fieldKey: fact.fieldKey,
+                            fieldType: field.type,
+                            extractedValue: fact.value,
+                        });
+                        continue;
+                    }
 
-            await tx.contactProfileValueHistory.create({
-                data: {
-                    contactProfileValueId: profileValue.id,
-                    previousValue: previous?.value ?? null,
-                    newValue: value,
-                    source: "INFERRED",
-                    evidence: fact.evidence,
-                },
-            });
+                    const previous = await tx.contactProfileValue.findUnique({
+                        where: {
+                            contactId_contactFieldId: {
+                                contactId,
+                                contactFieldId: field.id,
+                            },
+                        },
+                        select: {
+                            id: true,
+                            value: true,
+                        },
+                    });
 
-            changedCount++;
-        }
+                    if (previous?.value === value) {
+                        continue;
+                    }
 
-        return changedCount;
-    });
+                    const profileValue = await tx.contactProfileValue.upsert({
+                        where: {
+                            contactId_contactFieldId: {
+                                contactId,
+                                contactFieldId: field.id,
+                            },
+                        },
+                        create: {
+                            contactId,
+                            contactFieldId: field.id,
+                            value,
+                            source: "INFERRED",
+                            evidence: fact.evidence,
+                        },
+                        update: {
+                            value,
+                            source: "INFERRED",
+                            evidence: fact.evidence,
+                        },
+                    });
+
+                    await tx.contactProfileValueHistory.create({
+                        data: {
+                            contactProfileValueId: profileValue.id,
+                            previousValue: previous?.value ?? null,
+                            newValue: value,
+                            source: "INFERRED",
+                            evidence: fact.evidence,
+                        },
+                    });
+
+                    changedCount++;
+                }
+
+                return changedCount;
+            },
+            {
+                maxWait: 10_000,
+                timeout: 15_000,
+            },
+        );
+    } catch (error) {
+        console.error("[Contact Extraction] Profile transaction failed", {
+            contactId,
+            conversationId,
+            factCount: result.object.facts.length,
+            error,
+        });
+
+        throw error;
+    } finally {
+        console.timeEnd("[Contact Extraction] Profile transaction");
+    }
 
     return {
         extracted: result.object.facts.length,
