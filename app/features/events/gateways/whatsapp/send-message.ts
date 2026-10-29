@@ -1,6 +1,10 @@
+
+import { getWhatsAppChannelCredentials } from "./get-channel-credentials";
+
 type SendWhatsAppMessageParams = {
     to: string;
     text: string;
+    phoneNumberId: string;
 };
 
 type WhatsAppSendResponse = {
@@ -12,20 +16,16 @@ type WhatsAppSendResponse = {
 export async function sendWhatsAppMessage({
     to,
     text,
+    phoneNumberId,
 }: SendWhatsAppMessageParams): Promise<WhatsAppSendResponse> {
-    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-
-    if (!accessToken || !phoneNumberId) {
-        throw new Error("WhatsApp credentials are not configured");
-    }
+    const credentials = await getWhatsAppChannelCredentials(phoneNumberId);
 
     const response = await fetch(
-        `https://graph.facebook.com/v23.0/${phoneNumberId}/messages`,
+        `https://graph.facebook.com/v23.0/${credentials.phoneNumberId}/messages`,
         {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${accessToken}`,
+                Authorization: `Bearer ${credentials.accessToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
