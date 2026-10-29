@@ -61,6 +61,7 @@ export function AppSidebar() {
   const [signOutError, setSignOutError] = useState(false);
 
   useEffect(() => {
+  const frame = window.requestAnimationFrame(() => {
     try {
       setCollapsed(
         window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true",
@@ -70,7 +71,10 @@ export function AppSidebar() {
     }
 
     setHydrated(true);
-  }, []);
+  });
+
+  return () => window.cancelAnimationFrame(frame);
+}, []);
 
   const persistCollapsed = useCallback((next: boolean) => {
     setCollapsed(next);
