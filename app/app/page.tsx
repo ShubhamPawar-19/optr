@@ -58,18 +58,18 @@ function MetricCard({
   icon: typeof Users;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
+    <div className="rounded-xl border border-slate-400 bg-white p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">{label}</p>
-        <div className="flex size-9 items-center justify-center rounded-lg bg-slate-50 text-slate-600">
+        <p className="text-sm text-[#292923]-500">{label}</p>
+        <div className="flex size-9 items-center justify-center rounded-lg bg-slate-50 text-[#292923]-600">
           <Icon size={18} />
         </div>
       </div>
 
-      <p className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+      <p className="mt-4 text-3xl font-semibold tracking-tight text-[#292923]-950">
         {value.toLocaleString()}
       </p>
-      <p className="mt-1 text-xs text-slate-500">{description}</p>
+      <p className="mt-1 text-xs text-[#292923]-500">{description}</p>
     </div>
   );
 }
@@ -92,7 +92,7 @@ function RunStatus({ status }: { status: string }) {
   return (
     <span
       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-        styles[status] ?? "bg-slate-100 text-slate-600"
+        styles[status] ?? "bg-slate-100 text-[#292923]-600"
       }`}
     >
       {labels[status] ?? status}
@@ -118,19 +118,19 @@ export default async function Home() {
   const hasActiveWhatsApp = metrics.activeWhatsAppChannels > 0;
 
   return (
-    <main className="min-h-screen min-w-0 bg-[#f8fafc] text-slate-900">
-      <header className="sticky top-0 z-10 flex h-[72px] items-center justify-between gap-4 border-b border-slate-200 bg-white/95 px-5 backdrop-blur sm:px-8">
+    <main className="min-h-screen min-w-0 bg-[#f8fafc] text-[#292923]-900">
+      <header className="sticky top-0 z-10 flex h-[72px] items-center justify-between gap-4 border-b border-slate-400 bg-white/95 px-5 backdrop-blur sm:px-8">
         <div className="flex items-center gap-3">
           <SidebarToggle />
           <div>
-            <p className="text-xs text-slate-500">Workspace</p>
+            <p className="text-xs text-[#292923]-500">Workspace</p>
             <h1 className="text-sm font-semibold">Overview</h1>
           </div>
         </div>
 
         <Link
           href="/leads"
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#292923] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#292923]-800"
         >
           <Users size={16} />
           View leads
@@ -140,20 +140,20 @@ export default async function Home() {
       <div className="mx-auto max-w-7xl space-y-7 p-5 sm:p-8">
         <section className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-sm font-medium text-[#292923]-500">
               Your workspace at a glance
             </p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
               Overview
             </h2>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[#292923]-500">
               Focus on new leads and conversations that need your attention.
             </p>
           </div>
 
           <Link
             href="/leads"
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-950"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#292923]-700 hover:text-[#292923]-950"
           >
             Open lead inbox <ArrowRight size={15} />
           </Link>
@@ -183,7 +183,7 @@ export default async function Home() {
 
         {/* Setup and errors are shown only when relevant */}
         {(!hasActiveAgent || !hasActiveWhatsApp || failedRuns.length > 0) && (
-          <section className="rounded-xl border border-slate-200 bg-white p-5">
+          <section className="rounded-xl border border-slate-400 bg-white p-5">
             <div className="flex items-start gap-3">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
                 <AlertCircle size={18} />
@@ -191,7 +191,7 @@ export default async function Home() {
 
               <div className="min-w-0 flex-1">
                 <h2 className="font-semibold">Needs your attention</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-[#292923]-500">
                   Resolve these items to keep your lead workflow running smoothly.
                 </p>
 
@@ -199,7 +199,7 @@ export default async function Home() {
                   {!hasActiveAgent && (
                     <Link
                       href="/agents"
-                      className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 p-3 text-sm hover:bg-slate-100"
+                      className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 p-3 text-sm hover:bg-[#292923]-100"
                     >
                       <span>No active AI agent is configured.</span>
                       <ArrowRight size={16} />
@@ -209,7 +209,7 @@ export default async function Home() {
                   {!hasActiveWhatsApp && (
                     <Link
                       href="/settings"
-                      className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 p-3 text-sm hover:bg-slate-100"
+                      className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 p-3 text-sm hover:bg-[#292923]-100"
                     >
                       <span>No active WhatsApp channel was found.</span>
                       <ArrowRight size={16} />
@@ -241,17 +241,17 @@ export default async function Home() {
 
         <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.5fr_1fr]">
           {/* Recent leads */}
-          <div className="rounded-xl border border-slate-200 bg-white">
+          <div className="rounded-xl border border-slate-400 bg-white">
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
               <div>
                 <h2 className="font-semibold">Recent leads</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-[#292923]-500">
                   The latest contacts in your workspace.
                 </p>
               </div>
               <Link
                 href="/leads"
-                className="shrink-0 text-sm font-medium text-slate-700 hover:text-slate-950"
+                className="shrink-0 text-sm font-medium text-[#292923]-700 hover:text-[#292923]-950"
               >
                 View all <ArrowRight className="ml-1 inline" size={14} />
               </Link>
@@ -262,27 +262,27 @@ export default async function Home() {
                 <Link
                   key={contact.id}
                   href={`/contacts/${contact.id}`}
-                  className="flex items-center gap-3 px-5 py-4 transition hover:bg-slate-50"
+                  className="flex items-center gap-3 px-5 py-4 transition hover:bg-[#292923]-50"
                 >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-[#292923]-600">
                     {getInitials(contact.name)}
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-900">
+                    <p className="truncate text-sm font-medium text-[#292923]-900">
                       {contact.name || "Unnamed contact"}
                     </p>
-                    <p className="mt-1 truncate text-xs text-slate-500">
+                    <p className="mt-1 truncate text-xs text-[#292923]-500">
                       {contact.phone || contact.email || "No contact details"}
                     </p>
                   </div>
 
                   <div className="hidden text-right sm:block">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[#292923]-500">
                       {contact._count.conversations} conversation
                       {contact._count.conversations === 1 ? "" : "s"}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-[#292923]-400">
                       {formatRelativeTime(contact.updatedAt)}
                     </p>
                   </div>
@@ -291,9 +291,9 @@ export default async function Home() {
 
               {data.recentContacts.length === 0 && (
                 <div className="px-5 py-12 text-center">
-                  <Users className="mx-auto text-slate-300" size={28} />
+                  <Users className="mx-auto text-[#292923]-300" size={28} />
                   <p className="mt-3 text-sm font-medium">No leads yet</p>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-[#292923]-500">
                     Incoming inquiries will appear here when contacts are created.
                   </p>
                 </div>
@@ -303,7 +303,7 @@ export default async function Home() {
             <div className="border-t border-slate-100 p-4">
               <Link
                 href="/leads"
-                className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="flex items-center justify-center gap-2 rounded-lg border border-slate-400 px-4 py-2.5 text-sm font-medium text-[#292923]-700 transition hover:bg-[#292923]-50"
               >
                 Open all leads <ArrowRight size={15} />
               </Link>
@@ -312,20 +312,20 @@ export default async function Home() {
 
           {/* Compact system status */}
           <div className="space-y-5">
-            <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="rounded-xl border border-slate-400 bg-white p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="font-semibold">Agent status</h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-[#292923]-500">
                     Your automated lead handling.
                   </p>
                 </div>
-                <Bot className="text-slate-500" size={20} />
+                <Bot className="text-[#292923]-500" size={20} />
               </div>
 
               <div className="mt-5 space-y-4">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm text-slate-600">AI agent</span>
+                  <span className="text-sm text-[#292923]-600">AI agent</span>
                   <span className="inline-flex items-center gap-1.5 text-sm font-medium">
                     {hasActiveAgent ? (
                       <>
@@ -345,7 +345,7 @@ export default async function Home() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm text-slate-600">WhatsApp</span>
+                  <span className="text-sm text-[#292923]-600">WhatsApp</span>
                   <span className="inline-flex items-center gap-1.5 text-sm font-medium">
                     <span
                       className={`size-2 rounded-full ${
@@ -357,7 +357,7 @@ export default async function Home() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm text-slate-600">Configured agents</span>
+                  <span className="text-sm text-[#292923]-600">Configured agents</span>
                   <span className="text-sm font-medium">
                     {metrics.totalAgents}
                   </span>
@@ -366,22 +366,22 @@ export default async function Home() {
 
               <Link
                 href="/agents"
-                className="mt-5 flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium transition hover:bg-slate-50"
+                className="mt-5 flex items-center justify-center gap-2 rounded-lg border border-slate-400 px-4 py-2.5 text-sm font-medium transition hover:bg-[#292923]-50"
               >
                 Manage agents <ArrowRight size={15} />
               </Link>
             </div>
 
             {/* Only a few recent executions; full logs belong elsewhere */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="rounded-xl border border-slate-400 bg-white p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="font-semibold">Recent activity</h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-[#292923]-500">
                     Latest agent executions.
                   </p>
                 </div>
-                <Clock3 className="text-slate-400" size={19} />
+                <Clock3 className="text-[#292923]-400" size={19} />
               </div>
 
               <div className="mt-4 space-y-4">
@@ -396,7 +396,7 @@ export default async function Home() {
                       ) : run.status === "FAILED" ? (
                         <AlertCircle size={17} className="text-rose-600" />
                       ) : (
-                        <Clock3 size={17} className="text-slate-400" />
+                        <Clock3 size={17} className="text-[#292923]-400" />
                       )}
                     </div>
 
@@ -404,12 +404,12 @@ export default async function Home() {
                       <p className="truncate text-sm font-medium">
                         {run.event?.type || "Agent execution"}
                       </p>
-                      <p className="mt-1 truncate text-xs text-slate-500">
+                      <p className="mt-1 truncate text-xs text-[#292923]-500">
                         {run.agentName}
                       </p>
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <RunStatus status={run.status} />
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-[#292923]-400">
                           {formatRelativeTime(run.startedAt)}
                         </span>
                       </div>
@@ -423,7 +423,7 @@ export default async function Home() {
                 ))}
 
                 {data.recentRuns.length === 0 && (
-                  <p className="py-5 text-center text-sm text-slate-500">
+                  <p className="py-5 text-center text-sm text-[#292923]-500">
                     No agent activity recorded yet.
                   </p>
                 )}
@@ -433,22 +433,22 @@ export default async function Home() {
         </section>
 
         {/* Secondary destinations are links, not dashboard sections */}
-        <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5">
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-400 bg-white p-5">
           <div>
             <h2 className="text-sm font-semibold">Business knowledge</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[#292923]-500">
               Manage datasets used by your AI agent to answer inquiries.
             </p>
           </div>
           <Link
             href="/datasets"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium transition hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-400 px-4 py-2.5 text-sm font-medium transition hover:bg-[#292923]-50"
           >
             Manage datasets <ArrowRight size={15} />
           </Link>
         </section>
 
-        <footer className="flex flex-wrap items-center justify-between gap-2 pb-3 text-xs text-slate-400">
+        <footer className="flex flex-wrap items-center justify-between gap-2 pb-3 text-xs text-[#292923]-400">
           <span>OPTR · AI lead operations</span>
           <span className="flex items-center gap-1.5">
             <ShieldCheck size={13} />

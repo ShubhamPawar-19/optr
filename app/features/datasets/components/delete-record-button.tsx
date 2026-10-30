@@ -56,7 +56,7 @@ export function DeleteRecordButton({
 
       {showConfirmation && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#292923]/40 p-4 backdrop-blur-[2px]"
           onMouseDown={(event) => {
             if (
               event.target === event.currentTarget &&
@@ -71,7 +71,7 @@ export function DeleteRecordButton({
             aria-modal="true"
             aria-labelledby={`delete-title-${recordId}`}
             aria-describedby={`delete-description-${recordId}`}
-            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-950/15"
+            className="w-full max-w-md rounded-2xl border border-slate-400 bg-white p-6 shadow-2xl shadow-slate-950/15"
           >
             <div className="flex items-start gap-4">
               <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
@@ -81,14 +81,14 @@ export function DeleteRecordButton({
               <div className="min-w-0 pt-0.5">
                 <h2
                   id={`delete-title-${recordId}`}
-                  className="text-base font-semibold text-slate-950"
+                  className="text-base font-semibold text-[#292923]-950"
                 >
                   Delete this record?
                 </h2>
 
                 <p
                   id={`delete-description-${recordId}`}
-                  className="mt-2 text-sm leading-6 text-slate-500"
+                  className="mt-2 text-sm leading-6 text-[#292923]-500"
                 >
                   This permanently deletes the record from this
                   dataset. This action cannot be undone.
@@ -123,7 +123,7 @@ export function DeleteRecordButton({
                   type="button"
                   disabled={isPending}
                   onClick={() => setShowConfirmation(false)}
-                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-400 bg-white px-4 py-2.5 text-sm font-medium text-[#292923]-700 transition-colors hover:bg-[#292923]-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>

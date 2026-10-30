@@ -168,7 +168,7 @@ export function EditRecordForm({
   }
 
   const inputClass =
-    "mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-50";
+    "mt-2 w-full rounded-lg border border-slate-400 bg-white px-3.5 py-2.5 text-sm text-[#292923]-900 shadow-sm outline-none transition placeholder:text-[#292923]-400 hover:border-slate-300 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-50";
 
   const fieldErrors = serverState.fieldErrors ?? [];
 
@@ -178,12 +178,12 @@ export function EditRecordForm({
       <input type="hidden" name="recordId" value={recordId} />
       <input type="hidden" name="data" value={serializeValues()} />
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.02]">
+      <div className="rounded-xl border border-slate-400 bg-white shadow-sm shadow-slate-950/[0.02]">
         <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
-          <h2 className="text-base font-semibold tracking-tight text-slate-950">
+          <h2 className="text-base font-semibold tracking-tight text-[#292923]-950">
             Record details
           </h2>
-          <p className="mt-1 text-sm leading-5 text-slate-500">
+          <p className="mt-1 text-sm leading-5 text-[#292923]-500">
             Update the values below. Required fields are marked with an
             asterisk.
           </p>
@@ -191,10 +191,10 @@ export function EditRecordForm({
 
         {fields.length === 0 ? (
           <div className="px-5 py-12 text-center sm:px-6">
-            <p className="text-sm font-medium text-slate-800">
+            <p className="text-sm font-medium text-[#292923]-800">
               No fields defined
             </p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[#292923]-500">
               Add fields to this dataset before editing its records.
             </p>
           </div>
@@ -237,7 +237,7 @@ export function EditRecordForm({
                   {field.type !== "BOOLEAN" && (
                     <label
                       htmlFor={field.key}
-                      className="block text-sm font-medium text-slate-800"
+                      className="block text-sm font-medium text-[#292923]-800"
                     >
                       {field.label}
                       {field.isRequired && (
@@ -302,7 +302,7 @@ export function EditRecordForm({
                   )}
 
                   {field.type === "BOOLEAN" && (
-                    <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-3.5 py-2.5 transition-colors hover:bg-slate-50">
+                    <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-slate-400 px-3.5 py-2.5 transition-colors hover:bg-[#292923]-50">
                       <input
                         type="checkbox"
                         checked={value === true}
@@ -312,7 +312,7 @@ export function EditRecordForm({
                         }
                         className="size-4 rounded border-slate-300 accent-slate-900 focus:ring-2 focus:ring-slate-300"
                       />
-                      <span className="text-sm font-medium text-slate-700">
+                      <span className="text-sm font-medium text-[#292923]-700">
                         {field.label}
                         {field.isRequired && (
                           <span className="ml-1 text-red-600">*</span>
@@ -362,7 +362,7 @@ export function EditRecordForm({
                           </option>
                         ))}
                       </select>
-                      <p className="mt-2 text-xs leading-5 text-slate-500">
+                      <p className="mt-2 text-xs leading-5 text-[#292923]-500">
                         Hold Ctrl on Windows or Cmd on Mac to select
                         multiple options.
                       </p>
@@ -389,7 +389,7 @@ export function EditRecordForm({
                           updateValue(field.key, event.target.value)
                         }
                       />
-                      <p className="mt-2 text-xs leading-5 text-slate-500">
+                      <p className="mt-2 text-xs leading-5 text-[#292923]-500">
                         Enter one publicly accessible HTTP or HTTPS image
                         URL per line.
                       </p>
@@ -426,7 +426,7 @@ export function EditRecordForm({
         )}
 
         <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[#292923]-500">
             {fields.length} {fields.length === 1 ? "field" : "fields"}
             {" "}in this record
           </p>
@@ -435,7 +435,7 @@ export function EditRecordForm({
             <Link
               href={`/datasets/${datasetId}`}
               aria-disabled={isPending}
-              className={`inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 ${
+              className={`inline-flex items-center justify-center rounded-lg border border-slate-400 bg-white px-4 py-2.5 text-sm font-medium text-[#292923]-700 transition-colors hover:bg-[#292923]-50 ${
                 isPending ? "pointer-events-none opacity-50" : ""
               }`}
             >
@@ -445,7 +445,7 @@ export function EditRecordForm({
             <button
               type="submit"
               disabled={isPending || fields.length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#292923] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#292923]-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPending ? (
                 <>

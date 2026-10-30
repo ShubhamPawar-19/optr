@@ -92,15 +92,15 @@ function SummaryMetric({
   }[accent];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.025)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(15,23,42,0.055)] sm:p-6">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-400/80 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.025)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(15,23,42,0.055)] sm:p-6">
       <div
         className={`pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b ${styles.glow} to-transparent opacity-80`}
       />
 
       <div className="relative flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-slate-950 tabular-nums">
+          <p className="text-sm font-medium text-[#292923]-500">{label}</p>
+          <p className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-[#292923]-950 tabular-nums">
             {value.toLocaleString("en-IN")}
           </p>
         </div>
@@ -114,7 +114,7 @@ function SummaryMetric({
 
       <div className="relative mt-5 flex items-center gap-2 border-t border-slate-100 pt-4">
         <span className={`size-1.5 rounded-full ${styles.marker}`} />
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="text-xs text-[#292923]-500">{description}</p>
       </div>
     </div>
   );
@@ -134,7 +134,7 @@ export function ContactFieldsPage({
   );
 
   return (
-    <main className="min-h-screen bg-[#F5F7FB] text-slate-950">
+    <main className="min-h-screen bg-[#F5F7FB] text-[#292923]-950">
       <div className="mx-auto max-w-[1400px] px-4 pb-10 sm:px-7 lg:px-10">
         {/* Page introduction */}
         <section className="flex flex-col justify-between gap-5 pb-7 pt-8 sm:flex-row sm:items-end sm:pt-10">
@@ -144,17 +144,17 @@ export function ContactFieldsPage({
               Contact configuration
             </div>
 
-            <h1 className="text-[26px] font-semibold tracking-[-0.045em] text-slate-950 sm:text-[32px]">
+            <h1 className="text-[26px] font-semibold tracking-[-0.045em] text-[#292923]-950 sm:text-[32px]">
               Define the data you collect.
             </h1>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-[15px]">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#292923]-500 sm:text-[15px]">
               Configure the information OPTR tracks for every contact and makes
               available to your lead extraction pipeline.
             </p>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 pb-1 text-xs text-slate-500">
+          <div className="flex shrink-0 items-center gap-2 pb-1 text-xs text-[#292923]-500">
             <CheckCircle2 size={15} className="text-emerald-600" />
             <span>{activeCount} active fields</span>
           </div>
@@ -191,7 +191,7 @@ export function ContactFieldsPage({
         </section>
 
         {/* Main configuration workspace */}
-        <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.035)] sm:mt-9">
+        <section className="mt-8 overflow-hidden rounded-2xl border border-slate-400/90 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.035)] sm:mt-9">
           <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:px-6 sm:py-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
@@ -199,10 +199,10 @@ export function ContactFieldsPage({
               </div>
 
               <div>
-                <h2 className="text-base font-semibold tracking-tight text-slate-950">
+                <h2 className="text-base font-semibold tracking-tight text-[#292923]-950">
                   Contact fields
                 </h2>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="mt-1 text-xs leading-5 text-[#292923]-500">
                   Manage field definitions, types, and extraction requirements.
                 </p>
               </div>
@@ -213,8 +213,8 @@ export function ContactFieldsPage({
               onClick={() => setShowCreate((value) => !value)}
               aria-expanded={showCreate}
               className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium shadow-sm transition ${showCreate
-                ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                : "bg-slate-950 text-white hover:bg-slate-800"
+                ? "border border-slate-400 bg-white text-[#292923]-700 hover:bg-[#292923]-50"
+                : "bg-[#292923] text-white hover:bg-[#292923]-800"
                 }`}
             >
               {showCreate ? <X size={16} /> : <Plus size={16} />}
@@ -232,10 +232,10 @@ export function ContactFieldsPage({
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900">
+                    <h3 className="text-sm font-semibold text-[#292923]-900">
                       Create a contact field
                     </h3>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                    <p className="mt-1 text-xs leading-5 text-[#292923]-500">
                       Choose what information your agents should capture.
                     </p>
                   </div>
@@ -251,15 +251,15 @@ export function ContactFieldsPage({
 
           {/* Field list heading */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3.5 sm:px-6">
-            <p className="text-xs text-slate-500">
-              <span className="font-semibold text-slate-800">
+            <p className="text-xs text-[#292923]-500">
+              <span className="font-semibold text-[#292923]-800">
                 {fields.length.toLocaleString("en-IN")}
               </span>{" "}
               {fields.length === 1 ? "field" : "fields"} configured
             </p>
 
-            <div className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-              <ListFilter size={14} className="text-slate-400" />
+            <div className="inline-flex items-center gap-1.5 text-xs text-[#292923]-500">
+              <ListFilter size={14} className="text-[#292923]-400" />
               <span>Ordered by field position</span>
             </div>
           </div>
@@ -267,16 +267,16 @@ export function ContactFieldsPage({
           {/* Field list */}
           <div className="space-y-3 p-4 sm:p-5">
             {fields.length === 0 ? (
-              <div className="flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center">
-                <div className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 shadow-sm">
+              <div className="flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-400 bg-slate-50/50 px-6 py-12 text-center">
+                <div className="flex size-14 items-center justify-center rounded-2xl border border-slate-400 bg-white text-[#292923]-500 shadow-sm">
                   <Database size={23} strokeWidth={1.7} />
                 </div>
 
-                <h3 className="mt-4 text-sm font-semibold text-slate-900">
+                <h3 className="mt-4 text-sm font-semibold text-[#292923]-900">
                   Start with your first field
                 </h3>
 
-                <p className="mt-1.5 max-w-sm text-sm leading-6 text-slate-500">
+                <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#292923]-500">
                   Define the information you want to capture from conversations,
                   such as budget, preferred location, or property type.
                 </p>
@@ -285,7 +285,7 @@ export function ContactFieldsPage({
                   <button
                     type="button"
                     onClick={() => setShowCreate(true)}
-                    className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-slate-950 px-3.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                    className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-[#292923] px-3.5 text-sm font-medium text-white transition hover:bg-[#292923]-800"
                   >
                     <Plus size={15} />
                     Create first field
@@ -306,10 +306,10 @@ export function ContactFieldsPage({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-slate-700">
+              <p className="text-xs font-semibold text-[#292923]-700">
                 About field definitions
               </p>
-              <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-500">
+              <p className="mt-1 max-w-3xl text-xs leading-5 text-[#292923]-500">
                 Deactivating a field preserves existing values and history.
                 Field keys remain stable so previously extracted data stays
                 associated with the correct field.
@@ -335,10 +335,10 @@ function FieldRow({ field }: { field: ContactField }) {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">
+            <h3 className="text-sm font-semibold text-[#292923]-900">
               Edit field
             </h3>
-            <p className="mt-0.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-[#292923]-500">
               Update the label, type, or extraction instructions.
             </p>
           </div>
@@ -358,8 +358,8 @@ function FieldRow({ field }: { field: ContactField }) {
   return (
     <div
       className={`group rounded-xl border bg-white p-4 transition duration-200 sm:p-5 ${field.isActive
-        ? "border-slate-200 hover:border-slate-300 hover:shadow-[0_4px_14px_rgba(15,23,42,0.04)]"
-        : "border-slate-200/80 bg-slate-50/60"
+        ? "border-slate-400 hover:border-slate-300 hover:shadow-[0_4px_14px_rgba(15,23,42,0.04)]"
+        : "border-slate-400/80 bg-slate-50/60"
         }`}
     >
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
@@ -367,7 +367,7 @@ function FieldRow({ field }: { field: ContactField }) {
           <div
             className={`flex size-10 shrink-0 items-center justify-center rounded-xl border ${field.isActive
               ? "border-indigo-100 bg-indigo-50 text-indigo-600"
-              : "border-slate-200 bg-white text-slate-400"
+              : "border-slate-400 bg-white text-[#292923]-400"
               }`}
           >
             <Database size={18} strokeWidth={1.8} />
@@ -376,7 +376,7 @@ function FieldRow({ field }: { field: ContactField }) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3
-                className={`text-sm font-semibold ${field.isActive ? "text-slate-900" : "text-slate-500"
+                className={`text-sm font-semibold ${field.isActive ? "text-[#292923]-900" : "text-[#292923]-500"
                   }`}
               >
                 {field.label}
@@ -385,7 +385,7 @@ function FieldRow({ field }: { field: ContactField }) {
               <span
                 className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium ${field.isActive
                   ? "bg-emerald-50 text-emerald-700"
-                  : "bg-slate-100 text-slate-500"
+                  : "bg-slate-100 text-[#292923]-500"
                   }`}
               >
                 <span
@@ -403,28 +403,28 @@ function FieldRow({ field }: { field: ContactField }) {
             </div>
 
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-              <code className="break-all rounded bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] text-slate-500">
+              <code className="break-all rounded bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] text-[#292923]-500">
                 {field.key}
               </code>
-              <span className="text-slate-300">·</span>
-              <span className="text-xs text-slate-500">
+              <span className="text-[#292923]-300">·</span>
+              <span className="text-xs text-[#292923]-500">
                 {formatFieldType(field.type)}
               </span>
             </div>
 
             {field.description ? (
-              <p className="mt-2.5 max-w-2xl text-sm leading-5 text-slate-600">
+              <p className="mt-2.5 max-w-2xl text-sm leading-5 text-[#292923]-600">
                 {field.description}
               </p>
             ) : (
-              <p className="mt-2.5 text-xs text-slate-400">
+              <p className="mt-2.5 text-xs text-[#292923]-400">
                 No extraction description provided
               </p>
             )}
 
             <div className="mt-3.5 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600">
-                <Database size={12} className="text-slate-400" />
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 text-xs text-[#292923]-600">
+                <Database size={12} className="text-[#292923]-400" />
                 <span className="font-medium tabular-nums">
                   {field._count.values.toLocaleString("en-IN")}
                 </span>
@@ -505,7 +505,7 @@ function FieldForm({
         <div>
           <label
             htmlFor={`field-label-${field?.id ?? "new"}`}
-            className="text-xs font-semibold text-slate-700"
+            className="text-xs font-semibold text-[#292923]-700"
           >
             Field label <span className="text-red-500">*</span>
           </label>
@@ -517,14 +517,14 @@ function FieldForm({
             maxLength={100}
             required
             placeholder="e.g. Preferred location"
-            className="mt-2 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+            className="mt-2 h-10 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm outline-none transition placeholder:text-[#292923]-400 hover:border-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
           />
         </div>
 
         <div>
           <label
             htmlFor={`field-key-${field?.id ?? "new"}`}
-            className="text-xs font-semibold text-slate-700"
+            className="text-xs font-semibold text-[#292923]-700"
           >
             Field key
           </label>
@@ -543,10 +543,10 @@ function FieldForm({
             readOnly={mode === "edit"}
             maxLength={100}
             required
-            className="mt-2 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 font-mono text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 read-only:cursor-not-allowed read-only:text-slate-500"
+            className="mt-2 h-10 w-full rounded-xl border border-slate-400 bg-slate-50 px-3 font-mono text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 read-only:cursor-not-allowed read-only:text-[#292923]-500"
           />
 
-          <p className="mt-1.5 text-[11px] leading-4 text-slate-500">
+          <p className="mt-1.5 text-[11px] leading-4 text-[#292923]-500">
             {mode === "edit"
               ? "Keys cannot be changed after creation."
               : "Lowercase letters, numbers, and underscores."}
@@ -556,7 +556,7 @@ function FieldForm({
         <div>
           <label
             htmlFor={`field-type-${field?.id ?? "new"}`}
-            className="text-xs font-semibold text-slate-700"
+            className="text-xs font-semibold text-[#292923]-700"
           >
             Field type
           </label>
@@ -565,7 +565,7 @@ function FieldForm({
             id={`field-type-${field?.id ?? "new"}`}
             value={type}
             onChange={(event) => setType(event.target.value as FieldType)}
-            className="mt-2 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+            className="mt-2 h-10 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
           >
             {FIELD_TYPES.map((fieldType) => (
               <option key={fieldType} value={fieldType}>
@@ -578,7 +578,7 @@ function FieldForm({
         <div>
           <label
             htmlFor={`field-description-${field?.id ?? "new"}`}
-            className="text-xs font-semibold text-slate-700"
+            className="text-xs font-semibold text-[#292923]-700"
           >
             Description
           </label>
@@ -589,16 +589,16 @@ function FieldForm({
             onChange={(event) => setDescription(event.target.value)}
             maxLength={500}
             placeholder="What should the agent extract?"
-            className="mt-2 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+            className="mt-2 h-10 w-full rounded-xl border border-slate-400 bg-white px-3 text-sm outline-none transition placeholder:text-[#292923]-400 hover:border-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
           />
 
-          <p className="mt-1.5 text-[11px] leading-4 text-slate-500">
+          <p className="mt-1.5 text-[11px] leading-4 text-[#292923]-500">
             Give your extraction pipeline clear context.
           </p>
         </div>
       </div>
 
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 transition hover:border-slate-300">
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-400 bg-white p-3.5 transition hover:border-slate-300">
         <input
           type="checkbox"
           checked={isRequired}
@@ -607,10 +607,10 @@ function FieldForm({
         />
 
         <span>
-          <span className="block text-xs font-semibold text-slate-800">
+          <span className="block text-xs font-semibold text-[#292923]-800">
             Required field
           </span>
-          <span className="mt-1 block text-xs leading-5 text-slate-500">
+          <span className="mt-1 block text-xs leading-5 text-[#292923]-500">
             Mark this information as required for your lead qualification
             process.
           </span>
@@ -635,11 +635,11 @@ function FieldForm({
         </p>
       )}
 
-      <div className="flex flex-wrap gap-2 border-t border-slate-200/80 pt-4">
+      <div className="flex flex-wrap gap-2 border-t border-slate-400/80 pt-4">
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#292923] px-4 text-sm font-medium text-white shadow-sm transition hover:bg-[#292923]-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {mode === "create" ? <Plus size={15} /> : <Save size={15} />}
           {pending
@@ -652,7 +652,7 @@ function FieldForm({
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-400 bg-white px-4 text-sm font-medium text-[#292923]-600 transition hover:bg-[#292923]-50 hover:text-[#292923]-900"
         >
           <X size={15} />
           Cancel

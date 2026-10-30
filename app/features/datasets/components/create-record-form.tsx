@@ -1,7 +1,18 @@
+
 "use client";
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  Check,
+  ChevronDown,
+  Database,
+  FilePlus2,
+  Info,
+} from "lucide-react";
+
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import {
   createDatasetRecordAction,
@@ -121,87 +132,194 @@ export function CreateRecordForm({
   }
 
   const inputClass =
-    "block w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100";
+    "mt-1.5 block w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-[#292923] shadow-sm outline-none transition placeholder:text-[#292923]/35 hover:border-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
 
   const selectClass =
-    "block w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 shadow-sm outline-none transition hover:border-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100";
+    "mt-1.5 block w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-[#292923] shadow-sm outline-none transition hover:border-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
 
   const fieldsWithErrors = new Set(
     (serverState.fieldErrors ?? []).map((error) => error.field),
   );
 
-  return (
-    <div className="flex min-h-full w-full min-w-0 flex-col">
-      <header className="flex w-full min-w-0 items-center gap-3 border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
-        <SidebarToggle />
+  const filledFields = fields.filter((field) => {
+    const value = values[field.key];
 
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-            <Link
-              href={`/datasets/${datasetId}`}
-              className="transition hover:text-slate-900"
-            >
-              Datasets
-            </Link>
-            <span aria-hidden="true">/</span>
-            <span className="text-slate-700">New record</span>
+    return (
+      value !== undefined &&
+      value !== "" &&
+      (!Array.isArray(value) || value.length > 0)
+    );
+  }).length;
+
+  const requiredFields = fields.filter((field) => field.isRequired).length;
+
+  return (
+    <main className="min-h-screen bg-[#F5F7FB] text-[#292923]">
+      <div className="mx-auto max-w-[1680px] px-4 pb-10 sm:px-7 lg:px-10">
+        {/* Workspace header */}
+        <header className="sticky top-0 z-30 -mx-4 flex min-h-[72px] flex-wrap items-center justify-between gap-4 border-b border-slate-300 bg-[#F5F7FB]/95 px-4 py-3 backdrop-blur-md sm:-mx-7 sm:px-7 lg:-mx-10 lg:px-10">
+          <div className="flex min-w-0 items-center gap-3">
+            <SidebarToggle />
+
+            <div className="min-w-0">
+              <nav
+                aria-label="Breadcrumb"
+                className="flex flex-wrap items-center gap-2 text-xs text-[#292923]/50"
+              >
+                <Link href="/" className="transition hover:text-[#292923]">
+                  Workspace
+                </Link>
+                <span className="text-[#292923]/30">/</span>
+                <Link
+                  href="/datasets"
+                  className="transition hover:text-[#292923]"
+                >
+                  Datasets
+                </Link>
+                <span className="text-[#292923]/30">/</span>
+                <Link
+                  href={`/datasets/${datasetId}`}
+                  className="transition hover:text-[#292923]"
+                >
+                  Dataset details
+                </Link>
+                <span className="text-[#292923]/30">/</span>
+                <span className="font-medium text-[#292923]/75">
+                  New record
+                </span>
+              </nav>
+
+              <h1 className="mt-1 text-lg font-semibold tracking-tight">
+                Create record
+              </h1>
+            </div>
           </div>
 
-          <h1 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
-            Create record
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Add information to your dataset.
-          </p>
-        </div>
-      </header>
+          <Link
+            href={`/datasets/${datasetId}`}
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3.5 text-sm font-medium text-[#292923]/75 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <ArrowLeft size={15} />
+            Back to dataset
+          </Link>
+        </header>
 
-      <main className="w-full min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        {/* Page introduction */}
+        <section className="flex flex-col justify-between gap-4 pb-6 pt-7 sm:flex-row sm:items-end sm:pb-7 sm:pt-8">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium shadow-sm">
+              <span className="size-1.5 rounded-full bg-indigo-500" />
+              Record management
+            </div>
+
+            <h2 className="text-[26px] font-semibold tracking-[-0.045em] sm:text-[32px]">
+              Add information to your dataset.
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#292923]/60 sm:text-[15px]">
+              Fill in the fields below to create a structured record
+              your AI agents can search and use.
+            </p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2 pb-1 text-xs text-[#292923]/60">
+            <Database size={15} className="text-indigo-600" />
+            <span>Dataset record</span>
+          </div>
+        </section>
+
+        {/* Record overview */}
+        <section
+          aria-label="Record overview"
+          className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        >
+          <OverviewCard
+            label="Total fields"
+            value={fields.length.toLocaleString("en-IN")}
+            description="Available record attributes"
+            icon={<Database size={18} />}
+            accent="indigo"
+          />
+
+          <OverviewCard
+            label="Required fields"
+            value={requiredFields.toLocaleString("en-IN")}
+            description="Mandatory attributes"
+            icon={<Info size={18} />}
+            accent="amber"
+          />
+
+          <OverviewCard
+            label="Completed fields"
+            value={filledFields.toLocaleString("en-IN")}
+            description="Fields filled in this record"
+            icon={<Check size={18} />}
+            accent="teal"
+          />
+        </section>
+
         <form
           action={formAction}
           onSubmit={handleSubmit}
-          className="mx-0 w-full min-w-0 space-y-6"
+          className="space-y-6"
         >
           <input type="hidden" name="datasetId" value={datasetId} />
           <input type="hidden" name="data" value={serializeValues()} />
 
-          <section className="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
-              <div>
-                <h2 className="text-base font-semibold tracking-tight text-slate-950">
-                  Record details
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Fill in the information below to create a new record.
-                </p>
+          {/* Record details */}
+          <section className="overflow-hidden rounded-xl border border-slate-300/80 bg-white shadow-sm">
+            <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600">
+                  <FilePlus2 size={17} />
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold tracking-tight">
+                    Record details
+                  </h3>
+                  <p className="mt-0.5 text-xs text-[#292923]/55">
+                    Fill in the information below to create a new record.
+                  </p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 self-start rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 sm:self-center">
-                <span className="size-1.5 rounded-full bg-slate-400" />
+              <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-medium text-[#292923]/65">
+                <span className="size-1.5 rounded-full bg-indigo-500" />
                 {fields.length} {fields.length === 1 ? "field" : "fields"}
-              </div>
+              </span>
             </div>
 
             {fields.length === 0 ? (
               <div className="p-5 sm:p-7">
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-                  <p className="text-sm font-medium text-amber-900">
-                    No fields configured
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-amber-800">
-                    This dataset has no fields. Add fields to its schema before
-                    creating records.
-                  </p>
-                  <Link
-                    href={`/datasets/${datasetId}`}
-                    className="mt-3 inline-flex text-sm font-semibold text-amber-950 underline underline-offset-4"
-                  >
-                    Return to dataset
-                  </Link>
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                      <Info size={18} />
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold text-amber-900">
+                        No fields configured
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-amber-800">
+                        This dataset has no fields. Add fields to its schema
+                        before creating records.
+                      </p>
+
+                      <Link
+                        href={`/datasets/${datasetId}`}
+                        className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-amber-950 underline underline-offset-4"
+                      >
+                        Return to dataset
+                        <ArrowUpRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-6 p-5 sm:grid-cols-2 sm:p-7 xl:grid-cols-3">
+              <div className="grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-6 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
                 {fields.map((field) => {
                   const value = values[field.key];
 
@@ -222,6 +340,10 @@ export function CreateRecordForm({
                   const isFullWidth =
                     field.type === "MEDIA" || field.type === "MULTI_SELECT";
 
+                  const fieldInputClass = `${inputClass} ${
+                    hasError ? "border-red-400 focus:border-red-400 focus:ring-red-100" : ""
+                  }`;
+
                   return (
                     <div
                       key={field.id}
@@ -229,7 +351,7 @@ export function CreateRecordForm({
                     >
                       <label
                         htmlFor={field.key}
-                        className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-800"
+                        className="flex items-center gap-1.5 text-sm font-medium text-[#292923]/80"
                       >
                         {field.label}
                         {field.isRequired && (
@@ -248,7 +370,7 @@ export function CreateRecordForm({
                           name={`field-${field.key}`}
                           type="text"
                           placeholder={`Enter ${field.label.toLowerCase()}`}
-                          className={inputClass}
+                          className={fieldInputClass}
                           required={field.isRequired}
                           value={typeof value === "string" ? value : ""}
                           onChange={(event) =>
@@ -265,7 +387,7 @@ export function CreateRecordForm({
                           type="number"
                           step="any"
                           placeholder="Enter a number"
-                          className={inputClass}
+                          className={fieldInputClass}
                           required={field.isRequired}
                           value={typeof value === "string" ? value : ""}
                           onChange={(event) =>
@@ -280,7 +402,7 @@ export function CreateRecordForm({
                           id={field.key}
                           name={`field-${field.key}`}
                           type="date"
-                          className={inputClass}
+                          className={fieldInputClass}
                           required={field.isRequired}
                           value={typeof value === "string" ? value : ""}
                           onChange={(event) =>
@@ -296,7 +418,7 @@ export function CreateRecordForm({
                           name={`field-${field.key}`}
                           type="url"
                           placeholder="https://example.com"
-                          className={inputClass}
+                          className={fieldInputClass}
                           required={field.isRequired}
                           value={typeof value === "string" ? value : ""}
                           onChange={(event) =>
@@ -307,7 +429,7 @@ export function CreateRecordForm({
                       )}
 
                       {field.type === "BOOLEAN" && (
-                        <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 transition hover:bg-slate-50">
+                        <label className="mt-1.5 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-slate-300 bg-slate-50/70 px-4 transition hover:border-slate-400 hover:bg-slate-50">
                           <input
                             id={field.key}
                             name={`field-${field.key}`}
@@ -316,33 +438,40 @@ export function CreateRecordForm({
                             onChange={(event) =>
                               updateValue(field.key, event.target.checked)
                             }
-                            className="size-4 rounded border-slate-300 accent-slate-950"
+                            className="size-4 rounded border-slate-300 accent-indigo-600"
                           />
-                          <span className="text-sm text-slate-700">
+                          <span className="text-sm text-[#292923]/75">
                             Yes, enabled
                           </span>
                         </label>
                       )}
 
                       {field.type === "SINGLE_SELECT" && (
-                        <select
-                          id={field.key}
-                          name={`field-${field.key}`}
-                          className={selectClass}
-                          required={field.isRequired}
-                          value={typeof value === "string" ? value : ""}
-                          onChange={(event) =>
-                            updateValue(field.key, event.target.value)
-                          }
-                          aria-invalid={hasError || undefined}
-                        >
-                          <option value="">Select an option</option>
-                          {options.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <select
+                            id={field.key}
+                            name={`field-${field.key}`}
+                            className={`${fieldInputClass} appearance-none pr-9`}
+                            required={field.isRequired}
+                            value={typeof value === "string" ? value : ""}
+                            onChange={(event) =>
+                              updateValue(field.key, event.target.value)
+                            }
+                            aria-invalid={hasError || undefined}
+                          >
+                            <option value="">Select an option</option>
+                            {options.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+
+                          <ChevronDown
+                            size={15}
+                            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#292923]/40"
+                          />
+                        </div>
                       )}
 
                       {field.type === "MULTI_SELECT" && (
@@ -351,7 +480,7 @@ export function CreateRecordForm({
                             id={field.key}
                             name={`field-${field.key}`}
                             multiple
-                            className={`${selectClass} min-h-36`}
+                            className={`${fieldInputClass} min-h-36`}
                             required={
                               field.isRequired &&
                               (!Array.isArray(value) || value.length === 0)
@@ -378,7 +507,8 @@ export function CreateRecordForm({
                               </option>
                             ))}
                           </select>
-                          <p className="mt-2 text-xs text-slate-500">
+
+                          <p className="mt-2 text-xs text-[#292923]/50">
                             Hold Ctrl on Windows or Cmd on Mac to select
                             multiple options.
                           </p>
@@ -394,7 +524,7 @@ export function CreateRecordForm({
                               "https://example.com/property-1.jpg\nhttps://example.com/property-2.jpg"
                             }
                             rows={4}
-                            className={`${inputClass} resize-y leading-6`}
+                            className={`${fieldInputClass} resize-y leading-6`}
                             required={field.isRequired}
                             value={
                               typeof value === "string"
@@ -408,7 +538,8 @@ export function CreateRecordForm({
                             }
                             aria-invalid={hasError || undefined}
                           />
-                          <p className="mt-2 text-xs leading-5 text-slate-500">
+
+                          <p className="mt-2 text-xs leading-5 text-[#292923]/50">
                             Enter one publicly accessible HTTP or HTTPS image
                             URL per line.
                           </p>
@@ -430,6 +561,7 @@ export function CreateRecordForm({
             )}
           </section>
 
+          {/* Form errors */}
           {(clientError || serverState.error) && (
             <div
               role="alert"
@@ -444,27 +576,105 @@ export function CreateRecordForm({
             </div>
           )}
 
-          <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-end">
-            <Link
-              href={`/datasets/${datasetId}`}
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              Cancel
-            </Link>
+          {/* Submit area */}
+          <div className="flex flex-col-reverse gap-4 rounded-xl border border-slate-300/80 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <div>
+              <p className="text-sm font-semibold text-[#292923]/80">
+                Ready to create your record?
+              </p>
+              <p className="mt-1 text-xs text-[#292923]/50">
+                {filledFields} of {fields.length} fields completed
+              </p>
+            </div>
 
-            <button
-              type="submit"
-              disabled={isPending || fields.length === 0}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isPending && (
-                <span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-              )}
-              {isPending ? "Saving record..." : "Create record"}
-            </button>
+            <div className="flex items-center justify-end gap-3">
+              <Link
+                href={`/datasets/${datasetId}`}
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-[#292923]/75 transition hover:bg-slate-50"
+              >
+                Cancel
+              </Link>
+
+              <button
+                type="submit"
+                disabled={isPending || fields.length === 0}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292923] px-4 text-sm font-medium text-white shadow-sm transition hover:bg-[#292923]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isPending ? (
+                  <>
+                    <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Saving record...
+                  </>
+                ) : (
+                  <>
+                    <Check size={15} />
+                    Create record
+                    <ArrowUpRight size={14} />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </form>
-      </main>
+
+        <footer className="mt-8 border-t border-slate-300/80 pt-4">
+          <p className="text-xs text-[#292923]/40">
+            OPTR · Dataset management
+          </p>
+        </footer>
+      </div>
+    </main>
+  );
+}
+
+function OverviewCard({
+  icon,
+  label,
+  value,
+  description,
+  accent,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  description: string;
+  accent: "indigo" | "teal" | "amber";
+}) {
+  const styles = {
+    indigo: {
+      icon: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+      marker: "bg-indigo-500",
+    },
+    teal: {
+      icon: "bg-teal-50 text-teal-700 ring-teal-100",
+      marker: "bg-teal-500",
+    },
+    amber: {
+      icon: "bg-amber-50 text-amber-700 ring-amber-100",
+      marker: "bg-amber-500",
+    },
+  }[accent];
+
+  return (
+    <div className="rounded-xl border border-slate-300/80 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-[#292923]/60">{label}</p>
+
+        <div
+          className={`flex size-9 shrink-0 items-center justify-center rounded-lg ring-1 ${styles.icon}`}
+        >
+          {icon}
+        </div>
+      </div>
+
+      <p className="mt-2 text-2xl font-semibold tracking-tight text-[#292923] tabular-nums">
+        {value}
+      </p>
+
+      <div className="mt-3 flex items-center gap-2 border-t border-slate-200 pt-3">
+        <span className={`size-1.5 rounded-full ${styles.marker}`} />
+        <p className="text-xs text-[#292923]/55">{description}</p>
+      </div>
     </div>
   );
 }

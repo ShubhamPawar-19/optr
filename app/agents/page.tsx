@@ -1,7 +1,10 @@
+
 import Link from "next/link";
 import {
   Activity,
+  ArrowUpRight,
   Bot,
+  CalendarClock,
   CheckCircle2,
   CircleAlert,
   Database,
@@ -11,6 +14,8 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
+
+import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import { db } from "@/app/lib/db";
 import { getCurrentBusiness } from "@/app/lib/current-business";
 import {
@@ -35,9 +40,9 @@ Rules:
 - Only access data belonging to the current business.`;
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100";
+  "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-[#292923] outline-none transition placeholder:text-[#292923]/40 hover:border-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50";
 
-const labelClass = "mb-2 block text-sm font-medium text-slate-700";
+const labelClass = "mb-2 block text-sm font-medium text-[#292923]/80";
 
 export default async function AgentsPage({
   searchParams,
@@ -58,44 +63,35 @@ export default async function AgentsPage({
   const inactiveCount = agents.filter((agent) => !agent.isActive).length;
 
   return (
-    <main className="min-h-full bg-slate-50/70">
-      <div className="mx-auto w-full max-w-[1440px] space-y-7 p-5 sm:p-7 lg:p-10">
-        {/* Page header */}
-        <header className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-          <div>
-            <div className="mb-3 flex items-center gap-2 text-xs font-medium text-slate-500">
-              <Settings2 size={14} />
-              <span>Configuration</span>
-              <span className="text-slate-300">/</span>
-              <span className="text-slate-800">AI Agents</span>
-            </div>
+    <main className="min-h-screen bg-[#F5F7FB] text-[#292923]">
+      <div className="mx-auto w-full max-w-[1680px] px-4 pb-10 sm:px-7 lg:px-10">
+        {/* Workspace header */}
+        <header className="sticky top-0 z-30 -mx-4 flex min-h-[72px] flex-wrap items-center justify-between gap-4 border-b border-slate-300 bg-[#F5F7FB]/95 px-4 py-3 backdrop-blur-md sm:-mx-7 sm:px-7 lg:-mx-10 lg:px-10">
+          <div className="flex min-w-0 items-center gap-3">
+            <SidebarToggle />
 
-            <div className="flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-sm">
-                <Bot size={25} />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-xs text-[#292923]/50">
               </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                  AI Agents
-                </h1>
-                <p className="mt-1 text-sm text-slate-500">
-                  Build and manage the AI assistants for your business.
-                </p>
-              </div>
+
+              <h1 className="mt-1 text-lg font-semibold tracking-tight">
+                Agent management
+              </h1>
             </div>
           </div>
 
           <Link
             href="/integrations/whatsapp"
-            className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:self-center"
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3.5 text-sm font-medium text-[#292923]/80 shadow-sm transition hover:border-slate-400 hover:bg-slate-50"
           >
-            <MessageSquare size={16} />
-            WhatsApp settings
+            <MessageSquare size={15} />
+            <span>WhatsApp settings</span>
+            <ArrowUpRight size={13} />
           </Link>
         </header>
 
         {!business && (
-          <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="mt-6 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <CircleAlert className="mt-0.5 shrink-0" size={18} />
             <p>
               Your workspace could not be found. Sign in again before managing
@@ -105,7 +101,7 @@ export default async function AgentsPage({
         )}
 
         {params.created === "1" && (
-          <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
             <CheckCircle2 className="mt-0.5 shrink-0" size={18} />
             <div>
               <p className="font-semibold">Agent created successfully</p>
@@ -118,15 +114,43 @@ export default async function AgentsPage({
 
         {business && (
           <>
+            {/* Page introduction */}
+            <section className="flex flex-col justify-between gap-4 pb-5 pt-7 sm:flex-row sm:items-end sm:pb-6 sm:pt-8">
+              <div>
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium shadow-sm">
+                  <span className="size-1.5 rounded-full bg-indigo-500" />
+                  Configuration
+                </div>
+
+                <h2 className="text-[26px] font-semibold tracking-[-0.045em] sm:text-[32px]">
+                  Build agents that work for your business.
+                </h2>
+
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#292923]/60 sm:text-[15px]">
+                  Configure AI assistants, manage their instructions, and
+                  control which agent handles incoming customer inquiries.
+                </p>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2 pb-1 text-xs text-[#292923]/60">
+                <CalendarClock size={15} className="text-emerald-600" />
+                <span>Live workspace configuration</span>
+              </div>
+            </section>
+
             {/* Overview cards */}
-            <section className="grid gap-4 sm:grid-cols-3">
+            <section
+              aria-label="Agent overview"
+              className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+            >
               <OverviewCard
                 icon={<Bot size={19} />}
                 label="Total agents"
-                value={agents.length.toString()}
+                value={agents.length.toLocaleString("en-IN")}
                 detail="Created in this workspace"
-                iconClass="bg-slate-100 text-slate-700"
+                accent="indigo"
               />
+
               <OverviewCard
                 icon={<Activity size={19} />}
                 label="Active agent"
@@ -136,25 +160,22 @@ export default async function AgentsPage({
                     ? activeAgent.name
                     : "Activate an agent to process inquiries"
                 }
-                iconClass={
-                  activeAgent
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-amber-50 text-amber-700"
-                }
+                accent={activeAgent ? "teal" : "amber"}
               />
+
               <OverviewCard
                 icon={<Database size={19} />}
                 label="Inactive agents"
-                value={inactiveCount.toString()}
+                value={inactiveCount.toLocaleString("en-IN")}
                 detail="Available to configure and activate"
-                iconClass="bg-violet-50 text-violet-700"
+                accent="amber"
               />
             </section>
 
             {/* Active agent status */}
             <section
-              className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${
-                activeAgent ? "border-emerald-200" : "border-slate-200"
+              className={`mt-6 overflow-hidden rounded-xl border bg-white shadow-sm sm:mt-7 ${
+                activeAgent ? "border-emerald-200" : "border-slate-300/80"
               }`}
             >
               <div
@@ -162,10 +183,11 @@ export default async function AgentsPage({
                   activeAgent ? "bg-emerald-500" : "bg-slate-200"
                 }`}
               />
+
               <div className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
                 <div className="flex items-start gap-3">
                   <div
-                    className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${
+                    className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
                       activeAgent
                         ? "bg-emerald-50 text-emerald-700"
                         : "bg-amber-50 text-amber-700"
@@ -177,21 +199,24 @@ export default async function AgentsPage({
                       <CircleAlert size={20} />
                     )}
                   </div>
+
                   <div>
-                    <h2 className="font-semibold text-slate-950">
+                    <h2 className="font-semibold text-[#292923]">
                       {activeAgent
                         ? "Your agent is active"
                         : "No active agent"}
                     </h2>
-                    <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+
+                    <p className="mt-1 max-w-2xl text-sm leading-6 text-[#292923]/60">
                       {activeAgent
                         ? `${activeAgent.name} is selected by the current WhatsApp agent resolver. Make sure its instructions and model are configured correctly.`
                         : "Create an agent and activate it to enable agent processing for incoming WhatsApp inquiries."}
                     </p>
                   </div>
                 </div>
+
                 <span
-                  className={`inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  className={`inline-flex w-fit shrink-0 items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold ${
                     activeAgent
                       ? "bg-emerald-50 text-emerald-800"
                       : "bg-amber-50 text-amber-800"
@@ -208,19 +233,20 @@ export default async function AgentsPage({
             </section>
 
             {/* Main content */}
-            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+            <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] sm:mt-7">
               {/* Create agent */}
-              <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
+              <section className="min-w-0 overflow-hidden rounded-xl border border-slate-300/80 bg-white shadow-sm">
+                <div className="border-b border-slate-300 px-5 py-4 sm:px-6 sm:py-5">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-xl bg-slate-950 text-white">
-                      <Plus size={20} />
+                    <div className="flex size-9 items-center justify-center rounded-lg bg-[#292923] text-white">
+                      <Plus size={18} />
                     </div>
+
                     <div>
-                      <h2 className="font-semibold text-slate-950">
+                      <h2 className="text-base font-semibold tracking-tight">
                         Create an agent
                       </h2>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-0.5 text-xs text-[#292923]/60">
                         Configure a new AI assistant
                       </p>
                     </div>
@@ -232,6 +258,7 @@ export default async function AgentsPage({
                     <label className={labelClass} htmlFor="agent-name">
                       Agent name
                     </label>
+
                     <input
                       id="agent-name"
                       name="name"
@@ -247,10 +274,11 @@ export default async function AgentsPage({
                   <div>
                     <label className={labelClass} htmlFor="agent-description">
                       Description
-                      <span className="ml-1 font-normal text-slate-400">
+                      <span className="ml-1 font-normal text-[#292923]/40">
                         (optional)
                       </span>
                     </label>
+
                     <input
                       id="agent-description"
                       name="description"
@@ -265,6 +293,7 @@ export default async function AgentsPage({
                     <label className={labelClass} htmlFor="agent-model">
                       Model identifier
                     </label>
+
                     <input
                       id="agent-model"
                       name="model"
@@ -276,7 +305,8 @@ export default async function AgentsPage({
                       placeholder="Provider/model-name"
                       className={inputClass}
                     />
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
+
+                    <p className="mt-2 text-xs leading-5 text-[#292923]/60">
                       Use a model identifier supported by your configured AI
                       provider.
                     </p>
@@ -289,6 +319,7 @@ export default async function AgentsPage({
                     >
                       Agent instructions
                     </label>
+
                     <textarea
                       id="agent-instructions"
                       name="instructions"
@@ -300,7 +331,8 @@ export default async function AgentsPage({
                       placeholder="Describe the agent's role, behavior, and rules..."
                       className={`${inputClass} resize-y leading-6`}
                     />
-                    <div className="mt-2 flex items-start gap-2 text-xs leading-5 text-slate-500">
+
+                    <div className="mt-2 flex items-start gap-2 text-xs leading-5 text-[#292923]/60">
                       <Sparkles
                         size={14}
                         className="mt-0.5 shrink-0 text-violet-500"
@@ -319,7 +351,8 @@ export default async function AgentsPage({
                     >
                       Temperature
                     </label>
-                    <div className="flex items-center gap-3">
+
+                    <div className="flex flex-wrap items-center gap-3">
                       <input
                         id="agent-temperature"
                         name="temperature"
@@ -331,19 +364,21 @@ export default async function AgentsPage({
                         required
                         className={`${inputClass} max-w-36`}
                       />
-                      <p className="text-xs leading-5 text-slate-500">
+
+                      <p className="text-xs leading-5 text-[#292923]/60">
                         0 = more predictable. Higher values = more variation.
                       </p>
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                  <div className="rounded-xl border border-slate-300 bg-slate-50 p-3.5">
                     <div className="flex items-start gap-2.5">
                       <CircleAlert
                         size={16}
-                        className="mt-0.5 shrink-0 text-slate-500"
+                        className="mt-0.5 shrink-0 text-[#292923]/55"
                       />
-                      <p className="text-xs leading-5 text-slate-600">
+
+                      <p className="text-xs leading-5 text-[#292923]/70">
                         New agents are created inactive. Review the
                         configuration before activating an agent for customer
                         conversations.
@@ -353,39 +388,44 @@ export default async function AgentsPage({
 
                   <button
                     type="submit"
-                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200"
+                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#292923] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#292923]/85 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                   >
-                    <Plus size={17} />
+                    <Plus size={16} />
                     Create agent
+                    <ArrowUpRight size={14} />
                   </button>
                 </form>
               </section>
 
               {/* Agent list */}
               <section className="min-w-0 space-y-4">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-semibold tracking-tight text-slate-950">
+                    <h2 className="text-base font-semibold tracking-tight">
                       Your agents
                     </h2>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-0.5 text-xs text-[#292923]/60">
                       Manage your workspace assistants.
                     </p>
                   </div>
-                  <span className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600">
-                    {agents.length} total
+
+                  <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-[#292923]/65">
+                    {agents.length.toLocaleString("en-IN")}{" "}
+                    {agents.length === 1 ? "agent" : "agents"}
                   </span>
                 </div>
 
                 {agents.length === 0 ? (
-                  <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
-                    <div className="flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                      <Bot size={27} />
+                  <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-slate-300/80 bg-white px-6 py-12 text-center shadow-sm">
+                    <div className="flex size-14 items-center justify-center rounded-xl border border-slate-300 bg-slate-50 text-[#292923]/60">
+                      <Bot size={25} strokeWidth={1.7} />
                     </div>
-                    <h3 className="mt-4 font-semibold text-slate-950">
+
+                    <h3 className="mt-4 text-sm font-semibold text-[#292923]/90">
                       Your agents will appear here
                     </h3>
-                    <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
+
+                    <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#292923]/60">
                       Create your first agent using the form to get started.
                     </p>
                   </div>
@@ -394,29 +434,30 @@ export default async function AgentsPage({
                     {agents.map((agent) => (
                       <article
                         key={agent.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md sm:p-6"
+                        className="rounded-xl border border-slate-300/80 bg-white p-5 shadow-sm transition duration-200 hover:border-slate-400 hover:shadow-md sm:p-6"
                       >
                         <div className="flex items-start gap-3">
                           <div
-                            className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
+                            className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
                               agent.isActive
                                 ? "bg-emerald-50 text-emerald-700"
-                                : "bg-slate-100 text-slate-600"
+                                : "bg-slate-100 text-[#292923]/65"
                             }`}
                           >
-                            <Bot size={22} />
+                            <Bot size={20} />
                           </div>
 
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="break-words font-semibold text-slate-950">
+                              <h3 className="break-words text-sm font-semibold text-[#292923]/90">
                                 {agent.name}
                               </h3>
+
                               <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
                                   agent.isActive
                                     ? "bg-emerald-50 text-emerald-800"
-                                    : "bg-slate-100 text-slate-600"
+                                    : "bg-slate-100 text-[#292923]/65"
                                 }`}
                               >
                                 <span
@@ -430,47 +471,51 @@ export default async function AgentsPage({
                               </span>
                             </div>
 
-                            <p className="mt-1 break-words text-sm leading-5 text-slate-500">
+                            <p className="mt-1 break-words text-sm leading-5 text-[#292923]/60">
                               {agent.description || "No description provided."}
                             </p>
                           </div>
                         </div>
 
                         <div className="mt-5 grid grid-cols-2 gap-3">
-                          <div className="min-w-0 rounded-xl bg-slate-50 p-3">
-                            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                            <p className="text-[11px] font-medium uppercase tracking-wide text-[#292923]/45">
                               Model
                             </p>
+
                             <p
-                              className="mt-1 truncate text-sm font-medium text-slate-700"
+                              className="mt-1 truncate text-sm font-medium text-[#292923]/80"
                               title={agent.model}
                             >
                               {agent.model}
                             </p>
                           </div>
-                          <div className="rounded-xl bg-slate-50 p-3">
-                            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+
+                          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                            <p className="text-[11px] font-medium uppercase tracking-wide text-[#292923]/45">
                               Temperature
                             </p>
-                            <p className="mt-1 text-sm font-medium text-slate-700">
+
+                            <p className="mt-1 text-sm font-medium text-[#292923]/80">
                               {agent.temperature ?? 0.3}
                             </p>
                           </div>
                         </div>
 
                         <div className="mt-4">
-                          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#292923]/45">
                             Instructions preview
                           </p>
-                          <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-600">
+
+                          <p className="whitespace-pre-wrap break-words text-sm leading-6 text-[#292923]/65">
                             {agent.instructions.length > 220
                               ? `${agent.instructions.slice(0, 220).trimEnd()}…`
                               : agent.instructions}
                           </p>
                         </div>
 
-                        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-                          <span className="text-xs text-slate-400">
+                        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                          <span className="text-xs text-[#292923]/50">
                             {agent.isActive
                               ? "Selected as active in the current resolver"
                               : "Not processing inquiries"}
@@ -482,17 +527,19 @@ export default async function AgentsPage({
                               name="agentId"
                               value={agent.id}
                             />
+
                             <input
                               type="hidden"
                               name="active"
                               value={agent.isActive ? "false" : "true"}
                             />
+
                             <button
                               type="submit"
                               className={`inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3.5 text-xs font-semibold transition focus:outline-none focus:ring-4 ${
                                 agent.isActive
-                                  ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus:ring-slate-100"
-                                  : "bg-slate-950 text-white hover:bg-slate-800 focus:ring-slate-200"
+                                  ? "border border-slate-300 bg-white text-[#292923]/75 hover:bg-slate-50 focus:ring-slate-100"
+                                  : "bg-[#292923] text-white hover:bg-[#292923]/85 focus:ring-indigo-100"
                               }`}
                             >
                               {agent.isActive ? (
@@ -500,6 +547,7 @@ export default async function AgentsPage({
                               ) : (
                                 <Zap size={14} />
                               )}
+
                               {agent.isActive ? "Deactivate" : "Activate"}
                             </button>
                           </form>
@@ -509,30 +557,51 @@ export default async function AgentsPage({
                   </div>
                 )}
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                {/* Dataset connection */}
+                <div className="rounded-xl border border-slate-300/80 bg-white p-4 shadow-sm">
                   <div className="flex items-start gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600">
                       <Database size={17} />
                     </div>
+
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-900">
+                      <h3 className="text-sm font-semibold text-[#292923]/90">
                         Connect your business data
                       </h3>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">
+
+                      <p className="mt-1 text-xs leading-5 text-[#292923]/60">
                         Configure datasets so your agent can find relevant
                         business information when answering inquiries.
                       </p>
+
                       <Link
                         href="/datasets"
-                        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-slate-800 hover:text-slate-500"
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#292923]/75 transition hover:text-indigo-700"
                       >
-                        View datasets <span aria-hidden="true">→</span>
+                        View datasets
+                        <ArrowUpRight size={13} />
                       </Link>
                     </div>
                   </div>
                 </div>
               </section>
             </div>
+
+            {/* Workspace footer */}
+            <footer className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-slate-300 py-4">
+              <p className="text-xs text-[#292923]/50">
+                OPTR · Agent management
+              </p>
+
+              <Link
+                href="/integrations/whatsapp"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#292923]/60 transition hover:text-indigo-600"
+              >
+                <MessageSquare size={13} />
+                WhatsApp settings
+                <ArrowUpRight size={12} />
+              </Link>
+            </footer>
           </>
         )}
       </div>
@@ -545,32 +614,61 @@ function OverviewCard({
   label,
   value,
   detail,
-  iconClass,
+  accent,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   detail: string;
-  iconClass: string;
+  accent: "indigo" | "teal" | "amber";
 }) {
+  const accents = {
+    indigo: {
+      icon: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+      marker: "bg-indigo-500",
+      glow: "from-indigo-50/70",
+    },
+    teal: {
+      icon: "bg-teal-50 text-teal-700 ring-teal-100",
+      marker: "bg-teal-500",
+      glow: "from-teal-50/70",
+    },
+    amber: {
+      icon: "bg-amber-50 text-amber-700 ring-amber-100",
+      marker: "bg-amber-500",
+      glow: "from-amber-50/70",
+    },
+  }[accent];
+
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+    <article className="relative overflow-hidden rounded-xl border border-slate-300/80 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div
+        className={`pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b ${accents.glow} to-transparent opacity-80`}
+      />
+
+      <div className="relative flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-[#292923]/60">{label}</p>
+
+          <p className="mt-1.5 truncate text-2xl font-semibold tracking-tight text-[#292923]">
             {value}
           </p>
         </div>
+
         <div
-          className={`flex size-10 items-center justify-center rounded-xl ${iconClass}`}
+          className={`flex size-9 shrink-0 items-center justify-center rounded-lg ring-1 ${accents.icon}`}
         >
           {icon}
         </div>
       </div>
-      <p className="mt-3 truncate text-xs text-slate-500" title={detail}>
-        {detail}
-      </p>
+
+      <div className="relative mt-3 flex items-center gap-2 border-t border-slate-200 pt-3">
+        <span className={`size-1.5 shrink-0 rounded-full ${accents.marker}`} />
+
+        <p className="truncate text-xs text-[#292923]/60" title={detail}>
+          {detail}
+        </p>
+      </div>
     </article>
   );
 }

@@ -46,7 +46,7 @@ export function ContactFieldActions({
                 <button
                     type="button"
                     onClick={onEdit}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-400 bg-white px-3 text-xs font-medium text-[#292923]-600 transition hover:border-slate-300 hover:bg-[#292923]-50 hover:text-[#292923]-900"
                 >
                     <Pencil size={13} />
                     Edit
@@ -64,7 +64,7 @@ export function ContactFieldActions({
                         type="submit"
                         disabled={togglePending}
                         className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${field.isActive
-                            ? "border-slate-200 bg-white text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                            ? "border-slate-400 bg-white text-[#292923]-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                             : "border-emerald-200 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-50"
                             }`}
                     >
@@ -90,7 +90,7 @@ export function ContactFieldActions({
 
             {showDeleteConfirm && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-[#292923]/40 p-4 backdrop-blur-[2px]"
                     onMouseDown={(event) => {
                         if (event.target === event.currentTarget && !deletePending) {
                             setShowDeleteConfirm(false);
@@ -102,7 +102,7 @@ export function ContactFieldActions({
                         aria-modal="true"
                         aria-labelledby={`delete-title-${field.id}`}
                         aria-describedby={`delete-description-${field.id}`}
-                        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+                        className="w-full max-w-md rounded-2xl border border-slate-400 bg-white p-6 shadow-2xl"
                     >
                         <div className="flex size-11 items-center justify-center rounded-xl bg-red-50 text-red-600">
                             <Trash2 size={20} />
@@ -110,17 +110,17 @@ export function ContactFieldActions({
 
                         <h2
                             id={`delete-title-${field.id}`}
-                            className="mt-4 text-lg font-semibold tracking-tight text-slate-950"
+                            className="mt-4 text-lg font-semibold tracking-tight text-[#292923]-950"
                         >
                             Delete contact field?
                         </h2>
 
                         <p
                             id={`delete-description-${field.id}`}
-                            className="mt-2 text-sm leading-6 text-slate-600"
+                            className="mt-2 text-sm leading-6 text-[#292923]-600"
                         >
                             Are you sure you want to delete{" "}
-                            <span className="font-semibold text-slate-900">
+                            <span className="font-semibold text-[#292923]-900">
                                 {field.label}
                             </span>
                             ? This action cannot be undone.
@@ -152,7 +152,7 @@ export function ContactFieldActions({
                                 type="button"
                                 onClick={() => setShowDeleteConfirm(false)}
                                 disabled={deletePending}
-                                className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                                className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-400 bg-white px-4 text-sm font-medium text-[#292923]-700 transition hover:bg-[#292923]-50 disabled:opacity-50"
                             >
                                 Cancel
                             </button>

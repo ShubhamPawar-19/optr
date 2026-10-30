@@ -40,20 +40,20 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md">
         <Link href="/" className="mb-8 flex items-center justify-center gap-3">
-          <div className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white">
+          <div className="flex size-11 items-center justify-center rounded-xl bg-[#292923] text-white">
             <Command size={22} />
           </div>
-          <span className="text-2xl font-bold tracking-tight text-slate-950">
+          <span className="text-2xl font-bold tracking-tight text-[#292923]-950">
             optr
           </span>
         </Link>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border border-slate-400 bg-white p-8 shadow-sm">
           <div className="mb-7">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+            <h1 className="text-2xl font-semibold tracking-tight text-[#292923]-950">
               Welcome back
             </h1>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <p className="mt-2 text-sm leading-6 text-[#292923]-500">
               Sign in to manage your leads and conversations.
             </p>
           </div>
@@ -62,7 +62,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-[#292923]-700"
               >
                 Email address
               </label>
@@ -83,7 +83,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-[#292923]-700"
               >
                 Password
               </label>
@@ -113,18 +113,18 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#292923] px-4 text-sm font-medium text-white transition hover:bg-[#292923]-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading && <LoaderCircle size={16} className="animate-spin" />}
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p className="mt-6 text-center text-sm text-[#292923]-500">
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="font-semibold text-slate-950 underline-offset-4 hover:underline"
+              className="font-semibold text-[#292923]-950 underline-offset-4 hover:underline"
             >
               Create account
             </Link>

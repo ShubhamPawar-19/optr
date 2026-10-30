@@ -40,7 +40,7 @@ export default async function EditRecordPage({ params }: PageProps) {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link
             href={`/datasets/${dataset.id}`}
-            className="inline-flex items-center gap-2 text-sm text-slate-600 transition hover:text-slate-950"
+            className="inline-flex items-center gap-2 text-sm text-[#292923]-600 transition hover:text-[#292923]-950"
           >
             <ArrowLeft size={16} />
             Back to {dataset.name}
@@ -48,7 +48,7 @@ export default async function EditRecordPage({ params }: PageProps) {
 
           <Link
             href={`/datasets/${dataset.id}/schema/edit`}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-950"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-400 bg-white px-3 text-sm font-medium text-[#292923]-700 shadow-sm transition hover:bg-[#292923]-50 hover:text-[#292923]-950"
           >
             <SlidersHorizontal size={16} />
             Edit schema
@@ -56,15 +56,15 @@ export default async function EditRecordPage({ params }: PageProps) {
         </div>
 
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#292923]-950">
             Edit record
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-[#292923]-600">
             Update this record in {dataset.name}.
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-slate-400 bg-white p-6 shadow-sm">
           <EditRecordForm
             datasetId={dataset.id}
             recordId={record.id}

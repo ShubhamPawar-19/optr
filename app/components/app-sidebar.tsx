@@ -2,7 +2,7 @@
 "use client";
 
 import {
-  Activity,
+    Activity,
   Bot,
   ChevronRight,
   Command,
@@ -14,12 +14,14 @@ import {
   Settings2,
   Target,
   Users,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { authClient } from "@/app/lib/auth-client";
+import { BrandMark } from "../page";
 
 const mainNavigation: NavigationItem[] = [
   { label: "Overview", href: "/app", icon: LayoutDashboard },
@@ -54,6 +56,8 @@ const SIDEBAR_TOGGLE_EVENT = "optr-toggle-sidebar";
 export function AppSidebar() {
   const pathname = usePathname();
   const { data: session, isPending } = authClient.useSession();
+
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
 
   const [collapsed, setCollapsed] = useState(true);
   const [hydrated, setHydrated] = useState(false);
@@ -139,27 +143,29 @@ export function AppSidebar() {
     [pathname],
   );
 
-  async function handleSignOut() {
-    if (signingOut) return;
+  
+async function handleSignOut() {
+  if (signingOut) return;
 
-    setSigningOut(true);
-    setSignOutError(false);
+  setSigningOut(true);
+  setSignOutError(false);
 
-    try {
-      const result = await authClient.signOut();
+  try {
+    const result = await authClient.signOut();
 
-      if (result.error) {
-        setSignOutError(true);
-        setSigningOut(false);
-        return;
-      }
-
-      window.location.assign("/login");
-    } catch {
+    if (result.error) {
       setSignOutError(true);
       setSigningOut(false);
+      return;
     }
+
+    window.location.assign("/login");
+  } catch {
+    setSignOutError(true);
+    setSigningOut(false);
   }
+}
+
 
   const userName = session?.user?.name?.trim() || "Account";
   const userEmail = session?.user?.email || "";
@@ -171,13 +177,13 @@ export function AppSidebar() {
   return (
     <aside
       aria-label="Main navigation"
-      className={`sticky top-0 z-30 flex h-dvh shrink-0 flex-col border-r border-slate-200/80 bg-white text-slate-900 transition-[width] duration-200 ease-out ${
-        isCollapsed ? "w-[68px]" : "w-[248px]"
+      className={`sticky top-0 z-30 flex h-dvh shrink-0 flex-col border-r border-slate-300 bg-white text-[#292923]-900 transition-[width] duration-200 ease-out ${
+        isCollapsed ? "w-18" : "w-62"
       }`}
     >
       {/* Brand */}
       <div
-        className={`flex h-[68px] shrink-0 items-center border-b border-slate-100 ${
+        className={`flex h-18 shrink-0 items-center border-b border-slate-300 ${
           isCollapsed ? "justify-center px-2" : "px-4"
         }`}
       >
@@ -188,52 +194,25 @@ export function AppSidebar() {
             isCollapsed ? "justify-center" : ""
           }`}
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm transition group-hover:bg-slate-800">
-            <Command size={19} strokeWidth={2.1} />
-          </span>
+          <BrandMark />
 
           {!isCollapsed && (
             <span className="min-w-0">
               <span className="block text-[17px] font-bold tracking-tight">
                 optr
               </span>
-              <span className="block text-[11px] text-slate-500">
-                AI lead operations
+              <span className="block text-[11px] text-[#292923]-500">
+                AI lead Management
               </span>
             </span>
           )}
         </Link>
       </div>
 
-      {/* Workspace identity */}
-      <div className="border-b border-slate-100 p-3">
-        <div
-          title={isCollapsed ? "Your workspace" : undefined}
-          className={`flex h-10 items-center rounded-lg border border-slate-100 bg-slate-50/80 ${
-            isCollapsed ? "justify-center" : "gap-2.5 px-2"
-          }`}
-        >
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-orange-100 text-[10px] font-bold tracking-wide text-orange-800">
-            OP
-          </span>
-
-          {!isCollapsed && (
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-semibold text-slate-800">
-                Your workspace
-              </span>
-              <span className="block truncate text-[10px] text-slate-500">
-                Workspace account
-              </span>
-            </span>
-          )}
-        </div>
-      </div>
-
       {/* Navigation */}
       <nav
         aria-label="Workspace navigation"
-        className="min-h-0 flex-1 space-y-6 overflow-y-auto overflow-x-hidden px-2.5 py-5"
+        className="min-h-0 flex-1 space-y-6 overflow-y-auto overflow-x-hidden px-4 py-6"
       >
         <NavigationSection
           title="Workspace"
@@ -251,7 +230,7 @@ export function AppSidebar() {
       </nav>
 
       {/* Account */}
-      <div className="shrink-0 border-t border-slate-200/80 p-3">
+      <div className="shrink-0 border-t border-slate-400/80 p-3">
         {signOutError && (
           <p
             role="alert"
@@ -268,17 +247,17 @@ export function AppSidebar() {
         >
           <div
             title={userEmail || userName}
-            className="flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-700"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-400 bg-slate-100 text-xs font-semibold text-[#292923]-700"
           >
             {isPending ? "…" : avatarLetter}
           </div>
 
           {!isCollapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-slate-800">
+              <p className="truncate text-xs font-semibold text-[#292923]-800">
                 {isPending ? "Loading account…" : userName}
               </p>
-              <p className="truncate text-[11px] text-slate-500">
+              <p className="truncate text-[11px] text-[#292923]-500">
                 {userEmail || "Signed-in account"}
               </p>
             </div>
@@ -286,11 +265,11 @@ export function AppSidebar() {
 
           <button
             type="button"
-            onClick={handleSignOut}
+            onClick={() => setShowSignOutDialog(true)}
             disabled={signingOut}
             title={signingOut ? "Signing out…" : "Sign out"}
             aria-label={signingOut ? "Signing out" : "Sign out"}
-            className={`flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-500 outline-none transition hover:bg-red-50 hover:text-red-600 focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-wait disabled:opacity-50 ${
+            className={`flex size-9 shrink-0 items-center justify-center rounded-lg text-[#292923]-500 outline-none transition hover:bg-red-50 hover:text-red-600 focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-wait disabled:opacity-50 ${
               isCollapsed ? "" : "ml-auto"
             }`}
           >
@@ -301,6 +280,75 @@ export function AppSidebar() {
           </button>
         </div>
       </div>
+      {showSignOutDialog && (
+  <div
+    className="fixed inset-0 z-[100] flex items-center justify-center bg-[#292923]/40 p-4 backdrop-blur-[2px]"
+    onMouseDown={(event) => {
+      if (event.target === event.currentTarget && !signingOut) {
+        setShowSignOutDialog(false);
+      }
+    }}
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="signout-title"
+      aria-describedby="signout-description"
+      className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex size-11 items-center justify-center rounded-xl bg-red-50 text-red-600">
+          <LogOut size={20} />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowSignOutDialog(false)}
+          disabled={signingOut}
+          aria-label="Close dialog"
+          className="rounded-lg p-1.5 text-[#292923]/45 transition hover:bg-slate-100 hover:text-[#292923] disabled:opacity-40"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      <h2
+        id="signout-title"
+        className="mt-5 text-lg font-semibold tracking-tight text-[#292923]"
+      >
+        Sign out of OPTR?
+      </h2>
+
+      <p
+        id="signout-description"
+        className="mt-2 text-sm leading-6 text-[#292923]/60"
+      >
+        Are you sure you want to sign out? You will need to log in again to
+        access your workspace.
+      </p>
+
+      <div className="mt-6 flex justify-end gap-2">
+        <button
+          type="button"
+          disabled={signingOut}
+          onClick={() => setShowSignOutDialog(false)}
+          className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-[#292923]/75 transition hover:bg-slate-50 disabled:opacity-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          disabled={signingOut}
+          onClick={handleSignOut}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {signingOut ? "Signing out..." : "Sign out"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </aside>
   );
 }
@@ -314,7 +362,7 @@ function NavigationSection({
   return (
     <div className="space-y-1">
       {!collapsed && (
-        <h2 className="mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+        <h2 className="mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#292923]-400">
           {title}
         </h2>
       )}
@@ -335,8 +383,8 @@ function NavigationSection({
                 : "px-2.5"
             } ${
               active
-                ? "bg-slate-950 text-white"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                ? "bg-[#292923] text-white"
+                : "text-[#292923]-600 hover:bg-[#292923]-100 hover:text-[#292923]-950"
             }`}
           >
             <Icon
@@ -352,7 +400,7 @@ function NavigationSection({
                 {active && (
                   <ChevronRight
                     size={14}
-                    className="shrink-0 text-slate-400"
+                    className="shrink-0 text-[#292923]-400"
                     aria-hidden="true"
                   />
                 )}

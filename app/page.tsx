@@ -73,7 +73,7 @@ const steps = [
   },
 ];
 
-function BrandMark({ light = false }: { light?: boolean }) {
+export function BrandMark({ light = false }: { light?: boolean }) {
   return (
     <span
       className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${

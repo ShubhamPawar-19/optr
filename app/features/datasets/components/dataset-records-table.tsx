@@ -53,21 +53,21 @@ export function DatasetRecordsTable({
   if (records.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-        <div className="flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+        <div className="flex size-11 items-center justify-center rounded-xl bg-slate-100 text-[#292923]-500">
           <FileText size={20} />
         </div>
 
-        <p className="mt-3 text-sm font-semibold text-slate-900">
+        <p className="mt-3 text-sm font-semibold text-[#292923]-900">
           No records yet
         </p>
 
-        <p className="mt-1 max-w-sm text-sm text-slate-500">
+        <p className="mt-1 max-w-sm text-sm text-[#292923]-500">
           Add your first record to start populating this dataset.
         </p>
 
         <Link
           href={`/datasets/${datasetId}/records/new`}
-          className="mt-4 inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+          className="mt-4 inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#292923]-800"
         >
           Add record
         </Link>
@@ -77,32 +77,32 @@ export function DatasetRecordsTable({
 
   if (fields.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+      <div className="rounded-xl border border-slate-400 bg-white p-6 text-sm text-[#292923]-500">
         Records exist, but there are no schema fields to display.
       </div>
     );
   }
 
   return (
-    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.02]">
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-400 bg-white shadow-sm shadow-slate-950/[0.02]">
       <div className="w-full overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50/80">
+          <thead className="border-b border-slate-400 bg-slate-50/80">
             <tr>
               {fields.map((field) => (
                 <th
                   key={field.id}
-                  className="whitespace-nowrap px-5 py-3.5 font-medium text-slate-600"
+                  className="whitespace-nowrap px-5 py-3.5 font-medium text-[#292923]-600"
                 >
                   {field.label}
                 </th>
               ))}
 
-              <th className="whitespace-nowrap px-5 py-3.5 font-medium text-slate-600">
+              <th className="whitespace-nowrap px-5 py-3.5 font-medium text-[#292923]-600">
                 Last updated
               </th>
 
-              <th className="whitespace-nowrap px-5 py-3.5 font-medium text-slate-600">
+              <th className="whitespace-nowrap px-5 py-3.5 font-medium text-[#292923]-600">
                 Actions
               </th>
             </tr>
@@ -112,7 +112,7 @@ export function DatasetRecordsTable({
             {records.map((record) => (
               <tr
                 key={record.id}
-                className="transition-colors hover:bg-slate-50/70"
+                className="transition-colors hover:bg-[#292923]-50/70"
               >
                 {fields.map((field) => {
                   const value = formatValue(
@@ -122,7 +122,7 @@ export function DatasetRecordsTable({
                   return (
                     <td
                       key={field.id}
-                      className="max-w-xs px-5 py-4 text-slate-700"
+                      className="max-w-xs px-5 py-4 text-[#292923]-700"
                     >
                       <span
                         className="block max-w-xs truncate"
@@ -134,7 +134,7 @@ export function DatasetRecordsTable({
                   );
                 })}
 
-                <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-500">
+                <td className="whitespace-nowrap px-5 py-4 text-xs text-[#292923]-500">
                   {record.updatedAt.toLocaleDateString("en-IN", {
                     day: "numeric",
                     month: "short",
@@ -147,7 +147,7 @@ export function DatasetRecordsTable({
                     <Link
                       href={`/datasets/${datasetId}/records/${record.id}/edit`}
                       aria-label={`Edit record ${record.id}`}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-medium text-[#292923]-700 transition-colors hover:bg-[#292923]-100"
                     >
                       <Pencil size={13} />
                       Edit
@@ -165,7 +165,7 @@ export function DatasetRecordsTable({
         </table>
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-slate-100 bg-white px-5 py-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 border-t border-slate-100 bg-white px-5 py-3 text-xs text-[#292923]-500 sm:flex-row sm:items-center sm:justify-between">
         <span>
           Showing {records.length} of {totalRecords}{" "}
           {totalRecords === 1 ? "record" : "records"}

@@ -1,13 +1,14 @@
 
 import Link from "next/link";
 import {
-  ArrowDown,
   ArrowUpRight,
+  CalendarClock,
   Database,
   FilePlus2,
   FileText,
   Layers3,
   Plus,
+  Target,
 } from "lucide-react";
 
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
@@ -33,177 +34,225 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
       title: "Create dataset",
       description: "Create a collection and define its fields.",
       href: "/datasets/new",
-      icon: <Plus size={20} />,
-      iconClass: "bg-indigo-50 text-indigo-600",
+      icon: <Plus size={19} />,
+      iconClass: "bg-indigo-50 text-indigo-600 ring-indigo-100",
       action: "Get started",
     },
     {
       title: "Create record",
       description: "Choose a dataset and add a new record.",
       href: "#dataset-list",
-      icon: <FilePlus2 size={20} />,
-      iconClass: "bg-emerald-50 text-emerald-600",
+      icon: <FilePlus2 size={19} />,
+      iconClass: "bg-teal-50 text-teal-700 ring-teal-100",
       action: "Choose dataset",
     },
     {
       title: "View datasets",
       description: "Browse collections and manage their records.",
       href: "#dataset-list",
-      icon: <Database size={20} />,
-      iconClass: "bg-amber-50 text-amber-600",
+      icon: <Database size={19} />,
+      iconClass: "bg-amber-50 text-amber-700 ring-amber-100",
       action: "Browse datasets",
     },
   ];
 
   return (
-    <main className="min-h-screen w-full min-w-0 flex-1 bg-slate-50 text-slate-950">
-      <div className="w-full min-w-0 px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-        <header className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div className="min-w-0">
-            <div className="mb-4 flex items-center gap-3">
-              <SidebarToggle />
+    <main className="min-h-screen bg-[#F5F7FB] text-[#292923]">
+      <div className="mx-auto max-w-[1680px] px-4 pb-10 sm:px-7 lg:px-10">
+        {/* Sticky workspace header */}
+        <header className="sticky top-0 z-30 -mx-4 flex min-h-[72px] flex-wrap items-center justify-between gap-4 border-b border-slate-300 bg-[#F5F7FB]/95 px-4 py-3 backdrop-blur-md sm:-mx-7 sm:px-7 lg:-mx-10 lg:px-10">
+          <div className="flex min-w-0 items-center gap-3">
+            <SidebarToggle />
 
-              <nav
-                aria-label="Breadcrumb"
-                className="flex items-center gap-2 text-sm text-slate-500"
-              >
-                <Link
-                  href="/"
-                  className="transition-colors hover:text-slate-950"
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-xs text-[#292923]/50">
+                <nav
+                  aria-label="Breadcrumb"
+                  className="flex items-center gap-2 text-xs text-[#292923]/50"
                 >
-                  Workspace
-                </Link>
-                <span className="text-slate-300">/</span>
-                <span className="font-medium text-slate-900">
-                  Datasets
-                </span>
-              </nav>
+                  <Link
+                    href="/datasets"
+                    className="font-bold text-[#292923]"
+                  >
+                    Datasets
+                  </Link>
+                  <Link
+                    href="/datasets/new"
+                    className="transition hover:text-[#292923]"
+                  >
+                    <span className=" text-[#292923]/75">
+                      Create
+                    </span>
+                  </Link>
+                </nav>
+              </div>
             </div>
-
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Datasets
-            </h1>
-
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              Manage the structured information your AI agents use to
-              answer questions and complete tasks.
-            </p>
           </div>
 
           <Link
             href="/datasets/new"
-            className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 sm:w-auto"
+            className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#292923] px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#292923]/85"
           >
-            <Plus size={16} />
-            New dataset
+            <Plus size={15} />
+            <span>New dataset</span>
+            <ArrowUpRight size={14} />
           </Link>
         </header>
 
-        <section aria-label="Dataset quick actions" className="mb-8">
-          <div className="mb-4">
-            <h2 className="text-base font-semibold tracking-tight">
-              Quick actions
+        {/* Page introduction */}
+        <section className="flex flex-col justify-between gap-4 pb-5 pt-7 sm:flex-row sm:items-end sm:pb-6 sm:pt-8">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium shadow-sm">
+              <span className="size-1.5 rounded-full bg-indigo-500" />
+              Business data
+            </div>
+
+            <h2 className="text-[26px] font-semibold tracking-[-0.045em] sm:text-[32px]">
+              Give your agents the right information.
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Create and manage your business data.
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#292923]/60 sm:text-[15px]">
+              Manage structured business information your AI agents
+              use to answer questions and complete tasks.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {quickActions.map((action) => (
-              <Link
-                key={action.title}
-                href={action.href}
-                className="group flex min-w-0 items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-950/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
-              >
-                <div
-                  className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${action.iconClass}`}
-                >
-                  {action.icon}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    {action.title}
-                  </h3>
-
-                  <p className="mt-1 text-sm leading-5 text-slate-500">
-                    {action.description}
-                  </p>
-
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 transition-colors group-hover:text-slate-950">
-                    {action.action}
-                    {action.title === "Create record" ? (
-                      <ArrowDown
-                        size={14}
-                        className="transition-transform group-hover:translate-y-0.5"
-                      />
-                    ) : (
-                      <ArrowUpRight
-                        size={14}
-                        className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                      />
-                    )}
-                  </span>
-                </div>
-              </Link>
-            ))}
+          <div className="flex shrink-0 items-center gap-2 pb-1 text-xs text-[#292923]/60">
+            <CalendarClock size={15} className="text-emerald-600" />
+            <span>Live workspace data</span>
           </div>
         </section>
 
+        {/* Summary metrics */}
         <section
-          aria-label="Dataset statistics"
-          className="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3"
+          aria-label="Dataset overview"
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
         >
-          <SummaryCard
-            icon={<Database size={18} />}
+          <SummaryMetric
             label="Total datasets"
             value={datasets.length}
+            description="Collections in this workspace"
+            icon={Database}
+            accent="indigo"
           />
 
-          <SummaryCard
-            icon={<FileText size={18} />}
+          <SummaryMetric
             label="Total records"
             value={totalRecords}
+            description="Records across all datasets"
+            icon={FileText}
+            accent="teal"
           />
 
-          <SummaryCard
-            icon={<Layers3 size={18} />}
+          <SummaryMetric
             label="Total fields"
             value={totalFields}
+            description="Configured dataset attributes"
+            icon={Layers3}
+            accent="amber"
           />
         </section>
 
-        <section id="dataset-list" className="min-w-0 scroll-mt-6">
-          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-base font-semibold tracking-tight">
-                Your data
-              </h2>
+        {/* Dataset workspace */}
+        <section
+          id="dataset-list"
+          className="mt-6 scroll-mt-24 overflow-hidden rounded-xl border border-slate-300/80 bg-white shadow-sm sm:mt-7"
+        >
+          {/* Section title */}
+          <div className="flex flex-col gap-4 border-b border-slate-300 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-9 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600">
+                <Target size={17} />
+              </div>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Select a dataset to view its records, add new records,
-                or manage its fields.
-              </p>
+              <div>
+                <h3 className="text-base font-semibold tracking-tight">
+                  Your datasets
+                </h3>
+                <p className="mt-0.5 text-xs text-[#292923]/60">
+                  Browse collections and manage their records and fields
+                </p>
+              </div>
             </div>
 
-            <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-              {datasets.length}{" "}
+            <span className="inline-flex w-fit items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-[#292923]/65">
+              {datasets.length.toLocaleString("en-IN")}{" "}
               {datasets.length === 1 ? "dataset" : "datasets"}
             </span>
           </div>
 
+          {/* Quick actions */}
+          <div className="border-b border-slate-300 bg-slate-50/60 px-5 py-4 sm:px-6 sm:py-5">
+            <div className="mb-4">
+              <h4 className="text-sm font-semibold tracking-tight">
+                Quick actions
+              </h4>
+              <p className="mt-1 text-xs text-[#292923]/55">
+                Create and manage your business data.
+              </p>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-3">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.title}
+                  href={action.href}
+                  className="group flex min-w-0 items-start gap-3 rounded-xl border border-slate-300/80 bg-white p-4 transition duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
+                >
+                  <div
+                    className={`flex size-10 shrink-0 items-center justify-center rounded-lg ring-1 ${action.iconClass}`}
+                  >
+                    {action.icon}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h5 className="text-sm font-semibold text-[#292923]/90">
+                      {action.title}
+                    </h5>
+
+                    <p className="mt-1 text-xs leading-5 text-[#292923]/55">
+                      {action.description}
+                    </p>
+
+                    <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#292923]/75 transition group-hover:text-indigo-700">
+                      {action.action}
+                      <ArrowUpRight
+                        size={13}
+                        className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Dataset list */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300 bg-white px-5 py-3 sm:px-6">
+            <p className="text-xs text-[#292923]/60">
+              <span className="font-semibold text-[#292923]/85">
+                {datasets.length.toLocaleString("en-IN")}
+              </span>{" "}
+              {datasets.length === 1 ? "collection available" : "collections available"}
+            </p>
+
+            <div className="inline-flex items-center gap-1.5 text-xs text-[#292923]/55">
+              <Database size={14} className="text-[#292923]/40" />
+              <span>Business data collections</span>
+            </div>
+          </div>
+
           {datasets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
-                <Database size={22} />
+            <div className="flex min-h-[280px] flex-col items-center justify-center px-6 py-12 text-center">
+              <div className="flex size-14 items-center justify-center rounded-xl border border-slate-300 bg-slate-50 text-[#292923]/60">
+                <Database size={23} strokeWidth={1.7} />
               </div>
 
-              <h3 className="mt-4 text-sm font-semibold text-slate-900">
+              <h4 className="mt-4 text-sm font-semibold text-[#292923]/90">
                 No datasets yet
-              </h3>
+              </h4>
 
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+              <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#292923]/60">
                 Create a dataset to organize the business information
                 your AI agents can search and use when responding to
                 inquiries.
@@ -211,43 +260,43 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
 
               <Link
                 href="/datasets/new"
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+                className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-[#292923] px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#292923]/85"
               >
-                <Plus size={16} />
+                <Plus size={15} />
                 Create your first dataset
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
               {datasets.map((dataset) => (
                 <Link
                   key={dataset.id}
                   href={`/datasets/${dataset.id}`}
-                  className="group flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:border-slate-300 hover:shadow-md hover:shadow-slate-950/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+                  className="group flex min-w-0 flex-col rounded-xl border border-slate-300/80 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-colors group-hover:bg-slate-100">
-                      <Database size={20} />
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600">
+                      <Database size={19} />
                     </div>
 
-                    <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition-colors group-hover:text-slate-900">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-[#292923]/60 transition group-hover:border-indigo-200 group-hover:bg-indigo-50 group-hover:text-indigo-700">
                       View details
                       <ArrowUpRight
-                        size={14}
+                        size={13}
                         className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                       />
                     </span>
                   </div>
 
-                  <h3 className="mt-5 truncate text-base font-semibold text-slate-900">
+                  <h4 className="mt-5 truncate text-base font-semibold text-[#292923]/90">
                     {dataset.name}
-                  </h3>
+                  </h4>
 
-                  <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-slate-500">
+                  <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-[#292923]/55">
                     {dataset.description || "No description provided."}
                   </p>
 
-                  <div className="mt-5 flex items-center gap-8 border-t border-slate-100 pt-4">
+                  <div className="mt-5 flex items-center gap-8 border-t border-slate-200 pt-4">
                     <Count
                       label="Records"
                       value={dataset._count.records}
@@ -262,40 +311,84 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
               ))}
             </div>
           )}
-        </section>
 
-        <footer className="mt-8 border-t border-slate-200/80 pt-4">
-          <p className="text-xs text-slate-400">
-            OPTR · Dataset management
-          </p>
-        </footer>
+          {/* Workspace footer */}
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-300 bg-white px-5 py-3.5 sm:px-6">
+            <p className="text-xs text-[#292923]/50">
+              OPTR · Dataset management
+            </p>
+
+            <Link
+              href="/datasets/new"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#292923]/60 transition hover:text-indigo-600"
+            >
+              <Plus size={13} />
+              Add dataset
+              <ArrowUpRight size={12} />
+            </Link>
+          </footer>
+        </section>
       </div>
     </main>
   );
 }
 
-function SummaryCard({
-  icon,
+function SummaryMetric({
   label,
   value,
+  description,
+  icon: Icon,
+  accent,
 }: {
-  icon: React.ReactNode;
   label: string;
   value: number;
+  description: string;
+  icon: typeof Target;
+  accent: "indigo" | "teal" | "amber";
 }) {
+  const accents = {
+    indigo: {
+      icon: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+      marker: "bg-indigo-500",
+      glow: "from-indigo-50/70",
+    },
+    teal: {
+      icon: "bg-teal-50 text-teal-700 ring-teal-100",
+      marker: "bg-teal-500",
+      glow: "from-teal-50/70",
+    },
+    amber: {
+      icon: "bg-amber-50 text-amber-700 ring-amber-100",
+      marker: "bg-amber-500",
+      glow: "from-amber-50/70",
+    },
+  }[accent];
+
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.02]">
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
-          {icon}
+    <div className="relative overflow-hidden rounded-xl border border-slate-300/80 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div
+        className={`pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b ${accents.glow} to-transparent opacity-80`}
+      />
+
+      <div className="relative flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-[#292923]/60">{label}</p>
+          <p className="mt-1.5 text-2xl font-semibold tracking-tight text-[#292923] tabular-nums">
+            {value.toLocaleString("en-IN")}
+          </p>
         </div>
 
-        <p className="text-sm font-medium text-slate-500">{label}</p>
+        <div
+          className={`flex size-9 shrink-0 items-center justify-center rounded-lg ring-1 ${accents.icon}`}
+        >
+          <Icon size={18} strokeWidth={1.8} />
+        </div>
       </div>
 
-      <p className="mt-4 text-2xl font-semibold tracking-tight text-slate-950">
-        {value.toLocaleString("en-IN")}
-      </p>
+      <div className="relative mt-3 flex items-center gap-2 border-t border-slate-300 pt-3">
+        <span className={`size-1.5 shrink-0 rounded-full ${accents.marker}`} />
+        <p className="text-xs text-[#292923]/60">{description}</p>
+      </div>
     </div>
   );
 }
@@ -309,11 +402,11 @@ function Count({
 }) {
   return (
     <div>
-      <p className="text-lg font-semibold tracking-tight text-slate-900">
+      <p className="text-lg font-semibold tracking-tight text-[#292923]/90 tabular-nums">
         {value.toLocaleString("en-IN")}
       </p>
 
-      <p className="mt-0.5 text-xs text-slate-500">{label}</p>
+      <p className="mt-0.5 text-xs text-[#292923]/55">{label}</p>
     </div>
   );
 }

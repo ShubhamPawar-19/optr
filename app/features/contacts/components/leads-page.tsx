@@ -58,7 +58,7 @@ function formatDate(value: Date) {
 
 function displayValue(value: string | null | undefined, type: string) {
   if (value == null || value.trim() === "") {
-    return <span className="text-slate-300">—</span>;
+    return <span className="text-[#292923]-300">—</span>;
   }
 
   if (type === "BOOLEAN") {
@@ -69,7 +69,7 @@ function displayValue(value: string | null | undefined, type: string) {
       return (
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-            yes ? "text-emerald-700" : "text-slate-500"
+            yes ? "text-emerald-700" : "text-[#292923]-500"
           }`}
         >
           <span
@@ -100,7 +100,7 @@ function displayValue(value: string | null | undefined, type: string) {
 
   return (
     <span
-      className="block max-w-[240px] truncate text-slate-700"
+      className="block max-w-[240px] truncate text-[#292923]-700"
       title={value}
     >
       {value}
@@ -124,7 +124,7 @@ function SummaryMetric({
   const accents = {
     indigo: {
       icon: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-      marker: "bg-indigo-500",
+      marker: "bg-[#292923]",
       glow: "from-indigo-50/70",
     },
     teal: {
@@ -147,8 +147,8 @@ function SummaryMetric({
 
       <div className="relative flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-1.5 text-2xl font-semibold tracking-tight text-slate-950 tabular-nums">
+          <p className="text-sm font-medium text-[#292923]-500">{label}</p>
+          <p className="mt-1.5 text-2xl font-semibold tracking-tight text-[#292923]-950 tabular-nums">
             {value.toLocaleString("en-IN")}
           </p>
         </div>
@@ -160,9 +160,9 @@ function SummaryMetric({
         </div>
       </div>
 
-      <div className="relative mt-3 flex items-center gap-2 border-t border-slate-200 pt-3">
+      <div className="relative mt-3 flex items-center gap-2 border-t border-slate-400 pt-3">
         <span className={`size-1.5 shrink-0 rounded-full ${accents.marker}`} />
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="text-xs text-[#292923]-500">{description}</p>
       </div>
     </div>
   );
@@ -215,7 +215,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
   ).length;
 
   return (
-    <main className="min-h-screen bg-[#F5F7FB] text-slate-950">
+    <main className="min-h-screen bg-[#F5F7FB] text-[#292923]-950">
       <div className="mx-auto max-w-[1680px] px-4 pb-10 sm:px-7 lg:px-10">
         {/* Sticky workspace header */}
         <header className="sticky top-0 z-30 -mx-4 flex min-h-[72px] flex-wrap items-center justify-between gap-4 border-b border-slate-300 bg-[#F5F7FB]/95 px-4 py-3 backdrop-blur-md sm:-mx-7 sm:px-7 lg:-mx-10 lg:px-10">
@@ -223,13 +223,13 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
             <SidebarToggle />
 
             <div className="min-w-0">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-2 text-xs text-[#292923]-400">
                 <span>Workspace</span>
-                <span className="text-slate-300">/</span>
-                <span className="font-medium text-slate-600">Leads</span>
+                <span className="text-[#292923]-300">/</span>
+                <span className="font-medium text-[#292923]-600">Leads</span>
               </div>
 
-              <h1 className="mt-1 text-lg font-semibold tracking-tight text-slate-950">
+              <h1 className="mt-1 text-lg font-semibold tracking-tight text-[#292923]-950">
                 Lead management
               </h1>
             </div>
@@ -238,7 +238,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
           <div className="flex items-center gap-2">
             <Link
               href="/contacts/fields"
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-[#292923]-600 shadow-sm transition hover:bg-[#292923]-50 hover:text-[#292923]-900"
             >
               <SlidersHorizontal size={15} />
               <span className="hidden sm:inline">Manage fields</span>
@@ -247,7 +247,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
 
             <Link
               href="/contacts"
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-slate-950 px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#292923] px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#292923]-800"
             >
               <User size={15} />
               <span>Contacts</span>
@@ -259,22 +259,22 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
         {/* Page introduction */}
         <section className="flex flex-col justify-between gap-4 pb-5 pt-7 sm:flex-row sm:items-end sm:pb-6 sm:pt-8">
           <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 shadow-sm">
-              <span className="size-1.5 rounded-full bg-indigo-500" />
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium bg-[#292923] shadow-sm">
+              <span className="size-1.5 rounded-full bg-[#292923]" />
               Lead workspace
             </div>
 
-            <h2 className="text-[26px] font-semibold tracking-[-0.045em] text-slate-950 sm:text-[32px]">
+            <h2 className="text-[26px] font-semibold tracking-[-0.045em] text-[#292923]-950 sm:text-[32px]">
               Turn conversations into customers.
             </h2>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-[15px]">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#292923]-500 sm:text-[15px]">
               Manage your leads, review captured information, and keep track of
               every conversation in one place.
             </p>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 pb-1 text-xs text-slate-500">
+          <div className="flex shrink-0 items-center gap-2 pb-1 text-xs text-[#292923]-500">
             <CheckCircle2 size={15} className="text-emerald-600" />
             <span>Live workspace data</span>
           </div>
@@ -315,17 +315,17 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
         {/* Lead data workspace */}
         <section className="mt-6 overflow-hidden rounded-xl border border-slate-300/80 bg-white shadow-sm sm:mt-7">
           {/* Table title and actions */}
-          <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 border-b border-slate-400 px-5 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-2.5">
               <div className="flex size-9 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600">
                 <Target size={17} />
               </div>
 
               <div>
-                <h3 className="text-base font-semibold tracking-tight text-slate-950">
+                <h3 className="text-base font-semibold tracking-tight text-[#292923]-950">
                   All leads
                 </h3>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-[#292923]-500">
                   Your contacts and their captured information
                 </p>
               </div>
@@ -335,7 +335,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
               <div className="relative sm:w-[290px]">
                 <Search
                   size={16}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#292923]-400"
                 />
 
                 <input
@@ -343,7 +343,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search leads..."
                   aria-label="Search leads"
-                  className="h-10 w-full rounded-lg border border-slate-300 bg-slate-50/70 pl-9 pr-9 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:bg-white focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-50"
+                  className="h-10 w-full rounded-lg border border-slate-300 bg-slate-50/70 pl-9 pr-9 text-sm text-[#292923]-800 outline-none transition placeholder:text-[#292923]-400 hover:bg-white focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-50"
                 />
 
                 {search && (
@@ -351,7 +351,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                     type="button"
                     onClick={() => setSearch("")}
                     aria-label="Clear search"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-[#292923]-400 transition hover:bg-[#292923]-100 hover:text-[#292923]-700"
                   >
                     <X size={14} />
                   </button>
@@ -365,34 +365,34 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                     current === "recent" ? "oldest" : "recent",
                   )
                 }
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-[#292923]-600 transition hover:bg-[#292923]-50 hover:text-[#292923]-900"
                 title="Change update-date sort order"
               >
-                <ArrowDownUp size={15} className="text-slate-400" />
+                <ArrowDownUp size={15} className="text-[#292923]-400" />
                 {sortOrder === "recent" ? "Most recent" : "Oldest first"}
               </button>
             </div>
           </div>
 
           {/* Result summary */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-3 sm:px-6">
-            <p className="text-xs text-slate-500">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-400 bg-slate-50/70 px-5 py-3 sm:px-6">
+            <p className="text-xs text-[#292923]-500">
               Showing{" "}
-              <span className="font-semibold text-slate-800">
+              <span className="font-semibold text-[#292923]-800">
                 {filteredContacts.length.toLocaleString("en-IN")}
               </span>{" "}
               of{" "}
-              <span className="font-semibold text-slate-800">
+              <span className="font-semibold text-[#292923]-800">
                 {contacts.length.toLocaleString("en-IN")}
               </span>{" "}
               leads
               {search && (
-                <span className="text-slate-400"> · Matching your search</span>
+                <span className="text-[#292923]-400"> · Matching your search</span>
               )}
             </p>
 
-            <div className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-              <CalendarClock size={14} className="text-slate-400" />
+            <div className="inline-flex items-center gap-1.5 text-xs text-[#292923]-500">
+              <CalendarClock size={14} className="text-[#292923]-400" />
               <span>
                 Updated{" "}
                 {sortOrder === "recent" ? "most recently first" : "oldest first"}
@@ -403,7 +403,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
           {/* Table / empty state */}
           {filteredContacts.length === 0 ? (
             <div className="flex min-h-[280px] flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex size-14 items-center justify-center rounded-xl border border-slate-300 bg-slate-50 text-slate-500">
+              <div className="flex size-14 items-center justify-center rounded-xl border border-slate-300 bg-slate-50 text-[#292923]-500">
                 {contacts.length === 0 ? (
                   <Target size={23} strokeWidth={1.7} />
                 ) : (
@@ -411,13 +411,13 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                 )}
               </div>
 
-              <h4 className="mt-4 text-sm font-semibold text-slate-900">
+              <h4 className="mt-4 text-sm font-semibold text-[#292923]-900">
                 {contacts.length === 0
                   ? "Your leads will appear here"
                   : "No matching leads"}
               </h4>
 
-              <p className="mt-1.5 max-w-sm text-sm leading-6 text-slate-500">
+              <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#292923]-500">
                 {contacts.length === 0
                   ? "When people interact with your agents, their contact details and captured information will show up here."
                   : "We couldn't find any leads matching that search. Try a different name, phone number, email, or field value."}
@@ -427,7 +427,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                  className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-[#292923]-700 shadow-sm transition hover:bg-[#292923]-50"
                 >
                   <X size={14} />
                   Clear search
@@ -438,8 +438,8 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1000px] table-auto text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/60 text-[11px] font-semibold uppercase tracking-[0.075em] text-slate-500">
-                    <th className="sticky left-0 z-20 min-w-[230px] border-r border-slate-200 bg-slate-50 px-5 py-3.5 sm:px-6">
+                  <tr className="border-b border-slate-400 bg-slate-50/60 text-[11px] font-semibold uppercase tracking-[0.075em] text-[#292923]-500">
+                    <th className="sticky left-0 z-20 min-w-[230px] border-r border-slate-400 bg-slate-50 px-5 py-3.5 sm:px-6">
                       Contact
                     </th>
 
@@ -492,21 +492,21 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                         key={contact.id}
                         className="group transition-colors hover:bg-indigo-50/40"
                       >
-                        <td className="sticky left-0 z-10 border-r border-slate-200 bg-white px-5 py-3.5 transition-colors group-hover:bg-[#F8F9FF] sm:px-6">
+                        <td className="sticky left-0 z-10 border-r border-slate-400 bg-white px-5 py-3.5 transition-colors group-hover:bg-[#F8F9FF] sm:px-6">
                           <Link
                             href={`/contacts/${contact.id}`}
                             className="flex min-w-[190px] items-center gap-3"
                           >
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-xs font-semibold text-indigo-700">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 text-xs font-semibold bg-[#292923]">
                               {initials}
                             </div>
 
                             <div className="min-w-0">
-                              <p className="truncate font-semibold text-slate-800 transition group-hover:text-indigo-700">
+                              <p className="truncate font-semibold text-[#292923]-800 transition group-hover:bg-[#292923]">
                                 {displayName}
                               </p>
 
-                              <p className="mt-1 text-[11px] text-slate-400">
+                              <p className="mt-1 text-[11px] text-[#292923]-400">
                                 ID {contact.id.slice(0, 8)}
                               </p>
                             </div>
@@ -515,19 +515,19 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
 
                         <td className="px-5 py-3.5">
                           <div className="space-y-1.5">
-                            <p className="whitespace-nowrap text-[13px] font-medium text-slate-700">
+                            <p className="whitespace-nowrap text-[13px] font-medium text-[#292923]-700">
                               {contact.phone || "—"}
                             </p>
 
                             {contact.email ? (
                               <p
-                                className="max-w-[190px] truncate text-xs text-slate-400"
+                                className="max-w-[190px] truncate text-xs text-[#292923]-400"
                                 title={contact.email}
                               >
                                 {contact.email}
                               </p>
                             ) : (
-                              <p className="text-xs text-slate-300">No email</p>
+                              <p className="text-xs text-[#292923]-300">No email</p>
                             )}
                           </div>
                         </td>
@@ -546,7 +546,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                             className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
                               contact._count.conversations > 0
                                 ? "border-teal-200 bg-teal-50 text-teal-700"
-                                : "border-slate-200 bg-slate-50 text-slate-500"
+                                : "border-slate-400 bg-slate-50 text-[#292923]-500"
                             }`}
                           >
                             <MessageCircle
@@ -554,7 +554,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                               className={
                                 contact._count.conversations > 0
                                   ? "text-teal-600"
-                                  : "text-slate-400"
+                                  : "text-[#292923]-400"
                               }
                             />
                             <span className="tabular-nums">
@@ -564,7 +564,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                         </td>
 
                         <td className="whitespace-nowrap px-5 py-3.5">
-                          <span className="text-[13px] text-slate-600">
+                          <span className="text-[13px] text-[#292923]-600">
                             {formatDate(contact.updatedAt)}
                           </span>
                         </td>
@@ -574,7 +574,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
                             href={`/contacts/${contact.id}`}
                             aria-label={`Open ${displayName}`}
                             title="Open contact"
-                            className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-slate-400 transition hover:border-slate-300 hover:bg-white hover:text-indigo-600 hover:shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+                            className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-[#292923]-400 transition hover:border-slate-300 hover:bg-white hover:text-indigo-600 hover:shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
                           >
                             <ArrowUpRight size={16} />
                           </Link>
@@ -588,12 +588,12 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
           )}
 
           {/* Workspace footer */}
-          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white px-5 py-3.5 sm:px-6">
-            <p className="text-xs text-slate-400">
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-400 bg-white px-5 py-3.5 sm:px-6">
+            <p className="text-xs text-[#292923]-400">
               {filteredContacts.length > 0 ? (
                 <>
                   Displaying{" "}
-                  <span className="font-semibold text-slate-600">
+                  <span className="font-semibold text-[#292923]-600">
                     {filteredContacts.length.toLocaleString("en-IN")}
                   </span>{" "}
                   {filteredContacts.length === 1 ? "contact" : "contacts"}
@@ -605,7 +605,7 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
 
             <Link
               href="/contacts/fields"
-              className="inline-flex items-center gap-1.5 rounded-md text-xs font-medium text-slate-500 transition hover:text-indigo-700"
+              className="inline-flex items-center gap-1.5 rounded-md text-xs font-medium text-[#292923]-500 transition hover:bg-[#292923]"
             >
               <Filter size={13} />
               Customize fields
@@ -615,13 +615,13 @@ export function LeadsPage({ contacts, fields }: LeadsPageProps) {
         </section>
 
         {/* Bottom helper */}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-slate-400">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-[#292923]-400">
           <p>
             Lead information is organized using your configured contact fields.
           </p>
           <Link
             href="/contacts/fields"
-            className="font-medium text-slate-500 transition hover:text-indigo-600"
+            className="font-medium text-[#292923]-500 transition hover:text-indigo-600"
           >
             Configure your data <span aria-hidden="true">→</span>
           </Link>

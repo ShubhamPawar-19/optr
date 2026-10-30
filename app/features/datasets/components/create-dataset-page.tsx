@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import {
   ArrowLeft,
+  ArrowUpRight,
   Check,
   ChevronDown,
   Database,
@@ -72,9 +73,9 @@ function fieldTypeLabel(type: FieldType) {
 }
 
 const inputClass =
-  "mt-1.5 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-2 focus:ring-slate-200";
+  "mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#292923] outline-none transition placeholder:text-[#292923]/35 hover:border-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
 
-const labelClass = "block text-sm font-medium text-slate-700";
+const labelClass = "block text-sm font-medium text-[#292923]/80";
 
 export function CreateDatasetPage() {
   const [name, setName] = useState("");
@@ -156,43 +157,89 @@ export function CreateDatasetPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950">
-      <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        {/* Navigation */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <main className="min-h-screen bg-[#F5F7FB] text-[#292923]">
+      <div className="mx-auto max-w-[1680px] px-4 pb-10 sm:px-7 lg:px-10">
+        {/* Workspace header */}
+        <header className="sticky top-0 z-30 -mx-4 flex min-h-[72px] flex-wrap items-center justify-between gap-4 border-b border-slate-300 bg-[#F5F7FB]/95 px-4 py-3 backdrop-blur-md sm:-mx-7 sm:px-7 lg:-mx-10 lg:px-10">
+          <div className="flex min-w-0 items-center gap-3">
             <SidebarToggle />
-            <div className="h-5 w-px bg-slate-200" />
-            <Link
-              href="/datasets"
-              className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900"
-            >
-              <ArrowLeft size={16} />
-              Datasets
-            </Link>
+
+            <div className="min-w-0">
+              <nav
+                aria-label="Breadcrumb"
+                className="flex items-center gap-2 text-xs text-[#292923]/50"
+              >
+                <Link
+                  href="/datasets"
+                  className="transition hover:text-[#292923]/75"
+                >
+                  Datasets
+                </Link>
+                <Link
+                  href="/datasets/new"
+                  className="font-bold text-[#292923]"
+                >
+                <span className="font-bold text-[#292923]/75">
+                  Create
+                </span>
+                </Link>
+              </nav>
+            </div>
           </div>
 
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-            <Database size={14} />
-            Dataset setup
-          </span>
-        </div>
-
-        {/* Page heading */}
-        <header className="mb-8 mt-9 sm:mb-10">
-          <div className="mb-3 flex size-11 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-            <FilePlus2 size={21} className="text-slate-700" />
-          </div>
-
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Create a dataset
-          </h1>
-
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Organize your business information into structured records that
-            your AI agents can search and use to answer customer inquiries.
-          </p>
+          <Link
+            href="/datasets"
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3.5 text-sm font-medium text-[#292923]/75 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            <ArrowLeft size={15} />
+            Back to datasets
+          </Link>
         </header>
+
+        {/* Page introduction */}
+        <section className="pb-6 pt-7 sm:pb-7 sm:pt-8">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium shadow-sm">
+            <span className="size-1.5 rounded-full bg-indigo-500" />
+            Dataset configuration
+          </div>
+
+          <h2 className="text-[26px] font-semibold tracking-[-0.045em] sm:text-[32px]">
+            Build your business data collection.
+          </h2>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#292923]/60 sm:text-[15px]">
+            Organize your business information into structured records
+            that your AI agents can search and use to answer customer
+            inquiries.
+          </p>
+        </section>
+
+        {/* Configuration overview */}
+        <section className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <OverviewCard
+            icon={<Database size={18} />}
+            label="Dataset"
+            value={name.trim() || "Not named yet"}
+            description="Your collection name"
+            accent="indigo"
+          />
+
+          <OverviewCard
+            icon={<Layers3 size={18} />}
+            label="Fields"
+            value={fields.length.toLocaleString("en-IN")}
+            description="Configured attributes"
+            accent="teal"
+          />
+
+          <OverviewCard
+            icon={<FilePlus2 size={18} />}
+            label="Required fields"
+            value={fields.filter((field) => field.isRequired).length.toLocaleString("en-IN")}
+            description="Mandatory record attributes"
+            accent="amber"
+          />
+        </section>
 
         <form
           action={formAction}
@@ -219,18 +266,28 @@ export function CreateDatasetPage() {
           />
 
           {/* Dataset details */}
-          <section className="overflow-hidden rounded-xl p-6 border border-slate-200 bg-white">
-            <SectionHeader
-              icon={<Database size={18} />}
-              title="Dataset details"
-              description="Give this collection a clear name and purpose."
-            />
+          <section className="overflow-hidden rounded-xl border border-slate-300/80 bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4 sm:px-6">
+              <div className="flex size-9 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600">
+                <Database size={17} />
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold tracking-tight">
+                  Dataset details
+                </h3>
+                <p className="mt-0.5 text-xs text-[#292923]/55">
+                  Give this collection a clear name and purpose.
+                </p>
+              </div>
+            </div>
 
             <div className="grid gap-5 p-5 sm:p-6">
               <div>
                 <label htmlFor="dataset-name" className={labelClass}>
                   Dataset name <span className="text-red-500">*</span>
                 </label>
+
                 <input
                   id="dataset-name"
                   value={name}
@@ -240,7 +297,8 @@ export function CreateDatasetPage() {
                   required
                   className={inputClass}
                 />
-                <p className="mt-1.5 text-xs text-slate-400">
+
+                <p className="mt-1.5 text-xs text-[#292923]/45">
                   Use a short name that describes the records in this dataset.
                 </p>
               </div>
@@ -248,8 +306,11 @@ export function CreateDatasetPage() {
               <div>
                 <label htmlFor="dataset-description" className={labelClass}>
                   Description{" "}
-                  <span className="font-normal text-slate-400">Optional</span>
+                  <span className="font-normal text-[#292923]/40">
+                    Optional
+                  </span>
                 </label>
+
                 <textarea
                   id="dataset-description"
                   value={description}
@@ -257,9 +318,10 @@ export function CreateDatasetPage() {
                   placeholder="What information does this dataset contain? When should agents use it?"
                   rows={3}
                   maxLength={500}
-                  className="mt-1.5 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm leading-6 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                  className="mt-1.5 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm leading-6 outline-none transition placeholder:text-[#292923]/35 hover:border-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                 />
-                <p className="mt-1 text-right text-xs tabular-nums text-slate-400">
+
+                <p className="mt-1 text-right text-xs tabular-nums text-[#292923]/40">
                   {description.length}/500
                 </p>
               </div>
@@ -267,18 +329,27 @@ export function CreateDatasetPage() {
           </section>
 
           {/* Field configuration */}
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-              <SectionHeader
-                icon={<Layers3 size={18} />}
-                title="Fields"
-                description="Define the information each record can contain."
-              />
+          <section className="overflow-hidden rounded-xl border border-slate-300/80 bg-white shadow-sm">
+            <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-teal-100 bg-teal-50 text-teal-700">
+                  <Layers3 size={17} />
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold tracking-tight">
+                    Fields
+                  </h3>
+                  <p className="mt-0.5 text-xs text-[#292923]/55">
+                    Define the information each record can contain.
+                  </p>
+                </div>
+              </div>
 
               <button
                 type="button"
                 onClick={addField}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#292923] px-3.5 text-sm font-medium text-white transition hover:bg-[#292923]/85"
               >
                 <Plus size={15} />
                 Add field
@@ -289,18 +360,20 @@ export function CreateDatasetPage() {
               {fields.map((field, index) => (
                 <article
                   key={field.id}
-                  className="overflow-hidden rounded-xl border border-slate-200"
+                  className="overflow-hidden rounded-xl border border-slate-300/80 bg-white transition hover:border-slate-400"
                 >
-                  <div className="flex items-center justify-between gap-3 bg-slate-50 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-3 sm:px-5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-xs font-semibold text-slate-600">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-xs font-semibold text-[#292923]/70">
                         {index + 1}
                       </span>
+
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-800">
+                        <p className="truncate text-sm font-semibold text-[#292923]/90">
                           {field.label.trim() || `Untitled field ${index + 1}`}
                         </p>
-                        <p className="mt-0.5 truncate font-mono text-xs text-slate-400">
+
+                        <p className="mt-0.5 truncate font-mono text-xs text-[#292923]/40">
                           {field.key || "field_key"}
                         </p>
                       </div>
@@ -316,7 +389,7 @@ export function CreateDatasetPage() {
                       }
                       aria-label={`Remove field ${index + 1}`}
                       title="Remove field"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
+                      className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#292923]/40 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -330,6 +403,7 @@ export function CreateDatasetPage() {
                       >
                         Field label <span className="text-red-500">*</span>
                       </label>
+
                       <input
                         id={`field-label-${field.id}`}
                         value={field.label}
@@ -350,13 +424,15 @@ export function CreateDatasetPage() {
                       >
                         Field key
                       </label>
+
                       <input
                         id={`field-key-${field.id}`}
                         value={field.key}
                         readOnly
-                        className={`${inputClass} bg-slate-50 font-mono text-xs text-slate-500`}
+                        className={`${inputClass} bg-slate-50 font-mono text-xs text-[#292923]/55`}
                       />
-                      <p className="mt-1.5 text-xs text-slate-400">
+
+                      <p className="mt-1.5 text-xs text-[#292923]/40">
                         Generated automatically from the label.
                       </p>
                     </div>
@@ -368,6 +444,7 @@ export function CreateDatasetPage() {
                       >
                         Field type
                       </label>
+
                       <div className="relative">
                         <select
                           id={`field-type-${field.id}`}
@@ -385,9 +462,10 @@ export function CreateDatasetPage() {
                             </option>
                           ))}
                         </select>
+
                         <ChevronDown
                           size={15}
-                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#292923]/40"
                         />
                       </div>
                     </div>
@@ -400,6 +478,7 @@ export function CreateDatasetPage() {
                         >
                           Options <span className="text-red-500">*</span>
                         </label>
+
                         <input
                           id={`field-options-${field.id}`}
                           value={field.optionsText}
@@ -412,21 +491,22 @@ export function CreateDatasetPage() {
                           required
                           className={inputClass}
                         />
-                        <p className="mt-1.5 text-xs text-slate-400">
+
+                        <p className="mt-1.5 text-xs text-[#292923]/40">
                           Separate options with commas. Values must be unique.
                         </p>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                    <p className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-[#292923]/55">
                       <Info size={14} />
                       Field settings
                     </p>
 
                     <div className="flex flex-wrap gap-x-5 gap-y-3">
-                      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-[#292923]/70">
                         <input
                           type="checkbox"
                           checked={field.isRequired}
@@ -435,12 +515,12 @@ export function CreateDatasetPage() {
                               isRequired: event.target.checked,
                             })
                           }
-                          className="size-4 rounded border-slate-300 accent-slate-900"
+                          className="size-4 rounded border-slate-300 accent-indigo-600"
                         />
                         Required
                       </label>
 
-                      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-[#292923]/70">
                         <input
                           type="checkbox"
                           checked={field.isSearchable}
@@ -449,7 +529,7 @@ export function CreateDatasetPage() {
                               isSearchable: event.target.checked,
                             })
                           }
-                          className="size-4 rounded border-slate-300 accent-slate-900"
+                          className="size-4 rounded border-slate-300 accent-indigo-600"
                         />
                         Searchable by agents
                       </label>
@@ -461,7 +541,7 @@ export function CreateDatasetPage() {
               <button
                 type="button"
                 onClick={addField}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-4 py-3.5 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-4 py-4 text-sm font-medium text-[#292923]/60 transition hover:border-indigo-300 hover:bg-indigo-50/40 hover:text-indigo-700"
               >
                 <Plus size={16} />
                 Add another field
@@ -469,6 +549,7 @@ export function CreateDatasetPage() {
             </div>
           </section>
 
+          {/* Form errors */}
           {(error || serverState.error) && (
             <p
               role="alert"
@@ -478,16 +559,21 @@ export function CreateDatasetPage() {
             </p>
           )}
 
-          {/* Submit area */}
-          <div className="flex flex-col-reverse gap-4 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-500">
-              {fields.length} {fields.length === 1 ? "field" : "fields"} configured
-            </p>
+          {/* Form footer */}
+          <div className="flex flex-col-reverse gap-4 rounded-xl border border-slate-300/80 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <div>
+              <p className="text-sm font-semibold text-[#292923]/80">
+                Ready to create your dataset?
+              </p>
+              <p className="mt-1 text-xs text-[#292923]/50">
+                {fields.length} {fields.length === 1 ? "field" : "fields"} configured
+              </p>
+            </div>
 
             <div className="flex items-center justify-end gap-3">
               <Link
                 href="/datasets"
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-[#292923]/75 transition hover:bg-slate-50"
               >
                 Cancel
               </Link>
@@ -495,7 +581,7 @@ export function CreateDatasetPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292923] px-4 text-sm font-medium text-white shadow-sm transition hover:bg-[#292923]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPending ? (
                   <>
@@ -506,36 +592,71 @@ export function CreateDatasetPage() {
                   <>
                     <Check size={16} />
                     Create dataset
+                    <ArrowUpRight size={14} />
                   </>
                 )}
               </button>
             </div>
           </div>
         </form>
+
+        <footer className="mt-8 border-t border-slate-300/80 pt-4">
+          <p className="text-xs text-[#292923]/40">
+            OPTR · Dataset management
+          </p>
+        </footer>
       </div>
     </main>
   );
 }
 
-function SectionHeader({
+function OverviewCard({
   icon,
-  title,
+  label,
+  value,
   description,
+  accent,
 }: {
   icon: React.ReactNode;
-  title: string;
+  label: string;
+  value: string;
   description: string;
+  accent: "indigo" | "teal" | "amber";
 }) {
+  const styles = {
+    indigo: {
+      icon: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+      marker: "bg-indigo-500",
+    },
+    teal: {
+      icon: "bg-teal-50 text-teal-700 ring-teal-100",
+      marker: "bg-teal-500",
+    },
+    amber: {
+      icon: "bg-amber-50 text-amber-700 ring-amber-100",
+      marker: "bg-amber-500",
+    },
+  }[accent];
+
   return (
-    <div className="flex min-w-0 items-start gap-3">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
-        {icon}
+    <div className="rounded-xl border border-slate-300/80 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-[#292923]/60">{label}</p>
+
+        <div
+          className={`flex size-9 shrink-0 items-center justify-center rounded-lg ring-1 ${styles.icon}`}
+        >
+          {icon}
+        </div>
       </div>
-      <div className="min-w-0">
-        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
-        <p className="mt-1 text-sm leading-5 text-slate-500">
-          {description}
-        </p>
+
+      <p className="mt-2 truncate text-xl font-semibold tracking-tight text-[#292923]">
+        {value}
+      </p>
+
+      <div className="mt-3 flex items-center gap-2 border-t border-slate-200 pt-3">
+        <span className={`size-1.5 rounded-full ${styles.marker}`} />
+        <p className="text-xs text-[#292923]/55">{description}</p>
       </div>
     </div>
   );
