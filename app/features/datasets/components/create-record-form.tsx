@@ -12,7 +12,7 @@ import {
   FilePlus2,
   Info,
 } from "lucide-react";
-
+import { MediaUploadField } from "./media-upload-field";
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import {
   createDatasetRecordAction,
@@ -115,9 +115,9 @@ export function CreateRecordForm({
         const urls =
           typeof value === "string"
             ? value
-                .split("\n")
-                .map((url) => url.trim())
-                .filter(Boolean)
+              .split("\n")
+              .map((url) => url.trim())
+              .filter(Boolean)
             : Array.isArray(value)
               ? value
               : [];
@@ -325,9 +325,9 @@ export function CreateRecordForm({
 
                   const options = Array.isArray(field.options)
                     ? field.options.filter(
-                        (option): option is string =>
-                          typeof option === "string",
-                      )
+                      (option): option is string =>
+                        typeof option === "string",
+                    )
                     : [];
 
                   const fieldErrors = serverState.fieldErrors?.filter(
@@ -340,9 +340,8 @@ export function CreateRecordForm({
                   const isFullWidth =
                     field.type === "MEDIA" || field.type === "MULTI_SELECT";
 
-                  const fieldInputClass = `${inputClass} ${
-                    hasError ? "border-red-400 focus:border-red-400 focus:ring-red-100" : ""
-                  }`;
+                  const fieldInputClass = `${inputClass} ${hasError ? "border-red-400 focus:border-red-400 focus:ring-red-100" : ""
+                    }`;
 
                   return (
                     <div
@@ -516,34 +515,13 @@ export function CreateRecordForm({
                       )}
 
                       {field.type === "MEDIA" && (
-                        <div className="min-w-0">
-                          <textarea
-                            id={field.key}
-                            name={`field-${field.key}`}
-                            placeholder={
-                              "https://example.com/property-1.jpg\nhttps://example.com/property-2.jpg"
-                            }
-                            rows={4}
-                            className={`${fieldInputClass} resize-y leading-6`}
-                            required={field.isRequired}
-                            value={
-                              typeof value === "string"
-                                ? value
-                                : Array.isArray(value)
-                                  ? value.join("\n")
-                                  : ""
-                            }
-                            onChange={(event) =>
-                              updateValue(field.key, event.target.value)
-                            }
-                            aria-invalid={hasError || undefined}
-                          />
-
-                          <p className="mt-2 text-xs leading-5 text-[#292923]/50">
-                            Enter one publicly accessible HTTP or HTTPS image
-                            URL per line.
-                          </p>
-                        </div>
+                        <MediaUploadField
+                          datasetId={datasetId}
+                          fieldKey={field.key}
+                          value={Array.isArray(value) ? value : []}
+                          onChange={(urls) => updateValue(field.key, urls)}
+                          disabled={isPending}
+                        />
                       )}
 
                       {fieldErrors?.map((error, index) => (

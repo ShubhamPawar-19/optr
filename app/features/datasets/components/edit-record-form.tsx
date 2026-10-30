@@ -9,6 +9,7 @@ import {
   type UpdateRecordActionState,
 } from "../actions";
 import type { DatasetFieldSummary } from "../detail-types";
+import { MediaUploadField } from "./media-upload-field";
 
 interface EditRecordFormProps {
   datasetId: string;
@@ -46,8 +47,8 @@ export function EditRecordForm({
       ) {
         initial[field.key] = Array.isArray(value)
           ? value.filter(
-              (item): item is string => typeof item === "string",
-            )
+            (item): item is string => typeof item === "string",
+          )
           : field.type === "MEDIA" && typeof value === "string"
             ? value
             : [];
@@ -107,33 +108,22 @@ export function EditRecordForm({
         }
       }
 
-      if (field.type === "MEDIA") {
-        const urls =
-          typeof value === "string"
-            ? value.split("\n").map((url) => url.trim()).filter(Boolean)
-            : Array.isArray(value)
-              ? value
-              : [];
-
-        const invalidUrl = urls.find((url) => {
-          try {
-            const parsed = new URL(url);
-            return (
-              parsed.protocol !== "https:" &&
-              parsed.protocol !== "http:"
-            );
-          } catch {
-            return true;
-          }
-        });
-
-        if (invalidUrl) {
-          event.preventDefault();
-          setClientError(
-            `"${field.label}" contains an invalid HTTP or HTTPS URL.`,
-          );
-          return;
-        }
+      {
+        field.type === "MEDIA" && (
+          <MediaUploadField
+            datasetId={datasetId}
+            fieldKey={field.key}
+            value={
+              Array.isArray(value)
+                ? value
+                : typeof value === "string"
+                  ? value.split("\n").map((url) => url.trim()).filter(Boolean)
+                  : []
+            }
+            onChange={(urls) => updateValue(field.key, urls)}
+            disabled={isPending}
+          />
+        )
       }
     }
   }
@@ -204,9 +194,9 @@ export function EditRecordForm({
               const value = values[field.key];
               const options = Array.isArray(field.options)
                 ? field.options.filter(
-                    (option): option is string =>
-                      typeof option === "string",
-                  )
+                  (option): option is string =>
+                    typeof option === "string",
+                )
                 : [];
 
               const errors = fieldErrors.filter(
@@ -229,7 +219,7 @@ export function EditRecordForm({
                   key={field.id}
                   className={
                     field.type === "MEDIA" ||
-                    field.type === "MULTI_SELECT"
+                      field.type === "MULTI_SELECT"
                       ? "min-w-0 sm:col-span-2"
                       : "min-w-0"
                   }
@@ -435,9 +425,8 @@ export function EditRecordForm({
             <Link
               href={`/datasets/${datasetId}`}
               aria-disabled={isPending}
-              className={`inline-flex items-center justify-center rounded-lg border border-slate-400 bg-white px-4 py-2.5 text-sm font-medium text-[#292923]-700 transition-colors hover:bg-[#292923]-50 ${
-                isPending ? "pointer-events-none opacity-50" : ""
-              }`}
+              className={`inline-flex items-center justify-center rounded-lg border border-slate-400 bg-white px-4 py-2.5 text-sm font-medium text-[#292923]-700 transition-colors hover:bg-[#292923]-50 ${isPending ? "pointer-events-none opacity-50" : ""
+                }`}
             >
               Cancel
             </Link>
