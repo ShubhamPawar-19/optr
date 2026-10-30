@@ -1,14 +1,25 @@
+
 import "server-only";
 
 import { db } from "@/app/lib/db";
-
-const DEMO_BUSINESS_ID = "demo-business";
+import { getCurrentBusiness } from "@/app/lib/current-business";
 
 export async function listLeads() {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return {
+      fields: [],
+      contacts: [],
+    };
+  }
+
+  const businessId = business.id;
+
   const [contacts, fields] = await Promise.all([
     db.contact.findMany({
       where: {
-        businessId: DEMO_BUSINESS_ID,
+        businessId,
       },
       select: {
         id: true,
@@ -38,7 +49,7 @@ export async function listLeads() {
 
     db.contactField.findMany({
       where: {
-        businessId: DEMO_BUSINESS_ID,
+        businessId,
         isActive: true,
       },
       select: {

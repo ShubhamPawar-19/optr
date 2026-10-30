@@ -3,14 +3,13 @@
 
 import { revalidatePath } from "next/cache";
 import type { DatasetFieldType } from "@/app/generated/prisma/client";
+import { getCurrentBusiness } from "@/app/lib/current-business";
 import {
   createContactField,
   updateContactField,
   setContactFieldActive,
   deleteContactField,
 } from "./services/contact-fields";
-
-const DEMO_BUSINESS_ID = "demo-business";
 
 const FIELD_TYPES = new Set<string>([
   "TEXT",
@@ -44,6 +43,19 @@ function readFieldType(value: string | null): DatasetFieldType | null {
   return value as DatasetFieldType;
 }
 
+async function getBusinessIdOrError(): Promise<
+  { businessId: string; error?: never } |
+  { businessId?: never; error: string }
+> {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return { error: "Please sign in and set up your business first." };
+  }
+
+  return { businessId: business.id };
+}
+
 export async function createContactFieldAction(
   _previousState: ContactFieldActionState,
   formData: FormData,
@@ -66,8 +78,11 @@ export async function createContactFieldAction(
     return { error: "Check the field details and try again." };
   }
 
+  const access = await getBusinessIdOrError();
+  if (!access.businessId) return { error: access.error };
+
   const result = await createContactField({
-    businessId: DEMO_BUSINESS_ID,
+    businessId: access.businessId,
     field: {
       label,
       key,
@@ -108,8 +123,11 @@ export async function updateContactFieldAction(
     return { error: "Check the field details and try again." };
   }
 
+  const access = await getBusinessIdOrError();
+  if (!access.businessId) return { error: access.error };
+
   const result = await updateContactField({
-    businessId: DEMO_BUSINESS_ID,
+    businessId: access.businessId,
     field: {
       id,
       label,
@@ -140,8 +158,11 @@ export async function toggleContactFieldAction(
     return { error: "Invalid field status." };
   }
 
+  const access = await getBusinessIdOrError();
+  if (!access.businessId) return { error: access.error };
+
   const result = await setContactFieldActive({
-    businessId: DEMO_BUSINESS_ID,
+    businessId: access.businessId,
     fieldId,
     isActive,
   });
@@ -154,7 +175,9 @@ export async function toggleContactFieldAction(
   revalidatePath("/contacts/fields");
 
   return {
-    success: isActive ? "Contact field activated." : "Contact field deactivated.",
+    success: isActive
+      ? "Contact field activated."
+      : "Contact field deactivated.",
   };
 }
 
@@ -168,9 +191,12 @@ export async function deleteContactFieldAction(
     return { error: "Invalid contact field." };
   }
 
+  const access = await getBusinessIdOrError();
+  if (!access.businessId) return { error: access.error };
+
   try {
     const result = await deleteContactField({
-      businessId: DEMO_BUSINESS_ID,
+      businessId: access.businessId,
       fieldId,
     });
 

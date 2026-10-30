@@ -1,5 +1,6 @@
 
 "use server";
+
 import { updateDatasetRecord } from "./services/update-dataset-record";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -8,8 +9,7 @@ import { deleteDatasetRecord } from "./services/delete-dataset-record";
 import { createDataset } from "./services/create-dataset";
 import { createDatasetRecord } from "./services/create-dataset-record";
 import { updateDatasetSchema } from "./services/update-dataset-schema";
-
-const DEMO_BUSINESS_ID = "demo-business";
+import { getCurrentBusiness } from "@/app/lib/current-business";
 
 const FIELD_TYPES = new Set<string>([
   "TEXT",
@@ -30,6 +30,12 @@ export async function createDatasetAction(
   _previousState: CreateDatasetActionState,
   formData: FormData,
 ): Promise<CreateDatasetActionState> {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return { error: "Your account is not linked to a business yet." };
+  }
+
   const name = formData.get("name");
   const description = formData.get("description");
   const fieldsJson = formData.get("fields");
@@ -97,7 +103,7 @@ export async function createDatasetAction(
   }
 
   const result = await createDataset({
-    businessId: DEMO_BUSINESS_ID,
+    businessId: business.id,
     name,
     description,
     fields,
@@ -120,6 +126,12 @@ export async function createDatasetRecordAction(
   _previousState: CreateRecordActionState,
   formData: FormData,
 ): Promise<CreateRecordActionState> {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return { error: "Your account is not linked to a business yet." };
+  }
+
   const datasetId = formData.get("datasetId");
   const dataJson = formData.get("data");
 
@@ -140,7 +152,7 @@ export async function createDatasetRecordAction(
   }
 
   const result = await createDatasetRecord({
-    businessId: DEMO_BUSINESS_ID,
+    businessId: business.id,
     datasetId,
     data,
   });
@@ -158,7 +170,6 @@ export async function createDatasetRecordAction(
   redirect(`/datasets/${datasetId}`);
 }
 
-
 export type UpdateRecordActionState = {
   error?: string;
   fieldErrors?: { field: string; message: string }[];
@@ -168,6 +179,12 @@ export async function updateDatasetRecordAction(
   _previousState: UpdateRecordActionState,
   formData: FormData,
 ): Promise<UpdateRecordActionState> {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return { error: "Your account is not linked to a business yet." };
+  }
+
   const datasetId = formData.get("datasetId");
   const recordId = formData.get("recordId");
   const dataJson = formData.get("data");
@@ -191,7 +208,7 @@ export async function updateDatasetRecordAction(
   }
 
   const result = await updateDatasetRecord({
-    businessId: DEMO_BUSINESS_ID,
+    businessId: business.id,
     datasetId,
     recordId,
     data,
@@ -208,7 +225,6 @@ export async function updateDatasetRecordAction(
   redirect(`/datasets/${datasetId}`);
 }
 
-
 export type DeleteRecordActionState = {
   error?: string;
 };
@@ -217,6 +233,12 @@ export async function deleteDatasetRecordAction(
   _previousState: DeleteRecordActionState,
   formData: FormData,
 ): Promise<DeleteRecordActionState> {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return { error: "Your account is not linked to a business yet." };
+  }
+
   const datasetId = formData.get("datasetId");
   const recordId = formData.get("recordId");
 
@@ -230,7 +252,7 @@ export async function deleteDatasetRecordAction(
   }
 
   const result = await deleteDatasetRecord({
-    businessId: DEMO_BUSINESS_ID,
+    businessId: business.id,
     datasetId,
     recordId,
   });
@@ -253,6 +275,12 @@ export async function updateDatasetSchemaAction(
   _previousState: UpdateDatasetSchemaActionState,
   formData: FormData,
 ): Promise<UpdateDatasetSchemaActionState> {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return { error: "Your account is not linked to a business yet." };
+  }
+
   const datasetId = formData.get("datasetId");
   const fieldsJson = formData.get("fields");
 
@@ -321,7 +349,7 @@ export async function updateDatasetSchemaAction(
   }
 
   const result = await updateDatasetSchema({
-    businessId: DEMO_BUSINESS_ID,
+    businessId: business.id,
     datasetId,
     fields,
   });

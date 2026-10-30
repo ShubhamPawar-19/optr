@@ -1,19 +1,25 @@
+
 import "server-only";
 
 import { db } from "@/app/lib/db";
-
-const DEMO_BUSINESS_ID = "demo-business";
+import { getCurrentBusiness } from "@/app/lib/current-business";
 
 export async function getDatasetRecord(
   datasetId: string,
   recordId: string,
 ) {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return null;
+  }
+
   return db.datasetRecord.findFirst({
     where: {
       id: recordId,
       datasetId,
       dataset: {
-        businessId: DEMO_BUSINESS_ID,
+        businessId: business.id,
       },
     },
     select: {

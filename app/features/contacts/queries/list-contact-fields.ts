@@ -1,10 +1,15 @@
 
 import "server-only";
 
+import { getCurrentBusiness } from "@/app/lib/current-business";
 import { listContactFields } from "../services/contact-fields";
 
-const DEMO_BUSINESS_ID = "demo-business";
-
 export async function getContactFields() {
-  return listContactFields(DEMO_BUSINESS_ID);
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return [];
+  }
+
+  return listContactFields(business.id);
 }

@@ -2,29 +2,34 @@
 import "server-only";
 
 import { db } from "@/app/lib/db";
-
-const DEMO_BUSINESS_ID = "demo-business";
+import { getCurrentBusiness } from "@/app/lib/current-business";
 
 export async function listContacts() {
-    return db.contact.findMany({
-        where: {
-            businessId: DEMO_BUSINESS_ID,
-        },
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return [];
+  }
+
+  return db.contact.findMany({
+    where: {
+      businessId: business.id,
+    },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      createdAt: true,
+      updatedAt: true,
+      _count: {
         select: {
-            id: true,
-            name: true,
-            phone: true,
-            email: true,
-            createdAt: true,
-            updatedAt: true,
-            _count: {
-                select: {
-                    conversations: true,
-                },
-            },
+          conversations: true,
         },
-        orderBy: {
-            updatedAt: "desc",
-        },
-    });
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
 }

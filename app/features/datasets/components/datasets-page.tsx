@@ -1,7 +1,10 @@
+
 import Link from "next/link";
 import {
+  ArrowDown,
   ArrowUpRight,
   Database,
+  FilePlus2,
   FileText,
   Layers3,
   Plus,
@@ -25,10 +28,37 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
     0,
   );
 
+  const quickActions = [
+    {
+      title: "Create dataset",
+      description: "Create a collection and define its fields.",
+      href: "/datasets/new",
+      icon: <Plus size={20} />,
+      iconClass: "bg-indigo-50 text-indigo-600",
+      action: "Get started",
+    },
+    {
+      title: "Create record",
+      description: "Choose a dataset and add a new record.",
+      href: "#dataset-list",
+      icon: <FilePlus2 size={20} />,
+      iconClass: "bg-emerald-50 text-emerald-600",
+      action: "Choose dataset",
+    },
+    {
+      title: "View datasets",
+      description: "Browse collections and manage their records.",
+      href: "#dataset-list",
+      icon: <Database size={20} />,
+      iconClass: "bg-amber-50 text-amber-600",
+      action: "Browse datasets",
+    },
+  ];
+
   return (
     <main className="min-h-screen w-full min-w-0 flex-1 bg-slate-50 text-slate-950">
       <div className="w-full min-w-0 px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-        <header className="mb-8 flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <header className="mb-7 flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <div className="mb-4 flex items-center gap-3">
               <SidebarToggle />
@@ -69,6 +99,58 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
           </Link>
         </header>
 
+        <section aria-label="Dataset quick actions" className="mb-8">
+          <div className="mb-4">
+            <h2 className="text-base font-semibold tracking-tight">
+              Quick actions
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Create and manage your business data.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {quickActions.map((action) => (
+              <Link
+                key={action.title}
+                href={action.href}
+                className="group flex min-w-0 items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-950/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+              >
+                <div
+                  className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${action.iconClass}`}
+                >
+                  {action.icon}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    {action.title}
+                  </h3>
+
+                  <p className="mt-1 text-sm leading-5 text-slate-500">
+                    {action.description}
+                  </p>
+
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 transition-colors group-hover:text-slate-950">
+                    {action.action}
+                    {action.title === "Create record" ? (
+                      <ArrowDown
+                        size={14}
+                        className="transition-transform group-hover:translate-y-0.5"
+                      />
+                    ) : (
+                      <ArrowUpRight
+                        size={14}
+                        className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      />
+                    )}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <section
           aria-label="Dataset statistics"
           className="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3"
@@ -92,7 +174,7 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
           />
         </section>
 
-        <section className="min-w-0">
+        <section id="dataset-list" className="min-w-0 scroll-mt-6">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-base font-semibold tracking-tight">
@@ -100,7 +182,8 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Structured collections available to your agents.
+                Select a dataset to view its records, add new records,
+                or manage its fields.
               </p>
             </div>
 
@@ -183,7 +266,7 @@ export function DatasetsPage({ datasets }: DatasetsPageProps) {
 
         <footer className="mt-8 border-t border-slate-200/80 pt-4">
           <p className="text-xs text-slate-400">
-            Demo workspace · Read-only preview
+            OPTR · Dataset management
           </p>
         </footer>
       </div>

@@ -2,18 +2,23 @@
 import "server-only";
 
 import { db } from "@/app/lib/db";
-
-const DEMO_BUSINESS_ID = "demo-business";
+import { getCurrentBusiness } from "@/app/lib/current-business";
 
 export async function getContactProfile(contactId: string) {
   if (!contactId.trim()) {
     return null;
   }
 
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    return null;
+  }
+
   return db.contact.findFirst({
     where: {
       id: contactId,
-      businessId: DEMO_BUSINESS_ID,
+      businessId: business.id,
     },
     select: {
       id: true,
@@ -22,7 +27,6 @@ export async function getContactProfile(contactId: string) {
       email: true,
       createdAt: true,
       updatedAt: true,
-
       identities: {
         select: {
           id: true,
@@ -34,7 +38,6 @@ export async function getContactProfile(contactId: string) {
           createdAt: "asc",
         },
       },
-
       conversations: {
         select: {
           id: true,
@@ -59,7 +62,6 @@ export async function getContactProfile(contactId: string) {
           updatedAt: "desc",
         },
       },
-
       profileValues: {
         select: {
           id: true,
@@ -99,7 +101,6 @@ export async function getContactProfile(contactId: string) {
           updatedAt: "desc",
         },
       },
-
       business: {
         select: {
           contactFields: {

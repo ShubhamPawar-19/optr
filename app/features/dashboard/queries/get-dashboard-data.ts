@@ -3,9 +3,7 @@ import "server-only";
 
 import { db } from "@/app/lib/db";
 
-const DEMO_BUSINESS_ID = "demo-business";
-
-export async function getDashboardData() {
+export async function getDashboardData(ownerId: string) {
   const now = new Date();
 
   const startOfToday = new Date(now);
@@ -17,9 +15,42 @@ export async function getDashboardData() {
   const startOfWeek = new Date(startOfToday);
   startOfWeek.setDate(startOfWeek.getDate() - 6);
 
+  // Resolve only a business owned by the authenticated user.
+  const business = await db.business.findFirst({
+    where: { ownerId },
+    select: { id: true, name: true },
+  });
+
+  // New users without a business must not see demo workspace data.
+  if (!business) {
+    return {
+      generatedAt: now.toISOString(),
+      business: null,
+      metrics: {
+        totalContacts: 0,
+        contactsCreatedToday: 0,
+        contactsCreatedYesterday: 0,
+        totalConversations: 0,
+        conversationsToday: 0,
+        activeAgents: 0,
+        totalAgents: 0,
+        activeWhatsAppChannels: 0,
+        activeFields: 0,
+        runsToday: 0,
+        successfulRunsToday: 0,
+        failedRunsToday: 0,
+      },
+      recentContacts: [],
+      recentRuns: [],
+      runsThisWeek: [],
+    };
+  }
+
+  const businessId = business.id;
+
   // AgentRun and Conversation store agentId without an exposed agent relation.
   const businessAgents = await db.agent.findMany({
-    where: { businessId: DEMO_BUSINESS_ID },
+    where: { businessId },
     select: { id: true, name: true },
   });
 
@@ -29,7 +60,6 @@ export async function getDashboardData() {
   );
 
   const [
-    business,
     totalContacts,
     contactsCreatedToday,
     contactsCreatedYesterday,
@@ -46,25 +76,20 @@ export async function getDashboardData() {
     successfulRunsToday,
     runsThisWeek,
   ] = await Promise.all([
-    db.business.findUnique({
-      where: { id: DEMO_BUSINESS_ID },
-      select: { id: true, name: true },
-    }),
-
     db.contact.count({
-      where: { businessId: DEMO_BUSINESS_ID },
+      where: { businessId },
     }),
 
     db.contact.count({
       where: {
-        businessId: DEMO_BUSINESS_ID,
+        businessId,
         createdAt: { gte: startOfToday },
       },
     }),
 
     db.contact.count({
       where: {
-        businessId: DEMO_BUSINESS_ID,
+        businessId,
         createdAt: {
           gte: startOfPreviousDay,
           lt: startOfToday,
@@ -85,31 +110,31 @@ export async function getDashboardData() {
 
     db.agent.count({
       where: {
-        businessId: DEMO_BUSINESS_ID,
+        businessId,
         isActive: true,
       },
     }),
 
     db.agent.count({
-      where: { businessId: DEMO_BUSINESS_ID },
+      where: { businessId },
     }),
 
     db.whatsAppChannel.count({
       where: {
-        businessId: DEMO_BUSINESS_ID,
+        businessId,
         isActive: true,
       },
     }),
 
     db.contactField.count({
       where: {
-        businessId: DEMO_BUSINESS_ID,
+        businessId,
         isActive: true,
       },
     }),
 
     db.contact.findMany({
-      where: { businessId: DEMO_BUSINESS_ID },
+      where: { businessId },
       orderBy: { updatedAt: "desc" },
       take: 5,
       select: {
@@ -122,7 +147,7 @@ export async function getDashboardData() {
         profileValues: {
           where: {
             field: {
-              businessId: DEMO_BUSINESS_ID,
+              businessId,
               isActive: true,
             },
           },

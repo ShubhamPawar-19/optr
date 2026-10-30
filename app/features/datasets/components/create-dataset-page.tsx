@@ -1,17 +1,20 @@
+
 "use client";
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import {
   ArrowLeft,
-  Plus,
-  Trash2,
-  Database,
-  Layers3,
   Check,
   ChevronDown,
+  Database,
+  FilePlus2,
   Info,
+  Layers3,
+  Plus,
+  Trash2,
 } from "lucide-react";
+
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import {
   createDatasetAction,
@@ -62,30 +65,35 @@ function createField(): FieldDraft {
 }
 
 function fieldTypeLabel(type: FieldType) {
-  return type.replaceAll("_", " ").toLowerCase().replace(/^\w/, (letter) =>
-    letter.toUpperCase()
-  );
+  return type
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/^\w/, (letter) => letter.toUpperCase());
 }
 
 const inputClass =
-  "mt-2 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100";
+  "mt-1.5 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-2 focus:ring-slate-200";
+
+const labelClass = "block text-sm font-medium text-slate-700";
 
 export function CreateDatasetPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [fields, setFields] = useState<FieldDraft[]>([createField()]);
+  const [error, setError] = useState("");
+
   const initialState: CreateDatasetActionState = {};
+
   const [serverState, formAction, isPending] = useActionState(
     createDatasetAction,
-    initialState
+    initialState,
   );
-  const [error, setError] = useState("");
 
   function updateField(id: string, updates: Partial<FieldDraft>) {
     setFields((current) =>
       current.map((field) =>
-        field.id === id ? { ...field, ...updates } : field
-      )
+        field.id === id ? { ...field, ...updates } : field,
+      ),
     );
   }
 
@@ -138,53 +146,53 @@ export function CreateDatasetPage() {
     if (invalidOptions) {
       event.preventDefault();
       setError(
-        `Enter unique, comma-separated options for "${invalidOptions.label}".`
+        `Enter unique, comma-separated options for "${invalidOptions.label}".`,
       );
     }
   }
 
+  function addField() {
+    setFields((current) => [...current, createField()]);
+  }
+
   return (
-    <main className="min-h-screen w-full bg-slate-50/80 text-slate-950">
-      <div className="w-full px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        {/* Top navigation */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
+    <main className="min-h-screen bg-slate-50 text-slate-950">
+      <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+        {/* Navigation */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <SidebarToggle />
             <div className="h-5 w-px bg-slate-200" />
             <Link
               href="/datasets"
               className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900"
             >
-              <ArrowLeft className="size-4" />
-              <span>Datasets</span>
+              <ArrowLeft size={16} />
+              Datasets
             </Link>
           </div>
 
-          <span className="hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500 sm:inline-flex">
-            <Database className="size-3.5" />
+          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
+            <Database size={14} />
             Dataset setup
           </span>
         </div>
 
-        {/* Page introduction */}
-        <div className="mb-8 mt-8 flex items-start gap-4 sm:mb-10 sm:mt-10">
-          <div className="hidden size-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm sm:flex">
-            <Database className="size-5 text-slate-700" />
+        {/* Page heading */}
+        <header className="mb-8 mt-9 sm:mb-10">
+          <div className="mb-3 flex size-11 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+            <FilePlus2 size={21} className="text-slate-700" />
           </div>
 
-          <div className="min-w-0">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Data management
-            </p>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-              Create a dataset
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-[15px]">
-              Define a structured collection of information your agents can
-              search and use when responding to customers.
-            </p>
-          </div>
-        </div>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Create a dataset
+          </h1>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            Organize your business information into structured records that
+            your AI agents can search and use to answer customer inquiries.
+          </p>
+        </header>
 
         <form
           action={formAction}
@@ -206,32 +214,21 @@ export function CreateDatasetPage() {
                 options: ["SINGLE_SELECT", "MULTI_SELECT"].includes(field.type)
                   ? field.optionsText.split(",").map((option) => option.trim())
                   : undefined,
-              }))
+              })),
             )}
           />
 
           {/* Dataset details */}
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/30">
-            <div className="flex items-start gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                <Database className="size-4 text-slate-700" />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-slate-900">
-                  Dataset details
-                </h2>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Start with a name and a short description of the data.
-                </p>
-              </div>
-            </div>
+          <section className="overflow-hidden rounded-xl p-6 border border-slate-200 bg-white">
+            <SectionHeader
+              icon={<Database size={18} />}
+              title="Dataset details"
+              description="Give this collection a clear name and purpose."
+            />
 
-            <div className="grid gap-5 px-5 py-6 sm:px-6">
+            <div className="grid gap-5 p-5 sm:p-6">
               <div>
-                <label
-                  htmlFor="dataset-name"
-                  className="text-sm font-medium text-slate-800"
-                >
+                <label htmlFor="dataset-name" className={labelClass}>
                   Dataset name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -244,79 +241,67 @@ export function CreateDatasetPage() {
                   className={inputClass}
                 />
                 <p className="mt-1.5 text-xs text-slate-400">
-                  Choose a name that describes the records in this collection.
+                  Use a short name that describes the records in this dataset.
                 </p>
               </div>
 
               <div>
-                <label
-                  htmlFor="dataset-description"
-                  className="text-sm font-medium text-slate-800"
-                >
-                  Description <span className="text-slate-400">(optional)</span>
+                <label htmlFor="dataset-description" className={labelClass}>
+                  Description{" "}
+                  <span className="font-normal text-slate-400">Optional</span>
                 </label>
                 <textarea
                   id="dataset-description"
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Describe what this dataset contains and when agents should use it."
+                  placeholder="What information does this dataset contain? When should agents use it?"
                   rows={3}
                   maxLength={500}
-                  className="mt-2 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100"
+                  className="mt-1.5 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm leading-6 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
                 />
-                <div className="mt-1 flex justify-end">
-                  <span className="text-[11px] tabular-nums text-slate-400">
-                    {description.length}/500
-                  </span>
-                </div>
+                <p className="mt-1 text-right text-xs tabular-nums text-slate-400">
+                  {description.length}/500
+                </p>
               </div>
             </div>
           </section>
 
-          {/* Fields */}
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/30">
-            <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-              <div className="flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                  <Layers3 className="size-4 text-slate-700" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-slate-900">
-                    Define fields
-                  </h2>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    Choose the information stored on each record.
-                  </p>
-                </div>
-              </div>
+          {/* Field configuration */}
+          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <SectionHeader
+                icon={<Layers3 size={18} />}
+                title="Fields"
+                description="Define the information each record can contain."
+              />
 
               <button
                 type="button"
-                onClick={() => setFields((current) => [...current, createField()])}
-                className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
+                onClick={addField}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
-                <Plus className="size-4" />
+                <Plus size={15} />
                 Add field
               </button>
             </div>
 
             <div className="space-y-4 p-4 sm:p-6">
               {fields.map((field, index) => (
-                <div
+                <article
                   key={field.id}
-                  className="overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-slate-300"
+                  className="overflow-hidden rounded-xl border border-slate-200"
                 >
-                  <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-4 py-3 sm:px-5">
+                  <div className="flex items-center justify-between gap-3 bg-slate-50 px-4 py-3">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-600">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-xs font-semibold text-slate-600">
                         {index + 1}
                       </span>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-slate-800">
                           {field.label.trim() || `Untitled field ${index + 1}`}
                         </p>
-                        <p className="mt-0.5 text-[11px] text-slate-400">
-                          {field.key || "Field key will be generated"}
+                        <p className="mt-0.5 truncate font-mono text-xs text-slate-400">
+                          {field.key || "field_key"}
                         </p>
                       </div>
                     </div>
@@ -326,22 +311,22 @@ export function CreateDatasetPage() {
                       disabled={fields.length === 1}
                       onClick={() =>
                         setFields((current) =>
-                          current.filter((item) => item.id !== field.id)
+                          current.filter((item) => item.id !== field.id),
                         )
                       }
                       aria-label={`Remove field ${index + 1}`}
                       title="Remove field"
                       className="flex size-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
                     >
-                      <Trash2 className="size-4" />
+                      <Trash2 size={16} />
                     </button>
                   </div>
 
-                  <div className="grid gap-x-5 gap-y-4 p-4 sm:grid-cols-2 sm:p-5">
+                  <div className="grid gap-4 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5">
                     <div>
                       <label
                         htmlFor={`field-label-${field.id}`}
-                        className="text-xs font-medium text-slate-700"
+                        className={labelClass}
                       >
                         Field label <span className="text-red-500">*</span>
                       </label>
@@ -361,7 +346,7 @@ export function CreateDatasetPage() {
                     <div>
                       <label
                         htmlFor={`field-key-${field.id}`}
-                        className="text-xs font-medium text-slate-700"
+                        className={labelClass}
                       >
                         Field key
                       </label>
@@ -369,21 +354,17 @@ export function CreateDatasetPage() {
                         id={`field-key-${field.id}`}
                         value={field.key}
                         readOnly
-                        aria-describedby={`field-key-help-${field.id}`}
                         className={`${inputClass} bg-slate-50 font-mono text-xs text-slate-500`}
                       />
-                      <p
-                        id={`field-key-help-${field.id}`}
-                        className="mt-1.5 text-[11px] text-slate-400"
-                      >
-                        Used internally by agents and tools.
+                      <p className="mt-1.5 text-xs text-slate-400">
+                        Generated automatically from the label.
                       </p>
                     </div>
 
                     <div>
                       <label
                         htmlFor={`field-type-${field.id}`}
-                        className="text-xs font-medium text-slate-700"
+                        className={labelClass}
                       >
                         Field type
                       </label>
@@ -396,7 +377,7 @@ export function CreateDatasetPage() {
                               type: event.target.value as FieldType,
                             })
                           }
-                          className={`${inputClass} appearance-none pr-9 capitalize`}
+                          className={`${inputClass} appearance-none pr-9`}
                         >
                           {FIELD_TYPES.map((type) => (
                             <option key={type} value={type}>
@@ -404,7 +385,10 @@ export function CreateDatasetPage() {
                             </option>
                           ))}
                         </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                        <ChevronDown
+                          size={15}
+                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
                       </div>
                     </div>
 
@@ -412,7 +396,7 @@ export function CreateDatasetPage() {
                       <div>
                         <label
                           htmlFor={`field-options-${field.id}`}
-                          className="text-xs font-medium text-slate-700"
+                          className={labelClass}
                         >
                           Options <span className="text-red-500">*</span>
                         </label>
@@ -428,21 +412,21 @@ export function CreateDatasetPage() {
                           required
                           className={inputClass}
                         />
-                        <p className="mt-1.5 text-[11px] text-slate-400">
-                          Separate values with commas. Each option must be unique.
+                        <p className="mt-1.5 text-xs text-slate-400">
+                          Separate options with commas. Values must be unique.
                         </p>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                    <p className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                      <Info className="size-3.5 shrink-0" />
-                      Configure how this field is used.
+                  <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                    <p className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <Info size={14} />
+                      Field settings
                     </p>
 
                     <div className="flex flex-wrap gap-x-5 gap-y-3">
-                      <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-slate-600">
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600">
                         <input
                           type="checkbox"
                           checked={field.isRequired}
@@ -451,12 +435,12 @@ export function CreateDatasetPage() {
                               isRequired: event.target.checked,
                             })
                           }
-                          className="size-3.5 rounded border-slate-300 accent-slate-900 focus:ring-slate-400"
+                          className="size-4 rounded border-slate-300 accent-slate-900"
                         />
                         Required
                       </label>
 
-                      <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-slate-600">
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600">
                         <input
                           type="checkbox"
                           checked={field.isSearchable}
@@ -465,21 +449,21 @@ export function CreateDatasetPage() {
                               isSearchable: event.target.checked,
                             })
                           }
-                          className="size-3.5 rounded border-slate-300 accent-slate-900 focus:ring-slate-400"
+                          className="size-4 rounded border-slate-300 accent-slate-900"
                         />
                         Searchable by agents
                       </label>
                     </div>
                   </div>
-                </div>
+                </article>
               ))}
 
               <button
                 type="button"
-                onClick={() => setFields((current) => [...current, createField()])}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-4 py-4 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
+                onClick={addField}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-4 py-3.5 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
               >
-                <Plus className="size-4" />
+                <Plus size={16} />
                 Add another field
               </button>
             </div>
@@ -488,15 +472,15 @@ export function CreateDatasetPage() {
           {(error || serverState.error) && (
             <p
               role="alert"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
             >
               {error || serverState.error}
             </p>
           )}
 
-          {/* Form actions */}
-          <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs leading-5 text-slate-500">
+          {/* Submit area */}
+          <div className="flex flex-col-reverse gap-4 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-500">
               {fields.length} {fields.length === 1 ? "field" : "fields"} configured
             </p>
 
@@ -507,10 +491,11 @@ export function CreateDatasetPage() {
               >
                 Cancel
               </Link>
+
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPending ? (
                   <>
@@ -519,7 +504,7 @@ export function CreateDatasetPage() {
                   </>
                 ) : (
                   <>
-                    <Check className="size-4" />
+                    <Check size={16} />
                     Create dataset
                   </>
                 )}
@@ -529,5 +514,29 @@ export function CreateDatasetPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+function SectionHeader({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex min-w-0 items-start gap-3">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+        <p className="mt-1 text-sm leading-5 text-slate-500">
+          {description}
+        </p>
+      </div>
+    </div>
   );
 }

@@ -131,12 +131,12 @@ model Property {
 }
 
 model Conversation {
-  id            String  @id
-  agentId       String
-  channel       String
-  externalId    String
-  contactId     String?
-  phoneNumberId String?
+  id              String  @id
+  agentId         String
+  channel         String
+  externalId      String
+  contactId       String?
+  phoneNumberId   String?
 
   contact  Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
   messages Message[]
@@ -193,8 +193,11 @@ model Agent {
 model Business {
   id        String   @id @default(cuid())
   name      String
+  ownerId   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  owner User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
   agents           Agent[]
   properties       Property[]
@@ -203,6 +206,8 @@ model Business {
   contacts         Contact[]
   identities       ContactIdentity[]
   contactFields    ContactField[]
+
+  @@index([ownerId])
 }
 
 model WhatsAppChannel {
@@ -210,9 +215,9 @@ model WhatsAppChannel {
   phoneNumberId        String   @unique
   businessId           String
   encryptedAccessToken String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
@@ -379,4 +384,68 @@ model WhatsAppPendingStatus {
   @@unique([phoneNumberId, externalId, status, timestamp])
   @@index([phoneNumberId, externalId, processedAt])
   @@index([createdAt])
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  businesses    Business[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
