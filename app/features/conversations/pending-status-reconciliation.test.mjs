@@ -85,3 +85,13 @@ test("preserves the failure reason when applying FAILED", () => {
     );
 });
 
+test("keeps an invalid persisted status pending", () => {
+    assert.deepEqual(
+        decidePendingWhatsAppStatus({
+            currentStatus: "SENT",
+            pending: pending({ status: "unexpected-status" }),
+        }),
+        { action: "keep-pending" },
+    );
+});
+

@@ -3,11 +3,40 @@ import type { OutboundMessageStatus } from "../../generated/prisma/client";
 import { getOutboundStatusTransition } from "./outbound-status";
 import { decidePendingWhatsAppStatus } from "./pending-status-reconciliation";
 
+
 export async function getOrCreateConversation(params: {
     agentId: string;
     channel: string;
     externalId: string;
+    phoneNumberId?: string;
 }) {
+    if (params.channel === "WHATSAPP") {
+        if (!params.phoneNumberId) {
+            throw new Error("WhatsApp conversation requires a phone number ID");
+        }
+
+        const [agent, channel] = await Promise.all([
+            db.agent.findUnique({
+                where: { id: params.agentId },
+                select: { businessId: true, isActive: true },
+            }),
+            db.whatsAppChannel.findUnique({
+                where: { phoneNumberId: params.phoneNumberId },
+                select: { businessId: true, isActive: true },
+            }),
+        ]);
+
+        if (
+            !agent ||
+            !agent.isActive ||
+            !channel ||
+            !channel.isActive ||
+            agent.businessId !== channel.businessId
+        ) {
+            throw new Error("WhatsApp channel does not belong to the active agent's business");
+        }
+    }
+
     return db.conversation.upsert({
         where: {
             agentId_channel_externalId: {
@@ -16,15 +45,19 @@ export async function getOrCreateConversation(params: {
                 externalId: params.externalId,
             },
         },
-        update: {},
+        update: params.phoneNumberId
+            ? { phoneNumberId: params.phoneNumberId }
+            : {},
         create: {
             id: crypto.randomUUID(),
             agentId: params.agentId,
             channel: params.channel,
             externalId: params.externalId,
+            phoneNumberId: params.phoneNumberId,
         },
     });
 }
+
 
 export async function createMessage(params: {
     conversationId: string;
@@ -60,10 +93,86 @@ export async function createOutboundMessage(params: {
     });
 }
 
-export async function claimOutboundMessage(messageId: string) {
+/**
+ * Returns WhatsApp conversation IDs belonging to the supplied business
+ * and exact WhatsApp phone-number channel.
+ */
+async function getWhatsAppConversationIds(
+    businessId: string,
+    phoneNumberId: string,
+) {
+    const agents = await db.agent.findMany({
+        where: { businessId },
+        select: { id: true },
+    });
+
+    if (agents.length === 0) {
+        return [];
+    }
+
+    const conversations = await db.conversation.findMany({
+        where: {
+            channel: "WHATSAPP",
+            phoneNumberId,
+            agentId: {
+                in: agents.map((agent) => agent.id),
+            },
+        },
+        select: { id: true },
+    });
+
+    return conversations.map((conversation) => conversation.id);
+}
+
+async function isActiveWhatsAppChannelOwnedByBusiness(
+    businessId: string,
+    phoneNumberId: string,
+) {
+    const channel = await db.whatsAppChannel.findFirst({
+        where: {
+            businessId,
+            phoneNumberId,
+            isActive: true,
+        },
+        select: { id: true },
+    });
+
+    return Boolean(channel);
+}
+
+export async function claimOutboundMessage(params: {
+    messageId: string;
+    businessId: string;
+    phoneNumberId: string;
+}) {
+    const channelIsValid = await isActiveWhatsAppChannelOwnedByBusiness(
+        params.businessId,
+        params.phoneNumberId,
+    );
+
+    if (!channelIsValid) {
+        return false;
+    }
+
+    const conversationIds = await getWhatsAppConversationIds(
+        params.businessId,
+        params.phoneNumberId,
+    );
+
+    if (conversationIds.length === 0) {
+        return false;
+    }
+
     const result = await db.message.updateMany({
         where: {
-            id: messageId,
+            id: params.messageId,
+            conversationId: { in: conversationIds },
+            conversation: {
+                is: {
+                    channel: "WHATSAPP",
+                    phoneNumberId: params.phoneNumberId,
+                },
+            },
             role: "ASSISTANT",
             outboundStatus: "PENDING",
         },
@@ -77,20 +186,48 @@ export async function claimOutboundMessage(messageId: string) {
     return result.count === 1;
 }
 
-
-
-
 export async function updateOutboundMessage(params: {
     messageId: string;
+    businessId: string;
+    phoneNumberId: string;
     status: "SENT" | "UNKNOWN";
     externalId?: string;
     error?: string;
 }) {
+    const channelIsValid = await isActiveWhatsAppChannelOwnedByBusiness(
+        params.businessId,
+        params.phoneNumberId,
+    );
+
+    if (!channelIsValid) {
+        return { count: 0 };
+    }
+
+    const conversationIds = await getWhatsAppConversationIds(
+        params.businessId,
+        params.phoneNumberId,
+    );
+
+    if (conversationIds.length === 0) {
+        return { count: 0 };
+    }
+
+    const scopedWhere = {
+        id: params.messageId,
+        conversationId: { in: conversationIds },
+        conversation: {
+            is: {
+                channel: "WHATSAPP" as const,
+                phoneNumberId: params.phoneNumberId,
+            },
+        },
+        role: "ASSISTANT",
+    };
+
     if (params.status === "SENT") {
         const result = await db.message.updateMany({
             where: {
-                id: params.messageId,
-                role: "ASSISTANT",
+                ...scopedWhere,
                 outboundStatus: {
                     in: ["SENDING", "UNKNOWN"],
                 },
@@ -109,12 +246,11 @@ export async function updateOutboundMessage(params: {
             return result;
         }
 
-        // If a callback already advanced the status, attach the Meta ID
-        // without changing that status. Do not attach it to an unexpected state.
+        // Attach the Meta ID without overwriting a status already
+        // advanced by a delivery callback.
         return db.message.updateMany({
             where: {
-                id: params.messageId,
-                role: "ASSISTANT",
+                ...scopedWhere,
                 outboundStatus: {
                     in: ["SENT", "DELIVERED", "READ", "FAILED"],
                 },
@@ -130,8 +266,7 @@ export async function updateOutboundMessage(params: {
     // A send error must not overwrite a status already advanced by a callback.
     return db.message.updateMany({
         where: {
-            id: params.messageId,
-            role: "ASSISTANT",
+            ...scopedWhere,
             outboundStatus: "SENDING",
         },
         data: {
@@ -143,9 +278,8 @@ export async function updateOutboundMessage(params: {
     });
 }
 
-
-
 export async function savePendingWhatsAppStatus(params: {
+    phoneNumberId: string;
     externalId: string;
     status: "sent" | "delivered" | "read" | "failed";
     timestamp: number;
@@ -153,7 +287,8 @@ export async function savePendingWhatsAppStatus(params: {
 }) {
     return db.whatsAppPendingStatus.upsert({
         where: {
-            externalId_status_timestamp: {
+            phoneNumberId_externalId_status_timestamp: {
+                phoneNumberId: params.phoneNumberId,
                 externalId: params.externalId,
                 status: params.status,
                 timestamp: BigInt(params.timestamp),
@@ -161,6 +296,7 @@ export async function savePendingWhatsAppStatus(params: {
         },
         update: {},
         create: {
+            phoneNumberId: params.phoneNumberId,
             externalId: params.externalId,
             status: params.status,
             timestamp: BigInt(params.timestamp),
@@ -169,18 +305,32 @@ export async function savePendingWhatsAppStatus(params: {
     });
 }
 
-
-export async function reconcilePendingWhatsAppStatuses(externalId: string) {
+export async function reconcilePendingWhatsAppStatuses(
+    phoneNumberId: string,
+    externalId: string,
+    businessId: string,
+) {
     const pendingStatuses = await db.whatsAppPendingStatus.findMany({
         where: {
+            phoneNumberId,
             externalId,
             processedAt: null,
         },
-        orderBy: [
-            { timestamp: "asc" },
-            { createdAt: "asc" },
-        ],
+        orderBy: [{ timestamp: "asc" }, { createdAt: "asc" }],
     });
+
+    if (pendingStatuses.length === 0) {
+        return { reconciled: 0 };
+    }
+
+    const conversationIds = await getWhatsAppConversationIds(
+        businessId,
+        phoneNumberId,
+    );
+
+    if (conversationIds.length === 0) {
+        return { reconciled: 0 };
+    }
 
     let reconciled = 0;
 
@@ -189,6 +339,13 @@ export async function reconcilePendingWhatsAppStatuses(externalId: string) {
 
         const message = await db.message.findFirst({
             where: {
+                conversationId: { in: conversationIds },
+                conversation: {
+                    is: {
+                        channel: "WHATSAPP",
+                        phoneNumberId,
+                    },
+                },
                 externalId: pending.externalId,
                 role: "ASSISTANT",
                 outboundStatus: {
@@ -228,6 +385,8 @@ export async function reconcilePendingWhatsAppStatuses(externalId: string) {
 
         if (decision.action === "apply") {
             const result = await updateOutboundMessageFromWhatsAppStatus({
+                phoneNumberId,
+                businessId,
                 externalId: pending.externalId,
                 status: pending.status as
                     | "sent"
@@ -249,6 +408,7 @@ export async function reconcilePendingWhatsAppStatuses(externalId: string) {
         const marked = await db.whatsAppPendingStatus.updateMany({
             where: {
                 id: pending.id,
+                phoneNumberId,
                 processedAt: null,
             },
             data: {
@@ -262,8 +422,9 @@ export async function reconcilePendingWhatsAppStatuses(externalId: string) {
     return { reconciled };
 }
 
-
 export async function updateOutboundMessageFromWhatsAppStatus(params: {
+    phoneNumberId: string;
+    businessId: string;
     externalId: string;
     status: "sent" | "delivered" | "read" | "failed";
     timestamp: number;
@@ -276,12 +437,46 @@ export async function updateOutboundMessageFromWhatsAppStatus(params: {
         params.timestamp <= 0 ||
         Number.isNaN(statusTime.getTime())
     ) {
-        return { updated: false as const, reason: "invalid-timestamp" as const };
+        return {
+            updated: false as const,
+            reason: "invalid-timestamp" as const,
+        };
+    }
+
+    const channelIsValid = await isActiveWhatsAppChannelOwnedByBusiness(
+        params.businessId,
+        params.phoneNumberId,
+    );
+
+    if (!channelIsValid) {
+        return {
+            updated: false as const,
+            reason: "message-not-found" as const,
+        };
+    }
+
+    const conversationIds = await getWhatsAppConversationIds(
+        params.businessId,
+        params.phoneNumberId,
+    );
+
+    if (conversationIds.length === 0) {
+        return {
+            updated: false as const,
+            reason: "message-not-found" as const,
+        };
     }
 
     for (let attempt = 0; attempt < 3; attempt++) {
         const message = await db.message.findFirst({
             where: {
+                conversationId: { in: conversationIds },
+                conversation: {
+                    is: {
+                        channel: "WHATSAPP",
+                        phoneNumberId: params.phoneNumberId,
+                    },
+                },
                 externalId: params.externalId,
                 role: "ASSISTANT",
                 outboundStatus: {
@@ -323,6 +518,13 @@ export async function updateOutboundMessageFromWhatsAppStatus(params: {
         const result = await db.message.updateMany({
             where: {
                 id: message.id,
+                conversationId: { in: conversationIds },
+                conversation: {
+                    is: {
+                        channel: "WHATSAPP",
+                        phoneNumberId: params.phoneNumberId,
+                    },
+                },
                 outboundStatus: message.outboundStatus,
             },
             data: {
@@ -354,8 +556,6 @@ export async function updateOutboundMessageFromWhatsAppStatus(params: {
         reason: "concurrent-status-update" as const,
     };
 }
-
-
 
 export async function getConversationMessages(
     conversationId: string,

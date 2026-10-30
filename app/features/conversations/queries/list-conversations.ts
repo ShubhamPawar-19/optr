@@ -2,20 +2,29 @@
 import "server-only";
 
 import { db } from "@/app/lib/db";
-
-const DEMO_BUSINESS_ID = "demo-business";
+import { getCurrentBusiness } from "@/app/lib/current-business";
 
 export async function listConversations() {
+    const business = await getCurrentBusiness();
+
+    if (!business) {
+        return [];
+    }
+
     const agents = await db.agent.findMany({
         where: {
-            businessId: DEMO_BUSINESS_ID,
+            businessId: business.id,
         },
         select: {
             id: true,
         },
     });
 
-    const conversations = await db.conversation.findMany({
+    if (agents.length === 0) {
+        return [];
+    }
+
+    return db.conversation.findMany({
         where: {
             agentId: {
                 in: agents.map((agent) => agent.id),
@@ -55,6 +64,4 @@ export async function listConversations() {
             updatedAt: "desc",
         },
     });
-
-    return conversations;
 }

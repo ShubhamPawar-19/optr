@@ -1,8 +1,10 @@
+
 import type { NormalizedEvent } from "../types";
 
 export interface WhatsAppWebhookPayload {
     messageId: string;
     from: string;
+    phoneNumberId: string;
     name?: string;
     text?: string;
     timestamp: string;
@@ -24,7 +26,7 @@ export function normalizeWhatsAppEvent(
         },
 
         conversation: {
-            id: payload.from,
+            id: `${payload.phoneNumberId}:${payload.from}`,
         },
 
         content: {
@@ -32,6 +34,8 @@ export function normalizeWhatsAppEvent(
             text: payload.text,
         },
 
-        metadata: {},
+        metadata: {
+            phoneNumberId: payload.phoneNumberId,
+        },
     };
 }

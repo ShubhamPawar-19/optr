@@ -1,77 +1,83 @@
 
 import type { ValidWhatsAppWebhookPayload } from "./parse-payload.ts";
 
-export type WhatsAppDeliveryStatus =
-  | "sent"
-  | "delivered"
-  | "read"
-  | "failed";
+export type WhatsAppDeliveryStatus = "sent" | "delivered" | "read" | "failed";
 
 export type WhatsAppStatusUpdate = {
-  messageId: string;
-  status: WhatsAppDeliveryStatus;
-  timestamp: number;
-  errorMessage?: string;
+    phoneNumberId: string;
+    messageId: string;
+    status: WhatsAppDeliveryStatus;
+    timestamp: number;
+    errorMessage?: string;
 };
 
 const VALID_STATUSES = new Set<WhatsAppDeliveryStatus>([
-  "sent",
-  "delivered",
-  "read",
-  "failed",
+    "sent",
+    "delivered",
+    "read",
+    "failed",
 ]);
 
 function parseTimestamp(value: unknown): number | null {
-  if (typeof value !== "string" || !/^\d+$/.test(value)) {
-    return null;
-  }
+    if (typeof value !== "string" || !/^\d+$/.test(value)) {
+        return null;
+    }
 
-  const timestamp = Number(value);
+    const timestamp = Number(value);
 
-  if (!Number.isSafeInteger(timestamp) || timestamp <= 0) {
-    return null;
-  }
+    if (!Number.isSafeInteger(timestamp) || timestamp <= 0) {
+        return null;
+    }
 
-  return timestamp;
+    return timestamp;
 }
 
 export function extractWhatsAppStatusUpdates(
-  payload: ValidWhatsAppWebhookPayload,
+    payload: ValidWhatsAppWebhookPayload,
 ): WhatsAppStatusUpdate[] {
-  const updates: WhatsAppStatusUpdate[] = [];
+    const updates: WhatsAppStatusUpdate[] = [];
 
-  for (const entry of payload.entry ?? []) {
-    for (const change of entry.changes ?? []) {
-      for (const statusUpdate of change.value.statuses ?? []) {
-        const messageId = statusUpdate.id?.trim();
-        const status = statusUpdate.status;
-        const timestamp = parseTimestamp(statusUpdate.timestamp);
+    for (const entry of payload.entry ?? []) {
+        for (const change of entry.changes ?? []) {
+            const phoneNumberId =
+                change.value.metadata?.phone_number_id?.trim();
 
-        if (
-          !messageId ||
-          !status ||
-          !VALID_STATUSES.has(status as WhatsAppDeliveryStatus) ||
-          timestamp === null
-        ) {
-          continue;
+            // Never process an unscoped delivery-status event.
+            if (!phoneNumberId) {
+                continue;
+            }
+
+            for (const statusUpdate of change.value.statuses ?? []) {
+                const messageId = statusUpdate.id?.trim();
+                const status = statusUpdate.status;
+                const timestamp = parseTimestamp(statusUpdate.timestamp);
+
+                if (
+                    !messageId ||
+                    !status ||
+                    !VALID_STATUSES.has(status as WhatsAppDeliveryStatus) ||
+                    timestamp === null
+                ) {
+                    continue;
+                }
+
+                const errorMessage =
+                    status === "failed"
+                        ? statusUpdate.errors?.find(
+                              (error) => typeof error.message === "string",
+                          )?.message
+                        : undefined;
+
+                updates.push({
+                    phoneNumberId,
+                    messageId,
+                    status: status as WhatsAppDeliveryStatus,
+                    timestamp,
+                    ...(errorMessage ? { errorMessage } : {}),
+                });
+            }
         }
-
-        const errorMessage =
-          status === "failed"
-            ? statusUpdate.errors?.find(
-                (error) => typeof error.message === "string",
-              )?.message
-            : undefined;
-
-        updates.push({
-          messageId,
-          status: status as WhatsAppDeliveryStatus,
-          timestamp,
-          ...(errorMessage ? { errorMessage } : {}),
-        });
-      }
     }
-  }
 
-  return updates;
+    return updates;
 }

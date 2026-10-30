@@ -2,7 +2,7 @@ import {
     getOutboundStatusTransition,
     type TrackedOutboundStatus,
     type WhatsAppDeliveryStatus,
-} from "./outbound-status";
+} from "./outbound-status.ts";
 
 export type PendingWhatsAppStatus = {
     id: string;
@@ -22,13 +22,29 @@ export type PendingStatusDecision =
     | { action: "mark-processed" }
     | { action: "keep-pending" };
 
+const VALID_WHATSAPP_STATUSES = new Set<string>([
+    "sent",
+    "delivered",
+    "read",
+    "failed",
+]);
+
+function isWhatsAppDeliveryStatus(
+    status: unknown,
+): status is WhatsAppDeliveryStatus {
+    return typeof status === "string" && VALID_WHATSAPP_STATUSES.has(status);
+}
+
 export function decidePendingWhatsAppStatus(params: {
     currentStatus: TrackedOutboundStatus | null;
-    pending: PendingWhatsAppStatus;
+    pending: Omit<PendingWhatsAppStatus, "status"> & {
+        status: unknown;
+    };
 }): PendingStatusDecision {
     const { currentStatus, pending } = params;
 
     if (
+        !isWhatsAppDeliveryStatus(pending.status) ||
         !Number.isSafeInteger(pending.timestamp) ||
         pending.timestamp <= 0
     ) {

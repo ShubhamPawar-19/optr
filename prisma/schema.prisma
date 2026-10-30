@@ -131,11 +131,12 @@ model Property {
 }
 
 model Conversation {
-  id         String  @id
-  agentId    String
-  channel    String
-  externalId String
-  contactId  String?
+  id            String  @id
+  agentId       String
+  channel       String
+  externalId    String
+  contactId     String?
+  phoneNumberId String?
 
   contact  Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
   messages Message[]
@@ -146,6 +147,7 @@ model Conversation {
   @@unique([agentId, channel, externalId])
   @@index([agentId])
   @@index([contactId])
+  @@index([phoneNumberId, channel])
 }
 
 model Message {
@@ -365,15 +367,16 @@ model ContactProfileValueHistory {
 }
 
 model WhatsAppPendingStatus {
-  id          String    @id @default(cuid())
-  externalId  String
-  status      String
-  timestamp   BigInt
-  error       String?
-  createdAt   DateTime  @default(now())
-  processedAt DateTime?
+  id            String    @id @default(cuid())
+  phoneNumberId String?
+  externalId    String
+  status        String
+  timestamp     BigInt
+  error         String?
+  createdAt     DateTime  @default(now())
+  processedAt   DateTime?
 
-  @@unique([externalId, status, timestamp])
-  @@index([externalId, processedAt])
+  @@unique([phoneNumberId, externalId, status, timestamp])
+  @@index([phoneNumberId, externalId, processedAt])
   @@index([createdAt])
 }

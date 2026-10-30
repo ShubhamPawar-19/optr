@@ -40,6 +40,7 @@ export const processWhatsAppMessage = inngest.createFunction(
         const normalizedEvent = normalizeWhatsAppEvent({
             messageId: payload.messageId,
             from: payload.from,
+            phoneNumberId: payload.phoneNumberId,
             name: payload.name,
             text: payload.text,
             timestamp: payload.timestamp,
@@ -104,9 +105,11 @@ export const processWhatsAppMessage = inngest.createFunction(
         }
 
         const sendResult = await step.run("send-whatsapp-reply", async () => {
-            const claimed = await claimOutboundMessage(
-                result.assistantMessageId!,
-            );
+            const claimed = await claimOutboundMessage({
+                messageId: result.assistantMessageId!,
+                businessId,
+                phoneNumberId: payload.phoneNumberId,
+            });
 
             if (!claimed) {
                 return { sent: false, reason: "not-claimable" as const };
@@ -116,23 +119,32 @@ export const processWhatsAppMessage = inngest.createFunction(
                 const response = await sendWhatsAppMessage({
                     to: payload.from,
                     text: result.reply!,
+                    phoneNumberId: payload.phoneNumberId,
                 });
 
                 const externalId = response.messages[0].id;
 
                 await updateOutboundMessage({
                     messageId: result.assistantMessageId!,
+                    businessId,
+                    phoneNumberId: payload.phoneNumberId,
                     status: "SENT",
                     externalId,
                 });
 
-                await reconcilePendingWhatsAppStatuses(externalId);
+                await reconcilePendingWhatsAppStatuses(
+                    payload.phoneNumberId,
+                    externalId,
+                    businessId,
+                );
 
                 return { sent: true as const };
             } catch (error) {
                 try {
                     await updateOutboundMessage({
                         messageId: result.assistantMessageId!,
+                        businessId,
+                        phoneNumberId: payload.phoneNumberId,
                         status: "UNKNOWN",
                         error:
                             error instanceof Error
@@ -153,9 +165,7 @@ export const processWhatsAppMessage = inngest.createFunction(
         return {
             duplicate: false,
             sent: sendResult.sent,
-            ...(sendResult.sent
-                ? {}
-                : { reason: sendResult.reason }),
+            ...(sendResult.sent ? {} : { reason: sendResult.reason }),
         };
     },
 );

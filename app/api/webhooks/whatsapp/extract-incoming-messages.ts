@@ -54,6 +54,7 @@ export function extractIncomingWhatsAppMessages(
                     payload: {
                         messageId: message.id,
                         from: message.from,
+                        phoneNumberId,
                         name: contact?.profile?.name,
                         text:
                             message.type === "text"
