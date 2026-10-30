@@ -34,12 +34,19 @@ export async function processAgentEvent(params: {
         };
     }
 
+    const phoneNumberId =
+        event.source === "WHATSAPP" &&
+            typeof event.metadata.phoneNumberId === "string"
+            ? event.metadata.phoneNumberId
+            : undefined;
+
     const conversation = event.conversation
         ? await getOrCreateConversation({
-              agentId: agent.id,
-              channel: event.source,
-              externalId: event.conversation.id,
-          })
+            agentId: agent.id,
+            channel: event.source,
+            externalId: event.conversation.id,
+            phoneNumberId,
+        })
         : undefined;
 
     let contactId: string | undefined;
