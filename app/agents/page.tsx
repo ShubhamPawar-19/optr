@@ -1,4 +1,4 @@
-
+import { requireCurrentBusiness } from "@/app/lib/current-business";
 import Link from "next/link";
 import {
   Activity,
@@ -17,7 +17,6 @@ import {
 
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import { db } from "@/app/lib/db";
-import { getCurrentBusiness } from "@/app/lib/current-business";
 import {
   createAgent,
   setAgentActive,
@@ -49,15 +48,13 @@ export default async function AgentsPage({
 }: {
   searchParams: Promise<{ created?: string }>;
 }) {
-  const business = await getCurrentBusiness();
-  const params = await searchParams;
+  const business = await requireCurrentBusiness();
+const params = await searchParams;
 
-  const agents = business
-    ? await db.agent.findMany({
-        where: { businessId: business.id },
-        orderBy: { name: "asc" },
-      })
-    : [];
+const agents = await db.agent.findMany({
+  where: { businessId: business.id },
+  orderBy: { name: "asc" },
+});
 
   const activeAgent = agents.find((agent) => agent.isActive);
   const inactiveCount = agents.filter((agent) => !agent.isActive).length;
@@ -90,15 +87,7 @@ export default async function AgentsPage({
           </Link>
         </header>
 
-        {!business && (
-          <div className="mt-6 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            <CircleAlert className="mt-0.5 shrink-0" size={18} />
-            <p>
-              Your workspace could not be found. Sign in again before managing
-              agents.
-            </p>
-          </div>
-        )}
+
 
         {params.created === "1" && (
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
@@ -112,7 +101,6 @@ export default async function AgentsPage({
           </div>
         )}
 
-        {business && (
           <>
             {/* Page introduction */}
             <section className="flex flex-col justify-between gap-4 pb-5 pt-7 sm:flex-row sm:items-end sm:pb-6 sm:pt-8">
@@ -603,7 +591,6 @@ export default async function AgentsPage({
               </Link>
             </footer>
           </>
-        )}
       </div>
     </main>
   );

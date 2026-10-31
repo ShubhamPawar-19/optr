@@ -1,10 +1,12 @@
+
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+
 import { db } from "@/app/lib/db";
-import { getCurrentBusiness } from "@/app/lib/current-business";
+import { requireCurrentBusiness } from "@/app/lib/current-business";
 
 const agentSchema = z.object({
   name: z.string().trim().min(2, "Agent name must contain at least 2 characters").max(100),
@@ -14,26 +16,40 @@ const agentSchema = z.object({
   temperature: z.coerce.number().min(0).max(2),
 });
 
-export async function createAgent(formData: FormData) {
-  const business = await getCurrentBusiness();
+const activationSchema = z.object({
+  agentId: z.string().trim().min(1).max(100),
+  active: z.enum(["true", "false"]),
+});
 
-  if (!business) {
-    throw new Error("Sign in and create a workspace before creating an agent.");
-  }
+function getString(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value : undefined;
+}
+
+export async function createAgent(formData: FormData) {
+  const business = await requireCurrentBusiness();
 
   const parsed = agentSchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description") || undefined,
-    instructions: formData.get("instructions"),
-    model: formData.get("model"),
-    temperature: formData.get("temperature"),
+    name: getString(formData, "name"),
+    description: getString(formData, "description") || undefined,
+    instructions: getString(formData, "instructions"),
+    model: getString(formData, "model"),
+    temperature: getString(formData, "temperature"),
   });
 
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Invalid agent details.");
+    throw new Error(
+      parsed.error.issues[0]?.message ?? "Invalid agent details."
+    );
   }
 
-  const { name, description, instructions, model, temperature } = parsed.data;
+  const {
+    name,
+    description,
+    instructions,
+    model,
+    temperature,
+  } = parsed.data;
 
   await db.agent.create({
     data: {
@@ -53,26 +69,24 @@ export async function createAgent(formData: FormData) {
 }
 
 export async function setAgentActive(formData: FormData) {
-  const business = await getCurrentBusiness();
+  const business = await requireCurrentBusiness();
 
-  if (!business) {
-    throw new Error("Workspace not found.");
-  }
+  const parsed = activationSchema.safeParse({
+    agentId: getString(formData, "agentId"),
+    active: getString(formData, "active"),
+  });
 
-  const agentId = z.string().min(1).safeParse(formData.get("agentId"));
-  const active = z.enum(["true", "false"]).safeParse(formData.get("active"));
-
-  if (!agentId.success || !active.success) {
+  if (!parsed.success) {
     throw new Error("Invalid agent update.");
   }
 
   const result = await db.agent.updateMany({
     where: {
-      id: agentId.data,
+      id: parsed.data.agentId,
       businessId: business.id,
     },
     data: {
-      isActive: active.data === "true",
+      isActive: parsed.data.active === "true",
     },
   });
 

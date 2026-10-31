@@ -2,7 +2,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-
+import { requireCurrentBusiness } from "@/app/lib/current-business";
 import { getDataset } from "@/app/features/datasets/queries/get-dataset";
 import { CreateRecordForm } from "@/app/features/datasets/components/create-record-form";
 
@@ -13,6 +13,8 @@ interface PageProps {
 export const dynamic = "force-dynamic";
 
 export default async function NewRecordPage({ params }: PageProps) {
+  await requireCurrentBusiness();
+
   const { datasetId } = await params;
   const dataset = await getDataset(datasetId);
 

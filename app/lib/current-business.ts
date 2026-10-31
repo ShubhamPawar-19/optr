@@ -1,8 +1,8 @@
-
 import "server-only";
 
 import { db } from "@/app/lib/db";
 import { getSession } from "@/app/lib/auth-session";
+import { redirect } from "next/navigation";
 
 export async function getCurrentBusiness() {
   const session = await getSession();
@@ -31,4 +31,14 @@ export async function getCurrentBusiness() {
       name: true,
     },
   });
+}
+
+export async function requireCurrentBusiness() {
+  const business = await getCurrentBusiness();
+
+  if (!business) {
+    redirect("/login");
+  }
+
+  return business;
 }

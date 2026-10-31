@@ -6,7 +6,7 @@ import {
   CalendarClock,
   Contact,
 } from "lucide-react";
-
+import { requireCurrentBusiness } from "@/app/lib/current-business";
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import { getContactFields } from "@/app/features/contacts/queries/list-contact-fields";
 import { ContactFieldsPage } from "@/app/features/contacts/components/contact-fields-page";
@@ -14,6 +14,8 @@ import { ContactFieldsPage } from "@/app/features/contacts/components/contact-fi
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  await requireCurrentBusiness();
+
   const fields = await getContactFields();
 
   return (

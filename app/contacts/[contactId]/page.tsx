@@ -1,4 +1,4 @@
-
+import { requireCurrentBusiness } from "@/app/lib/current-business";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -49,6 +49,8 @@ const messageTimeFormatter = new Intl.DateTimeFormat("en-IN", {
 export default async function ContactProfilePage({
   params,
 }: ContactProfilePageProps) {
+  await requireCurrentBusiness();
+
   const { contactId } = await params;
   const contact = await getContactProfile(contactId);
 

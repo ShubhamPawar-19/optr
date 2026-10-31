@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Database, Plus } from "lucide-react";
-
+import { requireCurrentBusiness } from "@/app/lib/current-business";
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import { getDataset } from "@/app/features/datasets/queries/get-dataset";
 import { DatasetRecordsTable } from "@/app/features/datasets/components/dataset-records-table";
@@ -15,6 +15,8 @@ interface PageProps {
 export const dynamic = "force-dynamic";
 
 export default async function DatasetRecordsPage({ params }: PageProps) {
+  await requireCurrentBusiness();
+
   const { datasetId } = await params;
   const dataset = await getDataset(datasetId);
 

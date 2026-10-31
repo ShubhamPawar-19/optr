@@ -11,25 +11,23 @@ import {
 
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import { db } from "@/app/lib/db";
-import { getCurrentBusiness } from "@/app/lib/current-business";
+import { requireCurrentBusiness } from "@/app/lib/current-business";
 import { WhatsAppSettings } from "./whatsapp-settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function WhatsAppIntegrationPage() {
-  const business = await getCurrentBusiness();
+  const business = await requireCurrentBusiness();
 
-  const channel = business
-    ? await db.whatsAppChannel.findFirst({
-        where: { businessId: business.id },
-        select: {
-          phoneNumberId: true,
-          isActive: true,
-          updatedAt: true,
-        },
-        orderBy: { updatedAt: "desc" },
-      })
-    : null;
+  const channel = await db.whatsAppChannel.findFirst({
+    where: { businessId: business.id },
+    select: {
+      phoneNumberId: true,
+      isActive: true,
+      updatedAt: true,
+    },
+    orderBy: { updatedAt: "desc" },
+  });
 
   const webhookUrl = process.env.NEXT_PUBLIC_APP_URL
     ? `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/api/webhooks/whatsapp`
@@ -140,10 +138,10 @@ export default async function WhatsAppIntegrationPage() {
                   channel={
                     channel
                       ? {
-                          phoneNumberId: channel.phoneNumberId,
-                          isActive: channel.isActive,
-                          updatedAt: channel.updatedAt.toISOString(),
-                        }
+                        phoneNumberId: channel.phoneNumberId,
+                        isActive: channel.isActive,
+                        updatedAt: channel.updatedAt.toISOString(),
+                      }
                       : null
                   }
                 />

@@ -5,6 +5,7 @@ import { ArrowLeft, SlidersHorizontal } from "lucide-react";
 import { getDataset } from "@/app/features/datasets/queries/get-dataset";
 import { getDatasetRecord } from "@/app/features/datasets/queries/get-dataset-record";
 import { EditRecordForm } from "@/app/features/datasets/components/edit-record-form";
+import { requireCurrentBusiness } from "@/app/lib/current-business";
 
 interface PageProps {
   params: Promise<{
@@ -16,6 +17,8 @@ interface PageProps {
 export const dynamic = "force-dynamic";
 
 export default async function EditRecordPage({ params }: PageProps) {
+  await requireCurrentBusiness();
+
   const { datasetId, recordId } = await params;
 
   const [dataset, record] = await Promise.all([
