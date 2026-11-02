@@ -335,5 +335,8 @@ export async function updateDatasetSchema(
         }
 
         return { success: true } as const;
+        }, {
+        maxWait: 10_000,
+        timeout: 15_000,
     });
 }
