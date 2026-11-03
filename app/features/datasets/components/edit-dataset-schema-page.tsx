@@ -13,6 +13,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 import {
   updateDatasetSchemaAction,
@@ -54,7 +55,7 @@ interface EditDatasetSchemaPageProps {
 }
 
 const inputClass =
-  "mt-2 h-10 w-full rounded-lg border border-slate-400 bg-white px-3 text-sm text-[#292923]-900 outline-none transition placeholder:text-[#292923]-400 hover:border-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100";
+  "mt-2 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-[#292923] outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50";
 
 function toFieldKey(label: string) {
   return label
@@ -99,7 +100,9 @@ export function EditDatasetSchemaPage({
   );
 
   const [error, setError] = useState("");
+
   const initialState: UpdateDatasetSchemaActionState = {};
+
   const [serverState, formAction, isPending] = useActionState(
     updateDatasetSchemaAction,
     initialState
@@ -136,6 +139,7 @@ export function EditDatasetSchemaPage({
     }
 
     const keys = fields.map((field) => field.key);
+
     if (new Set(keys).size !== keys.length) {
       event.preventDefault();
       setError("Field keys must be unique. Check the field labels.");
@@ -176,6 +180,7 @@ export function EditDatasetSchemaPage({
 
     if (removedFields.length > 0) {
       const names = removedFields.map((field) => field.label).join(", ");
+
       const confirmed = window.confirm(
         `Remove ${names} from this dataset schema?\n\nTheir values will be permanently removed from every existing record. This cannot be undone.`
       );
@@ -199,73 +204,168 @@ export function EditDatasetSchemaPage({
         : undefined,
   }));
 
+  const requiredFields = fields.filter(
+    (field) => field.isRequired
+  ).length;
+
+  const searchableFields = fields.filter(
+    (field) => field.isSearchable
+  ).length;
+
   return (
-    <main className="min-h-screen w-full bg-slate-50/80 text-[#292923]-950">
-      <div className="w-full px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <SidebarToggle />
-            <div className="h-5 w-px bg-slate-200" />
+    <main className="min-h-screen w-full min-w-0 bg-[#F5F7FB] text-[#292923]">
+      <div className="mx-auto w-full max-w-[1680px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+        {/* Workspace header */}
+        <header className="mb-8 flex min-w-0 items-center gap-3 border-b border-slate-200 pb-5">
+          <SidebarToggle />
+
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+              <Link
+                href="/"
+                className="transition hover:text-[#292923]"
+              >
+                Workspace
+              </Link>
+
+              <span>/</span>
+
+              <Link
+                href="/datasets"
+                className="transition hover:text-[#292923]"
+              >
+                Datasets
+              </Link>
+
+              <span>/</span>
+
+              <Link
+                href={`/datasets/${datasetId}`}
+                className="transition hover:text-[#292923]"
+              >
+                Dataset details
+              </Link>
+
+              <span>/</span>
+
+              <span className="text-[#292923]">
+                Edit schema
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Database
+                size={17}
+                className="shrink-0 text-slate-500"
+              />
+
+              <p className="truncate text-sm font-semibold">
+                {datasetName}
+              </p>
+            </div>
+          </div>
+
+          <span className="hidden items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 sm:inline-flex">
+            <Layers3 size={14} />
+            Schema editor
+          </span>
+        </header>
+
+        {/* Page introduction */}
+        <section className="mb-8">
+          <div className="mb-3">
+            <span className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+              Dataset management
+            </span>
+          </div>
+
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                Edit dataset schema
+              </h1>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                Configure the fields used by agents when searching and
+                managing data in{" "}
+                <span className="font-medium text-[#292923]">
+                  {datasetName}
+                </span>
+                .
+              </p>
+            </div>
+
             <Link
               href={`/datasets/${datasetId}`}
-              className="inline-flex items-center gap-2 text-sm text-[#292923]-500 transition hover:text-[#292923]-900"
+              className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-[#292923]"
             >
-              <ArrowLeft className="size-4" />
+              <ArrowLeft size={15} />
               Back to dataset
             </Link>
           </div>
+        </section>
 
-          <span className="hidden items-center gap-1.5 rounded-full border border-slate-400 bg-white px-3 py-1.5 text-xs font-medium text-[#292923]-500 sm:inline-flex">
-            <Database className="size-3.5" />
-            Schema editor
-          </span>
-        </div>
+        {/* Schema overview */}
+        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <SummaryCard
+            title="Total fields"
+            value={fields.length.toLocaleString()}
+            description="Fields configured in this schema"
+            icon={<Database size={18} />}
+            accent="indigo"
+          />
 
-        <div className="mb-8 mt-8 flex items-start gap-4 sm:mb-10 sm:mt-10">
-          <div className="hidden size-12 shrink-0 items-center justify-center rounded-xl border border-slate-400 bg-white shadow-sm sm:flex">
-            <Layers3 className="size-5 text-[#292923]-700" />
-          </div>
-          <div className="min-w-0">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#292923]-500">
-              Data management
-            </p>
-            <h1 className="text-2xl font-semibold tracking-tight text-[#292923]-950 sm:text-3xl">
-              Edit dataset schema
-            </h1>
-            <p className="mt-2 text-sm text-[#292923]-500 sm:text-[15px]">
-              Update the fields used by agents in{" "}
-              <span className="font-medium text-[#292923]-800">
-                {datasetName}
-              </span>
-              .
-            </p>
-          </div>
-        </div>
+          <SummaryCard
+            title="Required fields"
+            value={requiredFields.toLocaleString()}
+            description="Fields required when creating records"
+            icon={<Check size={18} />}
+            accent="amber"
+          />
 
+          <SummaryCard
+            title="Searchable fields"
+            value={searchableFields.toLocaleString()}
+            description="Fields available to agent searches"
+            icon={<Layers3 size={18} />}
+            accent="teal"
+          />
+        </section>
+
+        {/* Schema form */}
         <form
           action={formAction}
           onSubmit={handleSubmit}
           className="space-y-6"
         >
-          <input type="hidden" name="datasetId" value={datasetId} />
+          <input
+            type="hidden"
+            name="datasetId"
+            value={datasetId}
+          />
+
           <input
             type="hidden"
             name="fields"
             value={JSON.stringify(serializedFields)}
           />
 
-          <section className="overflow-hidden rounded-2xl border border-slate-400 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          {/* Dataset fields */}
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div className="flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                  <Layers3 className="size-4 text-[#292923]-700" />
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
+                  <Layers3 className="size-4 text-indigo-600" />
                 </div>
+
                 <div>
-                  <h2 className="text-sm font-semibold text-[#292923]-900">
+                  <h2 className="text-sm font-semibold text-[#292923]">
                     Dataset fields
                   </h2>
-                  <p className="mt-1 text-xs leading-5 text-[#292923]-500">
-                    Existing keys and field types are locked to protect stored data.
+
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    Existing keys and field types are locked to protect
+                    stored data.
                   </p>
                 </div>
               </div>
@@ -273,9 +373,12 @@ export function EditDatasetSchemaPage({
               <button
                 type="button"
                 onClick={() =>
-                  setFields((current) => [...current, makeNewField()])
+                  setFields((current) => [
+                    ...current,
+                    makeNewField(),
+                  ])
                 }
-                className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-400 bg-white px-3 text-sm font-medium text-[#292923]-700 transition hover:bg-[#292923]-50"
+                className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <Plus className="size-4" />
                 Add field
@@ -286,18 +389,22 @@ export function EditDatasetSchemaPage({
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="overflow-hidden rounded-xl border border-slate-400 bg-white"
+                  className="overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors"
                 >
+                  {/* Field header */}
                   <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-4 py-3 sm:px-5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-slate-400 bg-white text-xs font-semibold text-[#292923]-600">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-600">
                         {index + 1}
                       </span>
+
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-[#292923]-800">
-                          {field.label.trim() || `Untitled field ${index + 1}`}
+                        <p className="truncate text-sm font-medium text-[#292923]">
+                          {field.label.trim() ||
+                            `Untitled field ${index + 1}`}
                         </p>
-                        <p className="mt-0.5 font-mono text-[11px] text-[#292923]-400">
+
+                        <p className="mt-0.5 truncate font-mono text-[11px] text-slate-400">
                           {field.key || "Key generated from label"}
                         </p>
                       </div>
@@ -307,30 +414,37 @@ export function EditDatasetSchemaPage({
                       type="button"
                       onClick={() =>
                         setFields((current) =>
-                          current.filter((item) => item.id !== field.id)
+                          current.filter(
+                            (item) => item.id !== field.id
+                          )
                         )
                       }
                       aria-label={`Remove field ${index + 1}`}
                       title="Remove field"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#292923]-400 transition hover:bg-red-50 hover:text-red-600"
+                      className="flex size-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                     >
                       <Trash2 className="size-4" />
                     </button>
                   </div>
 
+                  {/* Field configuration */}
                   <div className="grid gap-x-5 gap-y-4 p-4 sm:grid-cols-2 sm:p-5">
                     <div>
                       <label
                         htmlFor={`label-${field.id}`}
-                        className="text-xs font-medium text-[#292923]-700"
+                        className="text-xs font-medium text-slate-700"
                       >
                         Field label *
                       </label>
+
                       <input
                         id={`label-${field.id}`}
                         value={field.label}
                         onChange={(event) =>
-                          handleLabelChange(field, event.target.value)
+                          handleLabelChange(
+                            field,
+                            event.target.value
+                          )
                         }
                         maxLength={100}
                         required
@@ -342,25 +456,27 @@ export function EditDatasetSchemaPage({
                     <div>
                       <label
                         htmlFor={`key-${field.id}`}
-                        className="text-xs font-medium text-[#292923]-700"
+                        className="text-xs font-medium text-slate-700"
                       >
                         Field key
                       </label>
+
                       <input
                         id={`key-${field.id}`}
                         value={field.key}
                         readOnly
-                        className={`${inputClass} bg-slate-50 font-mono text-xs text-[#292923]-500`}
+                        className={`${inputClass} bg-slate-50 font-mono text-xs text-slate-500`}
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor={`type-${field.id}`}
-                        className="text-xs font-medium text-[#292923]-700"
+                        className="text-xs font-medium text-slate-700"
                       >
                         Field type
                       </label>
+
                       <div className="relative">
                         <select
                           id={`type-${field.id}`}
@@ -371,7 +487,7 @@ export function EditDatasetSchemaPage({
                               type: event.target.value as FieldType,
                             })
                           }
-                          className={`${inputClass} appearance-none pr-9 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-[#292923]-500`}
+                          className={`${inputClass} appearance-none pr-9 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500`}
                         >
                           {FIELD_TYPES.map((type) => (
                             <option key={type} value={type}>
@@ -379,7 +495,8 @@ export function EditDatasetSchemaPage({
                             </option>
                           ))}
                         </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#292923]-400" />
+
+                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
                       </div>
                     </div>
 
@@ -388,10 +505,11 @@ export function EditDatasetSchemaPage({
                       <div>
                         <label
                           htmlFor={`options-${field.id}`}
-                          className="text-xs font-medium text-[#292923]-700"
+                          className="text-xs font-medium text-slate-700"
                         >
                           Options *
                         </label>
+
                         <input
                           id={`options-${field.id}`}
                           value={field.optionsText}
@@ -404,20 +522,24 @@ export function EditDatasetSchemaPage({
                           placeholder="Available, Pending, Sold"
                           className={inputClass}
                         />
-                        <p className="mt-1.5 text-[11px] text-[#292923]-400">
-                          Separate options with commas. Existing record values must remain included.
+
+                        <p className="mt-1.5 text-[11px] leading-5 text-slate-400">
+                          Separate options with commas. Existing record
+                          values must remain included.
                         </p>
                       </div>
                     )}
                   </div>
 
+                  {/* Field settings */}
                   <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                    <p className="flex items-center gap-1.5 text-[11px] text-[#292923]-500">
+                    <p className="flex items-center gap-1.5 text-[11px] text-slate-500">
                       <Info className="size-3.5 shrink-0" />
                       Configure how this field is used.
                     </p>
+
                     <div className="flex flex-wrap gap-x-5 gap-y-3">
-                      <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-[#292923]-600">
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-slate-600">
                         <input
                           type="checkbox"
                           checked={field.isRequired}
@@ -430,7 +552,8 @@ export function EditDatasetSchemaPage({
                         />
                         Required
                       </label>
-                      <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-[#292923]-600">
+
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-slate-600">
                         <input
                           type="checkbox"
                           checked={field.isSearchable}
@@ -448,12 +571,16 @@ export function EditDatasetSchemaPage({
                 </div>
               ))}
 
+              {/* Add another field */}
               <button
                 type="button"
                 onClick={() =>
-                  setFields((current) => [...current, makeNewField()])
+                  setFields((current) => [
+                    ...current,
+                    makeNewField(),
+                  ])
                 }
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-4 py-4 text-sm font-medium text-[#292923]-600 transition hover:bg-[#292923]-50 hover:text-[#292923]-900"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 px-4 py-4 text-sm font-medium text-slate-600 transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700"
               >
                 <Plus className="size-4" />
                 Add another field
@@ -461,6 +588,7 @@ export function EditDatasetSchemaPage({
             </div>
           </section>
 
+          {/* Errors */}
           {(error || serverState.error) && (
             <p
               role="alert"
@@ -470,21 +598,25 @@ export function EditDatasetSchemaPage({
             </p>
           )}
 
-          <div className="flex flex-col-reverse gap-3 border-t border-slate-400 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-[#292923]-500">
-              {fields.length} {fields.length === 1 ? "field" : "fields"} configured
+          {/* Form actions */}
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500">
+              {fields.length}{" "}
+              {fields.length === 1 ? "field" : "fields"} configured
             </p>
+
             <div className="flex items-center justify-end gap-3">
               <Link
                 href={`/datasets/${datasetId}`}
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-400 bg-white px-4 text-sm font-medium text-[#292923]-700 transition hover:bg-[#292923]-50"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 Cancel
               </Link>
+
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292923] px-4 text-sm font-medium text-white shadow-sm transition hover:bg-[#292923]-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#292923] px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPending ? (
                   <>
@@ -501,7 +633,59 @@ export function EditDatasetSchemaPage({
             </div>
           </div>
         </form>
+
+        <footer className="mt-8 border-t border-slate-200 pt-5">
+          <p className="text-xs text-slate-400">
+            OPTR · Dataset management
+          </p>
+        </footer>
       </div>
     </main>
+  );
+}
+
+function SummaryCard({
+  title,
+  value,
+  description,
+  icon,
+  accent,
+}: {
+  title: string;
+  value: string;
+  description: string;
+  icon: React.ReactNode;
+  accent: "indigo" | "amber" | "teal";
+}) {
+  const accentStyles = {
+    indigo: "bg-indigo-50 text-indigo-600",
+    amber: "bg-amber-50 text-amber-600",
+    teal: "bg-teal-50 text-teal-600",
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-slate-500">
+            {title}
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">
+            {value}
+          </p>
+        </div>
+
+        <div
+          className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${accentStyles[accent]}`}
+        >
+          {icon}
+        </div>
+      </div>
+
+      <p className="mt-3 text-xs text-slate-400">
+        {description}
+      </p>
+    </div>
   );
 }

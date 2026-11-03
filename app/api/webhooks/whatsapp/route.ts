@@ -91,8 +91,17 @@ export async function POST(request: NextRequest) {
 
     try {
         for (const phoneNumberId of phoneNumberIds) {
+            console.log("[whatsapp-webhook] Resolving channel:", {
+                phoneNumberId,
+            });
+
             const businessId =
                 await resolveWhatsAppBusiness(phoneNumberId);
+
+            console.log("[whatsapp-webhook] Channel resolution result:", {
+                phoneNumberId,
+                businessId,
+            });
 
             if (!businessId) {
                 console.error(

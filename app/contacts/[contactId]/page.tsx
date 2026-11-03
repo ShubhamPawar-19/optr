@@ -1,8 +1,8 @@
+
 import { requireCurrentBusiness } from "@/app/lib/current-business";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
@@ -59,6 +59,7 @@ export default async function ContactProfilePage({
   }
 
   const conversationCount = contact.conversations.length;
+
   const populatedFields = contact.profileValues.filter(
     (item) => typeof item.value === "string" && item.value.trim().length > 0,
   ).length;
@@ -73,30 +74,30 @@ export default async function ContactProfilePage({
     .toUpperCase();
 
   return (
-    <main className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-10 lg:py-9">
-      <div className="mx-auto max-w-7xl space-y-7">
-        {/* Page toolbar */}
-        <div className="flex items-center gap-3">
+    <main className="min-h-screen w-full min-w-0 bg-[#F5F7FB] text-[#292923]">
+      <div className="mx-auto w-full max-w-[1680px] space-y-7 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        {/* Workspace header */}
+        <header className="flex min-w-0 items-center gap-3 border-b border-slate-200 pb-5">
           <SidebarToggle />
 
           <div className="h-5 w-px bg-slate-200" />
 
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#292923]-400">
+          <nav className="flex min-w-0 flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
             <span>Workspace</span>
-            <span>/</span>
+            <span className="text-slate-300">/</span>
             <Link
               href="/contacts"
-              className="transition hover:text-indigo-600"
+              className="transition-colors hover:text-indigo-600"
             >
               Contacts
             </Link>
-            <span>/</span>
-            <span className="text-[#292923]-600">Profile</span>
-          </div>
-        </div>
+            <span className="text-slate-300">/</span>
+            <span className="text-[#292923]">Profile</span>
+          </nav>
+        </header>
 
         {/* Profile header */}
-        <section className="overflow-hidden rounded-2xl border border-slate-400/80 bg-white shadow-sm shadow-slate-200/40">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-teal-400" />
 
           <div className="p-5 sm:p-7 lg:p-8">
@@ -112,13 +113,13 @@ export default async function ContactProfilePage({
 
                 <div className="min-w-0 flex-1 pt-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
                       <ContactRound className="h-3.5 w-3.5" />
                       Contact profile
                     </span>
 
                     {channels.length > 0 && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700">
                         <Radio className="h-3.5 w-3.5" />
                         {channels.length} linked{" "}
                         {channels.length === 1 ? "channel" : "channels"}
@@ -126,11 +127,11 @@ export default async function ContactProfilePage({
                     )}
                   </div>
 
-                  <h1 className="break-words text-2xl font-bold tracking-tight text-[#292923]-950 sm:text-3xl">
+                  <h1 className="break-words text-2xl font-bold tracking-tight text-[#292923] sm:text-3xl">
                     {contact.name || "Unknown contact"}
                   </h1>
 
-                  <p className="mt-1.5 max-w-2xl text-sm leading-6 text-[#292923]-500">
+                  <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">
                     Contact details, collected information, and the full
                     conversation history for this record.
                   </p>
@@ -139,7 +140,7 @@ export default async function ContactProfilePage({
                     {contact.phone ? (
                       <a
                         href={`tel:${contact.phone}`}
-                        className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-[#292923]-600 transition hover:text-indigo-700"
+                        className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-indigo-700"
                       >
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
                           <Phone className="h-4 w-4" />
@@ -147,7 +148,7 @@ export default async function ContactProfilePage({
                         <span className="break-all">{contact.phone}</span>
                       </a>
                     ) : (
-                      <span className="inline-flex items-center gap-2 text-sm text-[#292923]-400">
+                      <span className="inline-flex items-center gap-2 text-sm text-slate-400">
                         <Phone className="h-4 w-4" />
                         No phone number
                       </span>
@@ -156,7 +157,7 @@ export default async function ContactProfilePage({
                     {contact.email ? (
                       <a
                         href={`mailto:${contact.email}`}
-                        className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-[#292923]-600 transition hover:text-indigo-700"
+                        className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-indigo-700"
                       >
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700">
                           <Mail className="h-4 w-4" />
@@ -164,7 +165,7 @@ export default async function ContactProfilePage({
                         <span className="break-all">{contact.email}</span>
                       </a>
                     ) : (
-                      <span className="inline-flex items-center gap-2 text-sm text-[#292923]-400">
+                      <span className="inline-flex items-center gap-2 text-sm text-slate-400">
                         <Mail className="h-4 w-4" />
                         No email address
                       </span>
@@ -177,11 +178,12 @@ export default async function ContactProfilePage({
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm">
                   <MessageCircle className="h-5 w-5" />
                 </div>
+
                 <div>
-                  <p className="text-2xl font-bold tabular-nums text-[#292923]-950">
+                  <p className="text-2xl font-bold tabular-nums text-[#292923]">
                     {conversationCount}
                   </p>
-                  <p className="text-xs font-medium text-[#292923]-500">
+                  <p className="text-xs font-medium text-slate-500">
                     {conversationCount === 1
                       ? "Conversation"
                       : "Conversations"}
@@ -227,23 +229,24 @@ export default async function ContactProfilePage({
         {/* Main content */}
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           {/* Profile fields */}
-          <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-400/80 bg-white shadow-sm shadow-slate-200/40">
+          <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
                   <Sparkles className="h-5 w-5" />
                 </div>
+
                 <div>
-                  <h2 className="font-semibold tracking-tight text-[#292923]-950">
+                  <h2 className="font-semibold tracking-tight text-[#292923]">
                     Profile intelligence
                   </h2>
-                  <p className="mt-1 text-sm leading-5 text-[#292923]-500">
+                  <p className="mt-1 text-sm leading-5 text-slate-500">
                     Configured fields and collected contact facts.
                   </p>
                 </div>
               </div>
 
-              <span className="shrink-0 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold tabular-nums text-[#292923]-600">
+              <span className="shrink-0 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold tabular-nums text-slate-600">
                 {contact.business.contactFields.length}
               </span>
             </div>
@@ -270,14 +273,15 @@ export default async function ContactProfilePage({
                   return (
                     <article
                       key={field.id}
-                      className="px-5 py-5 transition-colors hover:bg-[#292923]-50/70 sm:px-6"
+                      className="px-5 py-5 transition-colors hover:bg-slate-50/70 sm:px-6"
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${hasValue
-                            ? "bg-teal-50 text-teal-700"
-                            : "bg-slate-100 text-[#292923]-400"
-                            }`}
+                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                            hasValue
+                              ? "bg-teal-50 text-teal-700"
+                              : "bg-slate-100 text-slate-400"
+                          }`}
                         >
                           {hasValue ? (
                             <CheckCircle2 className="h-4 w-4" />
@@ -288,49 +292,52 @@ export default async function ContactProfilePage({
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center justify-between gap-2">
-                            <h3 className="text-sm font-semibold text-[#292923]-800">
+                            <h3 className="text-sm font-semibold text-[#292923]">
                               {field.label}
                             </h3>
 
                             <span
-                              className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${hasValue
-                                ? "bg-teal-50 text-teal-700"
-                                : "bg-amber-50 text-amber-700"
-                                }`}
+                              className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                                hasValue
+                                  ? "bg-teal-50 text-teal-700"
+                                  : "bg-amber-50 text-amber-700"
+                              }`}
                             >
                               {hasValue ? "Collected" : "Missing"}
                             </span>
                           </div>
 
                           {field.description && (
-                            <p className="mt-1 text-xs leading-5 text-[#292923]-400">
+                            <p className="mt-1 text-xs leading-5 text-slate-500">
                               {field.description}
                             </p>
                           )}
 
                           <div
-                            className={`mt-3 rounded-xl border p-3.5 ${hasValue
-                              ? "border-slate-100 bg-slate-50/80"
-                              : "border-dashed border-slate-400 bg-white"
-                              }`}
+                            className={`mt-3 rounded-xl border p-3.5 ${
+                              hasValue
+                                ? "border-slate-100 bg-slate-50/80"
+                                : "border-dashed border-slate-300 bg-white"
+                            }`}
                           >
-                            <p className="break-words text-sm leading-6 text-[#292923]-800">
+                            <p className="break-words text-sm leading-6 text-slate-700">
                               {hasValue ? (
                                 profileValue!.value
                               ) : (
-                                <span className="italic text-[#292923]-400">
+                                <span className="italic text-slate-400">
                                   Not provided yet
                                 </span>
                               )}
                             </p>
 
                             {profileValue && (
-                              <div className="mt-3 border-t border-slate-400/70 pt-2.5">
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#292923]-500">
+                              <div className="mt-3 border-t border-slate-200 pt-2.5">
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
                                   <span className="inline-flex items-center gap-1.5">
                                     <Radio className="h-3 w-3" />
                                     Source: {profileValue.source}
                                   </span>
+
                                   <span className="inline-flex items-center gap-1.5">
                                     <Clock3 className="h-3 w-3" />
                                     {dateTimeFormatter.format(
@@ -344,7 +351,8 @@ export default async function ContactProfilePage({
                                     <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-amber-800">
                                       Supporting evidence
                                     </p>
-                                    <p className="break-words text-xs leading-5 text-[#292923]-600">
+
+                                    <p className="break-words text-xs leading-5 text-slate-600">
                                       {profileValue.evidence}
                                     </p>
                                   </div>
@@ -362,17 +370,18 @@ export default async function ContactProfilePage({
           </section>
 
           {/* Conversation history */}
-          <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-400/80 bg-white shadow-sm shadow-slate-200/40">
+          <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
                   <MessageCircle className="h-5 w-5" />
                 </div>
+
                 <div>
-                  <h2 className="font-semibold tracking-tight text-[#292923]-950">
+                  <h2 className="font-semibold tracking-tight text-[#292923]">
                     Conversation history
                   </h2>
-                  <p className="mt-1 text-sm leading-5 text-[#292923]-500">
+                  <p className="mt-1 text-sm leading-5 text-slate-500">
                     Messages across linked channels.
                   </p>
                 </div>
@@ -395,26 +404,27 @@ export default async function ContactProfilePage({
                   <article key={conversation.id} className="p-5 sm:p-6">
                     {/* Conversation header */}
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-[#292923]-600">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
                         <MessageCircle className="h-4 w-4" />
                       </div>
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <h3 className="font-semibold text-[#292923]-900">
+                          <h3 className="font-semibold text-[#292923]">
                             {conversation.channel}
                           </h3>
+
                           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                             Recorded
                           </span>
                         </div>
 
-                        <p className="mt-1 break-all text-xs leading-5 text-[#292923]-500">
+                        <p className="mt-1 break-all text-xs leading-5 text-slate-500">
                           {conversation.externalId}
                         </p>
 
-                        <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-[#292923]-400">
+                        <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-slate-400">
                           <Clock3 className="h-3.5 w-3.5" />
                           Updated{" "}
                           {dateTimeFormatter.format(conversation.updatedAt)}
@@ -424,8 +434,8 @@ export default async function ContactProfilePage({
 
                     {/* Messages */}
                     {conversation.messages.length === 0 ? (
-                      <div className="mt-5 rounded-xl border border-dashed border-slate-400 bg-slate-50/70 px-4 py-6 text-center">
-                        <p className="text-sm text-[#292923]-500">
+                      <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-6 text-center">
+                        <p className="text-sm text-slate-500">
                           No messages available for this conversation.
                         </p>
                       </div>
@@ -436,6 +446,7 @@ export default async function ContactProfilePage({
                           .reverse()
                           .map((message) => {
                             const role = message.role.toLowerCase();
+
                             const isAssistant =
                               role === "assistant" ||
                               role === "ai" ||
@@ -444,30 +455,33 @@ export default async function ContactProfilePage({
                             return (
                               <div
                                 key={message.id}
-                                className={`relative rounded-xl border p-3.5 ${isAssistant
-                                  ? "border-indigo-100 bg-indigo-50/60"
-                                  : "border-slate-100 bg-slate-50/80"
-                                  }`}
+                                className={`relative rounded-xl border p-3.5 ${
+                                  isAssistant
+                                    ? "border-indigo-100 bg-indigo-50/60"
+                                    : "border-slate-100 bg-slate-50/80"
+                                }`}
                               >
                                 <span
-                                  className={`absolute -left-[23px] top-4 h-2.5 w-2.5 rounded-full border-2 border-white ring-1 ${isAssistant
-                                    ? "bg-indigo-500 ring-indigo-200"
-                                    : "bg-slate-400 ring-slate-200"
-                                    }`}
+                                  className={`absolute -left-[23px] top-4 h-2.5 w-2.5 rounded-full border-2 border-white ring-1 ${
+                                    isAssistant
+                                      ? "bg-indigo-500 ring-indigo-200"
+                                      : "bg-slate-400 ring-slate-200"
+                                  }`}
                                 />
 
                                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                                   <span
-                                    className={`rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${isAssistant
-                                      ? "bg-indigo-100 text-indigo-700"
-                                      : "bg-white text-[#292923]-600"
-                                      }`}
+                                    className={`rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                                      isAssistant
+                                        ? "bg-indigo-100 text-indigo-700"
+                                        : "bg-white text-slate-600"
+                                    }`}
                                   >
                                     {message.role}
                                   </span>
 
                                   <time
-                                    className="text-[11px] text-[#292923]-400"
+                                    className="text-[11px] text-slate-400"
                                     dateTime={message.createdAt.toISOString()}
                                   >
                                     {messageTimeFormatter.format(
@@ -476,7 +490,7 @@ export default async function ContactProfilePage({
                                   </time>
                                 </div>
 
-                                <p className="break-words whitespace-pre-wrap text-sm leading-6 text-[#292923]-700">
+                                <p className="break-words whitespace-pre-wrap text-sm leading-6 text-slate-700">
                                   {message.content}
                                 </p>
                               </div>
@@ -490,6 +504,12 @@ export default async function ContactProfilePage({
             )}
           </section>
         </div>
+
+        {/* Footer */}
+        <footer className="flex flex-col gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+          <p>OPTR · Contact management</p>
+          <p>Contact profile and conversation history</p>
+        </footer>
       </div>
     </main>
   );
@@ -516,18 +536,21 @@ function MetadataCard({
   };
 
   return (
-    <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 transition hover:border-slate-400 hover:bg-white">
+    <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 transition-colors hover:border-slate-200 hover:bg-white">
       <div className="flex items-center gap-2">
         <span
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${accents[accent]}`}
         >
           <Icon className="h-4 w-4" />
         </span>
-        <p className="text-xs font-medium text-[#292923]-500">{label}</p>
+
+        <p className="text-xs font-medium text-slate-500">{label}</p>
       </div>
+
       <p
-        className={`mt-3 text-sm font-semibold leading-5 text-[#292923]-800 ${breakAll ? "break-all" : "break-words"
-          }`}
+        className={`mt-3 text-sm font-semibold leading-5 text-slate-700 ${
+          breakAll ? "break-all" : "break-words"
+        }`}
       >
         {value}
       </p>
@@ -550,20 +573,20 @@ function EmptyState({
 }) {
   return (
     <div className="px-6 py-12 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-[#292923]-400">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
         <Icon className="h-5 w-5" />
       </div>
 
-      <h3 className="mt-4 text-sm font-semibold text-[#292923]-800">{title}</h3>
+      <h3 className="mt-4 text-sm font-semibold text-[#292923]">{title}</h3>
 
-      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#292923]-500">
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
         {message}
       </p>
 
       {href && linkLabel && (
         <Link
           href={href}
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 transition hover:text-indigo-800"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-800"
         >
           {linkLabel}
           <ArrowUpRight className="h-4 w-4" />
