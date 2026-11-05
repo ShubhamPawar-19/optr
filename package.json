@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "test:retell": "tsx --test app/features/voice/providers/retell.test.ts",
     "test:whatsapp-signature": "node --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test app/features/events/gateways/whatsapp/verify-signature.test.mjs"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "prisma": "^7.10.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "retell-sdk": "^6.2.17",
     "zod": "^4.6.5"
   },
   "devDependencies": {

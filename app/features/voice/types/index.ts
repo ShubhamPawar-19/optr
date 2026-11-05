@@ -15,6 +15,7 @@ export type VoiceCallStatus =
 export type VoiceWebhookEventType =
     | "CALL_STARTED"
     | "CALL_ENDED"
+    | "CALL_ANALYZED"
     | "TRANSCRIPT_UPDATED"
     | "TOOL_CALL"
     | "UNKNOWN";
