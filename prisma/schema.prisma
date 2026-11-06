@@ -104,39 +104,14 @@ model AgentStep {
   @@index([status])
 }
 
-model Property {
-  id         String @id @default(cuid())
-  businessId String
-
-  title       String
-  city        String
-  area        String
-  bedrooms    Int
-  bathrooms   Int
-  price       Int
-  currency    String  @default("AED")
-  description String
-  imageUrl    String?
-  available   Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-
-  @@index([businessId])
-  @@index([city])
-  @@index([bedrooms])
-  @@index([price])
-  @@index([available])
-}
-
 model Conversation {
-  id              String  @id
-  agentId         String
-  channel         String
-  externalId      String
-  contactId       String?
-  phoneNumberId   String?
+  id            String  @id
+  agentId       String
+  channel       String
+  externalId    String
+  contactId     String?
+  phoneNumberId String?
+  call          Call?
 
   contact  Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
   messages Message[]
@@ -200,12 +175,12 @@ model Business {
   owner User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
   agents           Agent[]
-  properties       Property[]
   whatsAppChannels WhatsAppChannel[]
   datasets         Dataset[]
   contacts         Contact[]
   identities       ContactIdentity[]
   contactFields    ContactField[]
+  voiceChannels    VoiceChannel[]
 
   @@index([ownerId])
 }
@@ -387,13 +362,13 @@ model WhatsAppPendingStatus {
 }
 
 model User {
-  id            String    @id
+  id            String     @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean    @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   sessions      Session[]
   accounts      Account[]
   businesses    Business[]
@@ -448,4 +423,56 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model VoiceChannel {
+  id              String  @id @default(cuid())
+  businessId      String
+  provider        String  @default("RETELL")
+  phoneNumber     String  @unique
+  providerAgentId String?
+  isActive        Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  calls    Call[]
+
+  @@index([businessId])
+  @@index([provider, isActive])
+}
+
+model Call {
+  id             String @id @default(cuid())
+  conversationId String @unique
+  voiceChannelId String
+  provider       String
+  providerCallId String @unique
+
+  direction String
+  status    String @default("QUEUED")
+
+  fromNumber String?
+  toNumber   String?
+
+  startedAt  DateTime?
+  endedAt    DateTime?
+  durationMs Int?
+
+  recordingUrl String?
+  transcript   String?
+  summary      String?
+  outcome      String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  voiceChannel VoiceChannel @relation(fields: [voiceChannelId], references: [id], onDelete: Cascade)
+
+  @@index([voiceChannelId, createdAt])
+  @@index([status, createdAt])
 }
