@@ -1,6 +1,7 @@
 
 import { db } from "@/app/lib/db";
 import type { Agent } from "./types";
+import { getDefaultAgentTools } from "./default-tools";
 
 export async function resolveAgentForWhatsApp(
   businessId: string,
@@ -36,10 +37,6 @@ export async function resolveAgentForWhatsApp(
     model: agent.model,
     temperature: agent.temperature ?? undefined,
     isActive: agent.isActive,
-    tools: [
-      { name: "get_current_time", enabled: true },
-      { name: "search_data", enabled: true },
-      { name: "list_datasets", enabled: true },
-    ],
+    tools: getDefaultAgentTools(),
   };
 }
