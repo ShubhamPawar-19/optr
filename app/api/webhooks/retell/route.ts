@@ -1,11 +1,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { inngest } from "@/app/lib/inngest/client";
+import { persistCallEvent } from "@/app/features/voice/services/persist-call-event";
 import { registerVoiceProviders } from "@/app/features/voice/providers/register";
 import { getVoiceProvider } from "@/app/features/voice/providers/registry";
 
 export async function POST(request: NextRequest) {
-    // Register providers before looking up the Retell adapter.
     registerVoiceProviders();
 
     const provider = getVoiceProvider("RETELL");
@@ -19,11 +20,11 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    // Read the original body. Signature verification requires the exact
-    // raw body, not JSON that has been parsed and serialized again.
+    // Read the original body because signature verification requires
+    // the exact raw request body.
     const rawBody = await request.text();
 
-    // Verify the request before trusting or parsing its contents.
+    // Verify the signature before trusting the payload.
     const isValid = await provider.verifyWebhook({
         rawBody,
         headers: request.headers,
@@ -51,7 +52,18 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const event = await provider.parseWebhook(payload);
+    let event;
+
+    try {
+        event = await provider.parseWebhook(payload);
+    } catch (error) {
+        console.error("[retell-webhook] Event parsing failed", error);
+
+        return NextResponse.json(
+            { error: "Unable to parse webhook event" },
+            { status: 400 },
+        );
+    }
 
     if (!event) {
         console.error("[retell-webhook] Invalid event payload");
@@ -62,16 +74,52 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    // Temporary acknowledgement. Persistence and event processing
-    // will be implemented in the next steps.
-    console.info("[retell-webhook] Event received", {
-        type: event.type,
-        providerCallId: event.providerCallId,
-    });
+    try {
+        // Persist the normalized event before dispatching it.
+        // Identical webhook deliveries produce the same event ID.
+        const persisted = await persistCallEvent({
+            event,
+            rawBody,
+            payload,
+        });
 
-    return NextResponse.json({
-        success: true,
-        received: true,
-        event: event.type,
-    });
+        // Always dispatch, including duplicate deliveries.
+        // If a previous dispatch failed after persistence, a Retell
+        // retry can dispatch the already-persisted event again.
+        await inngest.send({
+            name: "optr/voice.call.event.received",
+            data: {
+                eventId: persisted.eventId,
+                providerCallId: event.providerCallId,
+            },
+        });
+
+        console.info("[retell-webhook] Event queued", {
+            eventId: persisted.eventId,
+            eventType: event.type,
+            duplicate: persisted.duplicate,
+        });
+
+        return NextResponse.json({
+            success: true,
+            received: true,
+            queued: true,
+            duplicate: persisted.duplicate,
+            event: event.type,
+        });
+    } catch (error) {
+        console.error("[retell-webhook] Persistence or dispatch failed", {
+            eventType: event.type,
+            error:
+                error instanceof Error
+                    ? error.message
+                    : "Unknown error",
+        });
+
+        // Returning 500 allows Retell to retry the webhook.
+        return NextResponse.json(
+            { error: "Failed to process webhook event" },
+            { status: 500 },
+        );
+    }
 }

@@ -160,7 +160,8 @@ model Agent {
   temperature  Float?
   isActive     Boolean @default(true)
 
-  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business      Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  voiceChannels VoiceChannel[]
 
   @@index([businessId])
 }
@@ -428,6 +429,7 @@ model Verification {
 model VoiceChannel {
   id              String  @id @default(cuid())
   businessId      String
+  agentId         String
   provider        String  @default("RETELL")
   phoneNumber     String  @unique
   providerAgentId String?
@@ -437,9 +439,11 @@ model VoiceChannel {
   updatedAt DateTime @updatedAt
 
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  agent    Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
   calls    Call[]
 
   @@index([businessId])
+  @@index([agentId])
   @@index([provider, isActive])
 }
 
