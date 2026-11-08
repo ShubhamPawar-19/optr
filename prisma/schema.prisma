@@ -41,6 +41,13 @@ enum AgentStepStatus {
   FAILED
 }
 
+enum VoiceToolExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
 model Event {
   id         String   @id
   source     String
@@ -471,6 +478,8 @@ model Call {
 
   metadata Json?
 
+  toolExecutions VoiceToolExecution[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -478,5 +487,31 @@ model Call {
   voiceChannel VoiceChannel @relation(fields: [voiceChannelId], references: [id], onDelete: Cascade)
 
   @@index([voiceChannelId, createdAt])
+  @@index([status, createdAt])
+}
+
+model VoiceToolExecution {
+  id                  String                    @id @default(cuid())
+  callId              String
+  providerToolCallId  String
+  toolName            String
+
+  status              VoiceToolExecutionStatus @default(PENDING)
+
+  input               Json
+  output              Json?
+  error               String?
+
+  durationMs          Int?
+  startedAt           DateTime                  @default(now())
+  completedAt         DateTime?
+
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  call Call @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, providerToolCallId])
+  @@index([callId, createdAt])
   @@index([status, createdAt])
 }
