@@ -7,6 +7,9 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "test:voice-execution": "tsx --test app/features/voice/services/execute-voice-tool.test.ts",
+    "test:voice-body": "tsx --test app/features/voice/providers/read-limited-body.test.ts",
+    "test:retell-invocation": "tsx --test app/features/voice/providers/retell-tool-invocation.test.ts",
     "test:retell": "tsx --test app/features/voice/providers/retell.test.ts",
     "test:whatsapp-signature": "node --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test app/features/events/gateways/whatsapp/verify-signature.test.mjs"
   },
