@@ -41,6 +41,13 @@ enum AgentStepStatus {
   FAILED
 }
 
+enum VoiceToolExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
 model Event {
   id         String   @id
   source     String
@@ -104,39 +111,14 @@ model AgentStep {
   @@index([status])
 }
 
-model Property {
-  id         String @id @default(cuid())
-  businessId String
-
-  title       String
-  city        String
-  area        String
-  bedrooms    Int
-  bathrooms   Int
-  price       Int
-  currency    String  @default("AED")
-  description String
-  imageUrl    String?
-  available   Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-
-  @@index([businessId])
-  @@index([city])
-  @@index([bedrooms])
-  @@index([price])
-  @@index([available])
-}
-
 model Conversation {
-  id              String  @id
-  agentId         String
-  channel         String
-  externalId      String
-  contactId       String?
-  phoneNumberId   String?
+  id            String  @id
+  agentId       String
+  channel       String
+  externalId    String
+  contactId     String?
+  phoneNumberId String?
+  call          Call?
 
   contact  Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
   messages Message[]
@@ -185,7 +167,8 @@ model Agent {
   temperature  Float?
   isActive     Boolean @default(true)
 
-  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business      Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  voiceChannels VoiceChannel[]
 
   @@index([businessId])
 }
@@ -200,12 +183,12 @@ model Business {
   owner User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
   agents           Agent[]
-  properties       Property[]
   whatsAppChannels WhatsAppChannel[]
   datasets         Dataset[]
   contacts         Contact[]
   identities       ContactIdentity[]
   contactFields    ContactField[]
+  voiceChannels    VoiceChannel[]
 
   @@index([ownerId])
 }
@@ -387,13 +370,13 @@ model WhatsAppPendingStatus {
 }
 
 model User {
-  id            String    @id
+  id            String     @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean    @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   sessions      Session[]
   accounts      Account[]
   businesses    Business[]
@@ -448,4 +431,87 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model VoiceChannel {
+  id              String  @id @default(cuid())
+  businessId      String
+  agentId         String
+  provider        String  @default("RETELL")
+  phoneNumber     String  @unique
+  providerAgentId String?
+  isActive        Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  agent    Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  calls    Call[]
+
+  @@index([businessId])
+  @@index([agentId])
+  @@index([provider, isActive])
+}
+
+model Call {
+  id             String @id @default(cuid())
+  conversationId String @unique
+  voiceChannelId String
+  provider       String
+  providerCallId String @unique
+
+  direction String
+  status    String @default("QUEUED")
+
+  fromNumber String?
+  toNumber   String?
+
+  startedAt  DateTime?
+  endedAt    DateTime?
+  durationMs Int?
+
+  recordingUrl String?
+  transcript   String?
+  summary      String?
+  outcome      String?
+
+  metadata Json?
+
+  toolExecutions VoiceToolExecution[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  voiceChannel VoiceChannel @relation(fields: [voiceChannelId], references: [id], onDelete: Cascade)
+
+  @@index([voiceChannelId, createdAt])
+  @@index([status, createdAt])
+}
+
+model VoiceToolExecution {
+  id                  String                    @id @default(cuid())
+  callId              String
+  providerToolCallId  String
+  toolName            String
+
+  status              VoiceToolExecutionStatus @default(PENDING)
+
+  input               Json
+  output              Json?
+  error               String?
+
+  durationMs          Int?
+  startedAt           DateTime                  @default(now())
+  completedAt         DateTime?
+
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  call Call @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, providerToolCallId])
+  @@index([callId, createdAt])
+  @@index([status, createdAt])
 }

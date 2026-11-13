@@ -15,6 +15,15 @@ function normalizeExternalId(channel: string, externalId: string) {
         return value.replace(/\D/g, "");
     }
 
+    if (channel === "PHONE") {
+        // Accept only normalized E.164 phone numbers.
+        if (!/^\+[1-9]\d{7,14}$/.test(value)) {
+            throw new Error("Invalid phone number");
+        }
+
+        return value;
+    }
+
     return value;
 }
 
@@ -60,7 +69,7 @@ export async function getOrCreateContact(
                     },
                     name,
                     phone:
-                        channel === "WHATSAPP"
+                        channel === "WHATSAPP" || channel === "PHONE"
                             ? externalId
                             : null,
                 },

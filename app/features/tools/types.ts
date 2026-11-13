@@ -3,8 +3,8 @@ import type { z } from "zod";
 export interface ToolContext {
     agentId: string;
     businessId: string;
-    userId: string;
-    runId: string;
+    userId?: string;
+    runId?: string;
     event?: { id: string };
 }
 
