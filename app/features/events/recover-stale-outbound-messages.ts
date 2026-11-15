@@ -3,7 +3,7 @@ import { inngest } from "@/app/lib/inngest/client";
 import { db } from "@/app/lib/db";
 import { decideOutboundRecovery } from "@/app/features/conversations/outbound-recovery";
 
-const STALE_AFTER_MS = 5 * 60 * 1000;
+const STALE_AFTER_MS = 60 * 60 * 1000;
 const BATCH_SIZE = 100;
 
 export const recoverStaleOutboundMessages = inngest.createFunction(
