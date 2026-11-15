@@ -1,9 +1,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 
 import { resolveRetellToolInvocationId } from "@/app/features/voice/providers/retell-tool-invocation";
-import { registerVoiceProviders } from "@/app/features/voice/providers/register";
-import { getVoiceProvider } from "@/app/features/voice/providers/registry";
 import { executeVoiceTool } from "@/app/features/voice/services/execute-voice-tool";
 import {
     readLimitedBody,
@@ -33,19 +32,34 @@ function parseObject(value: unknown): UnknownRecord | null {
     return isRecord(value) ? value : null;
 }
 
+function verifyVoiceToolSecret(request: NextRequest): boolean {
+    const expectedSecret = process.env.OPTR_VOICE_TOOL_SECRET;
+    const providedSecret = request.headers.get("x-optr-voice-secret");
+
+    if (!expectedSecret || !providedSecret) {
+        return false;
+    }
+
+    const expected = Buffer.from(expectedSecret, "utf8");
+    const provided = Buffer.from(providedSecret, "utf8");
+
+    if (expected.length !== provided.length) {
+        return false;
+    }
+
+    return timingSafeEqual(expected, provided);
+}
+
 export async function POST(request: NextRequest) {
-    registerVoiceProviders();
-
-    const provider = getVoiceProvider("RETELL");
-
-    if (!provider) {
+    // 1. Authenticate custom-function request.
+    if (!verifyVoiceToolSecret(request)) {
         return NextResponse.json(
-            { error: "Voice provider unavailable" },
-            { status: 503 },
+            { error: "Unauthorized" },
+            { status: 401 },
         );
     }
 
-    // 1. Read the exact raw body for signature verification.
+    // 2. Read the request body.
     let rawBody: string;
 
     try {
@@ -71,20 +85,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    // 2. Authenticate the request.
-    const isValid = await provider.verifyWebhook({
-        rawBody,
-        headers: request.headers,
-    });
-
-    if (!isValid) {
-        return NextResponse.json(
-            { error: "Invalid request signature" },
-            { status: 401 },
-        );
-    }
-
-    // 3. Parse JSON only after signature verification.
+    // 3. Parse the authenticated request.
     let payload: unknown;
 
     try {
