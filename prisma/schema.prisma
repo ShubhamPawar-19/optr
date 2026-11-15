@@ -438,7 +438,7 @@ model VoiceChannel {
   businessId      String
   agentId         String
   provider        String  @default("RETELL")
-  phoneNumber     String  @unique
+  phoneNumber     String? @unique
   providerAgentId String?
   isActive        Boolean @default(true)
 
@@ -449,6 +449,7 @@ model VoiceChannel {
   agent    Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
   calls    Call[]
 
+  @@unique([provider, providerAgentId])
   @@index([businessId])
   @@index([agentId])
   @@index([provider, isActive])
@@ -461,8 +462,9 @@ model Call {
   provider       String
   providerCallId String @unique
 
-  direction String
-  status    String @default("QUEUED")
+  callType  String  @default("PHONE")
+  direction String?
+  status    String  @default("QUEUED")
 
   fromNumber String?
   toNumber   String?
@@ -491,23 +493,23 @@ model Call {
 }
 
 model VoiceToolExecution {
-  id                  String                    @id @default(cuid())
-  callId              String
-  providerToolCallId  String
-  toolName            String
+  id                 String @id @default(cuid())
+  callId             String
+  providerToolCallId String
+  toolName           String
 
-  status              VoiceToolExecutionStatus @default(PENDING)
+  status VoiceToolExecutionStatus @default(PENDING)
 
-  input               Json
-  output              Json?
-  error               String?
+  input  Json
+  output Json?
+  error  String?
 
-  durationMs          Int?
-  startedAt           DateTime                  @default(now())
-  completedAt         DateTime?
+  durationMs  Int?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
 
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   call Call @relation(fields: [callId], references: [id], onDelete: Cascade)
 

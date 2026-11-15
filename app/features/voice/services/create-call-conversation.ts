@@ -10,9 +10,11 @@ import { resolveVoiceChannel } from "./resolve-voice-channel";
 type CreateCallConversationParams = {
     provider: VoiceProviderName;
     providerCallId: string;
-    direction: VoiceCallDirection;
+    callType: "PHONE" | "WEB";
+    direction?: VoiceCallDirection;
     fromNumber?: string;
-    toNumber: string;
+    toNumber?: string;
+    providerAgentId?: string;
     status?: VoiceCallStatus;
     callerName?: string;
 };
@@ -24,23 +26,53 @@ export async function createCallConversation(
         throw new Error("Provider call ID is required");
     }
 
-    // Resolve the business and OPTR agent from the destination number.
-    const resolved = await resolveVoiceChannel({
-        toNumber: params.toNumber,
-        provider: params.provider,
-    });
+    // Phone calls require direction and a destination number.
+    if (params.callType === "PHONE") {
+        if (!params.direction) {
+            throw new Error("Phone calls require a direction");
+        }
 
-    // Only create a caller identity for valid E.164 numbers.
+        if (!params.toNumber?.trim()) {
+            throw new Error("Phone calls require a destination number");
+        }
+
+        if (!/^\+[1-9]\d{7,14}$/.test(params.toNumber.trim())) {
+            throw new Error("Invalid destination phone number");
+        }
+    }
+
+    // Web calls must resolve through the provider's agent ID.
+    if (
+        params.callType === "WEB" &&
+        !params.providerAgentId?.trim()
+    ) {
+        throw new Error("Web calls require a provider agent ID");
+    }
+
+    const resolved =
+        params.callType === "PHONE"
+            ? await resolveVoiceChannel({
+                  callType: "PHONE",
+                  toNumber: params.toNumber!,
+                  provider: params.provider,
+              })
+            : await resolveVoiceChannel({
+                  callType: "WEB",
+                  providerAgentId: params.providerAgentId!,
+                  provider: params.provider,
+              });
+
+    // Only phone calls can create a caller identity.
     const callerNumber = params.fromNumber?.trim() ?? "";
 
     const isValidCallerNumber =
+        params.callType === "PHONE" &&
         /^\+[1-9]\d{7,14}$/.test(callerNumber);
 
     return db.$transaction(async (tx) => {
         let contactId: string | undefined;
 
         if (isValidCallerNumber) {
-
             const identity = await tx.contactIdentity.upsert({
                 where: {
                     businessId_channel_externalId: {
@@ -74,9 +106,6 @@ export async function createCallConversation(
                     contact: true,
                 },
             });
-
-            contactId = identity.contact.id;
-
 
             contactId = identity.contact.id;
 
@@ -133,10 +162,11 @@ export async function createCallConversation(
                 voiceChannelId: resolved.voiceChannel.id,
                 provider: params.provider,
                 providerCallId: params.providerCallId,
-                direction: params.direction,
+                callType: params.callType,
+                direction: params.direction ?? null,
                 status: params.status ?? "QUEUED",
                 fromNumber: params.fromNumber ?? null,
-                toNumber: params.toNumber,
+                toNumber: params.toNumber ?? null,
             },
         });
 
@@ -144,7 +174,8 @@ export async function createCallConversation(
         if (
             call.voiceChannelId !== resolved.voiceChannel.id ||
             call.conversationId !== conversation.id ||
-            call.provider !== params.provider
+            call.provider !== params.provider ||
+            call.callType !== params.callType
         ) {
             throw new Error(
                 "Provider call ID is already associated with another voice channel",

@@ -155,6 +155,16 @@ export const processVoiceCallEvent = inngest.createFunction(
             ? normalized.direction
             : undefined;
 
+        const callType =
+            normalized.callType === "PHONE" ||
+                normalized.callType === "WEB"
+                ? normalized.callType
+                : undefined;
+
+        const providerAgentId =
+            typeof normalized.providerAgentId === "string"
+                ? normalized.providerAgentId
+                : undefined;
         const status = isStatus(normalized.status)
             ? normalized.status
             : undefined;
@@ -189,18 +199,32 @@ export const processVoiceCallEvent = inngest.createFunction(
                     return existing;
                 }
 
-                if (!direction || !toNumber) {
+                if (!callType) {
                     throw new Error(
-                        "Cannot create call without direction and destination number",
+                        "Cannot create call without a valid call type",
+                    );
+                }
+
+                if (callType === "PHONE" && (!direction || !toNumber)) {
+                    throw new Error(
+                        "Phone calls require direction and destination number",
+                    );
+                }
+
+                if (callType === "WEB" && !providerAgentId) {
+                    throw new Error(
+                        "Web calls require a provider agent ID",
                     );
                 }
 
                 const created = await createCallConversation({
                     provider: provider as VoiceProviderName,
                     providerCallId,
+                    callType,
                     direction,
                     fromNumber,
                     toNumber,
+                    providerAgentId,
                     status,
                 });
 
@@ -230,8 +254,8 @@ export const processVoiceCallEvent = inngest.createFunction(
 
                 const durationMs =
                     typeof metadata.durationMs === "number" &&
-                    Number.isSafeInteger(metadata.durationMs) &&
-                    metadata.durationMs >= 0
+                        Number.isSafeInteger(metadata.durationMs) &&
+                        metadata.durationMs >= 0
                         ? metadata.durationMs
                         : undefined;
 
@@ -270,7 +294,7 @@ export const processVoiceCallEvent = inngest.createFunction(
                     const isNewerEnd =
                         !currentCall.endedAt ||
                         occurredAt.getTime() >=
-                            currentCall.endedAt.getTime();
+                        currentCall.endedAt.getTime();
 
                     if (isNewerEnd) {
                         updateData.endedAt = occurredAt;

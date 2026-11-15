@@ -1,30 +1,42 @@
-
 import { db } from "@/app/lib/db";
 import type { VoiceProviderName } from "../types";
 
-type ResolveVoiceChannelParams = {
-    toNumber: string;
-    provider: VoiceProviderName;
-};
+type ResolveVoiceChannelParams =
+    | {
+          callType: "PHONE";
+          toNumber: string;
+          provider: VoiceProviderName;
+      }
+    | {
+          callType: "WEB";
+          providerAgentId: string;
+          provider: VoiceProviderName;
+      };
 
 export async function resolveVoiceChannel(
     params: ResolveVoiceChannelParams,
 ) {
-    const phoneNumber = params.toNumber.trim();
-
-    // Voice numbers must be stored in E.164 format.
-    if (!/^\+[1-9]\d{7,14}$/.test(phoneNumber)) {
-        throw new Error("Invalid destination phone number");
-    }
-
-    const voiceChannel = await db.voiceChannel.findUnique({
-        where: {
-            phoneNumber,
-        },
-        include: {
-            agent: true,
-        },
-    });
+    const voiceChannel =
+        params.callType === "PHONE"
+            ? await db.voiceChannel.findUnique({
+                  where: {
+                      phoneNumber: params.toNumber.trim(),
+                  },
+                  include: {
+                      agent: true,
+                  },
+              })
+            : await db.voiceChannel.findUnique({
+                  where: {
+                      provider_providerAgentId: {
+                          provider: params.provider,
+                          providerAgentId: params.providerAgentId.trim(),
+                      },
+                  },
+                  include: {
+                      agent: true,
+                  },
+              });
 
     if (!voiceChannel) {
         throw new Error("Voice channel not found");
@@ -36,6 +48,20 @@ export async function resolveVoiceChannel(
 
     if (voiceChannel.provider !== params.provider) {
         throw new Error("Voice provider mismatch");
+    }
+
+    if (
+        params.callType === "PHONE" &&
+        voiceChannel.phoneNumber !== params.toNumber.trim()
+    ) {
+        throw new Error("Voice channel phone number mismatch");
+    }
+
+    if (
+        params.callType === "WEB" &&
+        voiceChannel.providerAgentId !== params.providerAgentId.trim()
+    ) {
+        throw new Error("Voice provider agent mismatch");
     }
 
     if (!voiceChannel.agent.isActive) {
