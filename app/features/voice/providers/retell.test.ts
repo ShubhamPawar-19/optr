@@ -10,6 +10,7 @@ describe("Retell webhook adapter", () => {
             event: "call_started",
             call: {
                 call_id: "call_123",
+                call_type: "phone_call",
                 direction: "inbound",
                 from_number: "+919876543210",
                 to_number: "+971501234567",
@@ -23,6 +24,7 @@ describe("Retell webhook adapter", () => {
         assert.equal(event.type, "CALL_STARTED");
         assert.equal(event.direction, "INBOUND");
         assert.equal(event.status, "IN_PROGRESS");
+        assert.equal(event.callType, "PHONE");
         assert.equal(
             event.fromNumber,
             "+919876543210",
@@ -160,4 +162,22 @@ describe("Retell webhook adapter", () => {
             null,
         );
     });
+});
+
+it("normalizes Retell web calls", async () => {
+    const event = await retellVoiceProvider.parseWebhook({
+        event: "call_started",
+        call: {
+            call_id: "web_call_123",
+            call_type: "web_call",
+            agent_id: "agent_123",
+            start_timestamp: 1793900000000,
+        },
+    });
+
+    assert.ok(event);
+    assert.equal(event.callType, "WEB");
+    assert.equal(event.providerAgentId, "agent_123");
+    assert.equal(event.direction, undefined);
+    assert.equal(event.toNumber, undefined);
 });

@@ -1,4 +1,7 @@
+
 export type VoiceProviderName = "RETELL" | "VAPI" | "BOLNA";
+
+export type VoiceCallType = "PHONE" | "WEB";
 
 export type VoiceCallDirection = "INBOUND" | "OUTBOUND";
 
@@ -33,9 +36,11 @@ export interface VoiceProviderEvent {
     type: VoiceWebhookEventType;
     occurredAt: Date;
 
+    callType?: VoiceCallType;
     direction?: VoiceCallDirection;
     status?: VoiceCallStatus;
 
+    providerAgentId?: string;
     fromNumber?: string;
     toNumber?: string;
 

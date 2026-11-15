@@ -183,6 +183,17 @@ export const retellVoiceProvider: VoiceProviderAdapter = {
             toNumber: getString(call.to_number),
             transcript,
             metadata,
+            callType: normalizeCallType(call.call_type),
+            providerAgentId: getString(call.agent_id),
         };
     },
 };
+
+function normalizeCallType(
+    value: unknown,
+): "PHONE" | "WEB" | undefined {
+    if (value === "phone_call") return "PHONE";
+    if (value === "web_call") return "WEB";
+
+    return undefined;
+}
