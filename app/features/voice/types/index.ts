@@ -29,6 +29,13 @@ export interface VoiceToolCall {
     arguments: unknown;
 }
 
+export interface VoiceTranscriptTurn {
+    role: "USER" | "ASSISTANT";
+    content: string;
+    startTimeSeconds?: number;
+    endTimeSeconds?: number;
+}
+
 export interface VoiceProviderEvent {
     provider: VoiceProviderName;
     providerCallId: string;
@@ -48,4 +55,6 @@ export interface VoiceProviderEvent {
     toolCall?: VoiceToolCall;
 
     metadata?: Record<string, unknown>;
+
+    transcriptTurns?: VoiceTranscriptTurn[];
 }

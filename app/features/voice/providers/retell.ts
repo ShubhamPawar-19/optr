@@ -6,6 +6,7 @@ import type {
     VoiceCallDirection,
     VoiceCallStatus,
     VoiceProviderEvent,
+    VoiceTranscriptTurn,
     VoiceWebhookEventType,
 } from "../types";
 
@@ -25,6 +26,68 @@ function getString(
     return typeof value === "string" && value.length > 0
         ? value
         : undefined;
+}
+
+function getNumber(value: unknown): number | undefined {
+    return typeof value === "number" && Number.isFinite(value)
+        ? value
+        : undefined;
+}
+
+function parseTranscriptTurns(
+    value: unknown,
+): VoiceTranscriptTurn[] | undefined {
+    if (!Array.isArray(value)) {
+        return undefined;
+    }
+
+    const turns: VoiceTranscriptTurn[] = [];
+
+    for (const item of value) {
+        if (!isRecord(item)) continue;
+
+        const role =
+            item.role === "user"
+                ? "USER"
+                : item.role === "agent"
+                    ? "ASSISTANT"
+                    : undefined;
+
+        if (!role) continue;
+
+        const content = getString(item.content)?.trim();
+
+        if (!content) continue;
+
+        const words = Array.isArray(item.words)
+            ? item.words
+            : [];
+
+        const firstWord = words.find(
+            (word) =>
+                isRecord(word) &&
+                getNumber(word.start) !== undefined,
+        );
+
+        const lastWord = [...words].reverse().find(
+            (word) =>
+                isRecord(word) &&
+                getNumber(word.end) !== undefined,
+        );
+
+        turns.push({
+            role,
+            content,
+            startTimeSeconds: isRecord(firstWord)
+                ? getNumber(firstWord.start)
+                : undefined,
+            endTimeSeconds: isRecord(lastWord)
+                ? getNumber(lastWord.end)
+                : undefined,
+        });
+    }
+
+    return turns;
 }
 
 function getTimestamp(value: unknown): Date | undefined {
@@ -145,9 +208,20 @@ export const retellVoiceProvider: VoiceProviderAdapter = {
 
         const transcript = getString(call.transcript);
 
+        const transcriptTurns = parseTranscriptTurns(
+            call.transcript_object,
+        );
+
         const metadata: UnknownRecord = {
             retellEvent: eventName,
         };
+
+        if (
+            typeof call.start_timestamp === "number" &&
+            Number.isFinite(call.start_timestamp)
+        ) {
+            metadata.startTimestampMs = call.start_timestamp;
+        }
 
         if (call.agent_id !== undefined) {
             metadata.agentId = call.agent_id;
@@ -182,6 +256,7 @@ export const retellVoiceProvider: VoiceProviderAdapter = {
             fromNumber: getString(call.from_number),
             toNumber: getString(call.to_number),
             transcript,
+            transcriptTurns,
             metadata,
             callType: normalizeCallType(call.call_type),
             providerAgentId: getString(call.agent_id),

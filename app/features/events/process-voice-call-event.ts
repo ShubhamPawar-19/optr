@@ -3,10 +3,12 @@ import { Prisma } from "@/app/generated/prisma/client";
 import { db } from "@/app/lib/db";
 import { inngest } from "@/app/lib/inngest/client";
 import { createCallConversation } from "@/app/features/voice/services/create-call-conversation";
+import { persistCallTranscript } from "@/app/features/voice/services/persist-call-transcript";
 import type {
     VoiceCallDirection,
     VoiceCallStatus,
     VoiceProviderName,
+    VoiceTranscriptTurn,
     VoiceWebhookEventType,
 } from "@/app/features/voice/types";
 
@@ -22,6 +24,55 @@ function asRecord(
     }
 
     return value as Record<string, unknown>;
+}
+
+function parseTranscriptTurns(
+    value: unknown,
+): VoiceTranscriptTurn[] | undefined {
+    if (!Array.isArray(value)) {
+        return undefined;
+    }
+
+    const turns: VoiceTranscriptTurn[] = [];
+
+    for (const item of value) {
+        const record = asRecord(item);
+
+        if (!record) continue;
+
+        if (
+            record.role !== "USER" &&
+            record.role !== "ASSISTANT"
+        ) {
+            continue;
+        }
+
+        if (
+            typeof record.content !== "string" ||
+            !record.content.trim()
+        ) {
+            continue;
+        }
+
+        turns.push({
+            role: record.role,
+            content: record.content.trim(),
+            startTimeSeconds:
+                typeof record.startTimeSeconds === "number" &&
+                    Number.isFinite(record.startTimeSeconds) &&
+                    record.startTimeSeconds >= 0
+                    ? record.startTimeSeconds
+                    : undefined,
+            endTimeSeconds:
+                typeof record.endTimeSeconds === "number" &&
+                    Number.isFinite(record.endTimeSeconds) &&
+                    record.endTimeSeconds >= 0
+                    ? record.endTimeSeconds
+                    : undefined,
+        });
+    }
+
+    return turns;
 }
 
 function isDirection(value: unknown): value is VoiceCallDirection {
@@ -165,6 +216,7 @@ export const processVoiceCallEvent = inngest.createFunction(
             typeof normalized.providerAgentId === "string"
                 ? normalized.providerAgentId
                 : undefined;
+
         const status = isStatus(normalized.status)
             ? normalized.status
             : undefined;
@@ -183,6 +235,10 @@ export const processVoiceCallEvent = inngest.createFunction(
             typeof normalized.transcript === "string"
                 ? normalized.transcript
                 : undefined;
+
+        const transcriptTurns = parseTranscriptTurns(
+            normalized.transcriptTurns,
+        );
 
         const metadata = asRecord(normalized.metadata) ?? {};
 
@@ -353,12 +409,55 @@ export const processVoiceCallEvent = inngest.createFunction(
             },
         );
 
+        // Persist the final structured Retell transcript.
+        // This is a separate Inngest step so it can retry independently.
+        const transcriptResult =
+            type === "CALL_ANALYZED" && transcriptTurns !== undefined
+                ? await step.run(
+                    "persist-call-transcript",
+                    async () => {
+                        const currentCall = await db.call.findUnique({
+                            where: { id: call.id },
+                            select: {
+                                conversationId: true,
+                                startedAt: true,
+                            },
+                        });
+
+                        if (!currentCall) {
+                            throw new Error("Call record not found");
+                        }
+
+                        const startTimestampMs = metadata.startTimestampMs;
+
+                        const providerStartedAt =
+                            typeof startTimestampMs === "number" &&
+                                Number.isFinite(startTimestampMs)
+                                ? new Date(startTimestampMs)
+                                : null;
+
+                        const effectiveStartedAt =
+                            currentCall.startedAt ?? providerStartedAt;
+
+                        return persistCallTranscript({
+                            conversationId: currentCall.conversationId,
+                            provider,
+                            providerCallId,
+                            startedAt: effectiveStartedAt,
+                            fallbackTimestamp: effectiveStartedAt ?? occurredAt,
+                            turns: transcriptTurns,
+                        });
+                    },
+                )
+                : null;
+
         return {
             success: true,
             eventId,
             providerCallId,
             eventType: type,
             updated: result.updated,
+            transcriptPersisted: transcriptResult?.persisted ?? 0,
         };
     },
 );
