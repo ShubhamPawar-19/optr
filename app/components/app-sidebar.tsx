@@ -2,7 +2,7 @@
 "use client";
 
 import {
-    Activity,
+  Activity,
   Bot,
   ChevronRight,
   Command,
@@ -11,12 +11,14 @@ import {
   LogOut,
   MessageCircle,
   Plug,
+  Phone,
   Settings2,
   Target,
   Users,
   X,
   type LucideIcon,
 } from "lucide-react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -35,6 +37,7 @@ const settingsNavigation: NavigationItem[] = [
   { label: "AI agents", href: "/agents", icon: Bot },
   { label: "Contact fields", href: "/contacts/fields", icon: Settings2 },
   { label: "WhatsApp", href: "/integrations/whatsapp", icon: Plug },
+  { label: "Voice", href: "/integrations/voice", icon: Phone },
 ];
 
 type NavigationItem = {
