@@ -6,6 +6,10 @@ export interface ToolContext {
     userId?: string;
     runId?: string;
     event?: { id: string };
+
+    // Trusted context supplied by OPTR's voice executor.
+    conversationId?: string;
+    callId?: string;
 }
 
 export interface ToolResult {
