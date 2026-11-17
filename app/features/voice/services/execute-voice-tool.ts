@@ -9,6 +9,7 @@ const VOICE_ALLOWED_TOOLS = new Set([
     "get_current_time",
     "list_datasets",
     "search_data",
+    "capture_contact",
 ]);
 
 const STALE_EXECUTION_MS = 5 * 60 * 1000;
@@ -159,7 +160,7 @@ export function createVoiceToolExecutor({
         if (
             !call.voiceChannel.agent.isActive ||
             call.voiceChannel.agent.businessId !==
-                call.voiceChannel.businessId
+            call.voiceChannel.businessId
         ) {
             throw new Error("Assigned agent is unavailable");
         }
@@ -187,7 +188,10 @@ export function createVoiceToolExecutor({
             temperature:
                 call.voiceChannel.agent.temperature ?? undefined,
             isActive: call.voiceChannel.agent.isActive,
-            tools: getDefaultAgentTools(),
+            tools: [
+                ...getDefaultAgentTools(),
+                { name: "capture_contact", enabled: true },
+            ],
         };
 
         if (!canAgentUseTool(agent, toolName)) {
@@ -312,6 +316,8 @@ export function createVoiceToolExecutor({
                 {
                     agentId: agent.id,
                     businessId: call.voiceChannel.businessId,
+                    conversationId: call.conversationId,
+                    callId: call.id,
                 },
             );
         } catch (error) {

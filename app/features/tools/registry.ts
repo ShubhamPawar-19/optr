@@ -2,7 +2,7 @@ import type { OptrTool } from "./types";
 import { getCurrentTimeTool } from "./get-current-time";
 import { searchDataTool } from "./search-data";
 import { listDatasetsTool } from "./list-datasets";
-
+import { captureContactTool } from "./capture-contact";
 const toolRegistry = new Map<string, OptrTool>();
 
 export function registerTool(tool: OptrTool) {
@@ -24,3 +24,4 @@ export function getAllTools(): OptrTool[] {
 registerTool(getCurrentTimeTool);
 registerTool(searchDataTool);
 registerTool(listDatasetsTool);
+registerTool(captureContactTool);
