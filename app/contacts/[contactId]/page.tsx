@@ -15,7 +15,7 @@ import {
   Radio,
   Sparkles,
 } from "lucide-react";
-
+import { ContactActions } from "@/app/features/contacts/components/contact-actions";
 import { getContactProfile } from "@/app/features/contacts/queries/get-contact-profile";
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 
@@ -192,6 +192,19 @@ export default async function ContactProfilePage({
               </div>
             </div>
 
+            <ContactActions
+              contactId={contact.id}
+              name={contact.name}
+              email={contact.email}
+              phone={contact.phone}
+              phoneLocked={contact.identities.some(
+                (identity) =>
+                  identity.channel === "WHATSAPP" ||
+                  identity.channel === "PHONE",
+              )}
+              leadCount={contact._count.leads}
+            />
+
             {/* Contact metadata */}
             <div className="mt-8 grid gap-3 border-t border-slate-100 pt-6 sm:grid-cols-2 xl:grid-cols-4">
               <MetadataCard
@@ -277,11 +290,10 @@ export default async function ContactProfilePage({
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                            hasValue
+                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${hasValue
                               ? "bg-teal-50 text-teal-700"
                               : "bg-slate-100 text-slate-400"
-                          }`}
+                            }`}
                         >
                           {hasValue ? (
                             <CheckCircle2 className="h-4 w-4" />
@@ -297,11 +309,10 @@ export default async function ContactProfilePage({
                             </h3>
 
                             <span
-                              className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-                                hasValue
+                              className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${hasValue
                                   ? "bg-teal-50 text-teal-700"
                                   : "bg-amber-50 text-amber-700"
-                              }`}
+                                }`}
                             >
                               {hasValue ? "Collected" : "Missing"}
                             </span>
@@ -314,11 +325,10 @@ export default async function ContactProfilePage({
                           )}
 
                           <div
-                            className={`mt-3 rounded-xl border p-3.5 ${
-                              hasValue
+                            className={`mt-3 rounded-xl border p-3.5 ${hasValue
                                 ? "border-slate-100 bg-slate-50/80"
                                 : "border-dashed border-slate-300 bg-white"
-                            }`}
+                              }`}
                           >
                             <p className="break-words text-sm leading-6 text-slate-700">
                               {hasValue ? (
@@ -455,27 +465,24 @@ export default async function ContactProfilePage({
                             return (
                               <div
                                 key={message.id}
-                                className={`relative rounded-xl border p-3.5 ${
-                                  isAssistant
+                                className={`relative rounded-xl border p-3.5 ${isAssistant
                                     ? "border-indigo-100 bg-indigo-50/60"
                                     : "border-slate-100 bg-slate-50/80"
-                                }`}
+                                  }`}
                               >
                                 <span
-                                  className={`absolute -left-[23px] top-4 h-2.5 w-2.5 rounded-full border-2 border-white ring-1 ${
-                                    isAssistant
+                                  className={`absolute -left-[23px] top-4 h-2.5 w-2.5 rounded-full border-2 border-white ring-1 ${isAssistant
                                       ? "bg-indigo-500 ring-indigo-200"
                                       : "bg-slate-400 ring-slate-200"
-                                  }`}
+                                    }`}
                                 />
 
                                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                                   <span
-                                    className={`rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                                      isAssistant
+                                    className={`rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${isAssistant
                                         ? "bg-indigo-100 text-indigo-700"
                                         : "bg-white text-slate-600"
-                                    }`}
+                                      }`}
                                   >
                                     {message.role}
                                   </span>
@@ -548,9 +555,8 @@ function MetadataCard({
       </div>
 
       <p
-        className={`mt-3 text-sm font-semibold leading-5 text-slate-700 ${
-          breakAll ? "break-all" : "break-words"
-        }`}
+        className={`mt-3 text-sm font-semibold leading-5 text-slate-700 ${breakAll ? "break-all" : "break-words"
+          }`}
       >
         {value}
       </p>

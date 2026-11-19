@@ -48,6 +48,20 @@ enum VoiceToolExecutionStatus {
   FAILED
 }
 
+enum LeadStatus {
+  NEW
+  QUALIFYING
+  QUALIFIED
+  CONVERTED
+  LOST
+}
+
+enum LeadSource {
+  WHATSAPP
+  VOICE
+  MANUAL
+}
+
 model Event {
   id         String   @id
   source     String
@@ -120,8 +134,9 @@ model Conversation {
   phoneNumberId String?
   call          Call?
 
-  contact  Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  messages Message[]
+  contact   Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  messages  Message[]
+  leadLinks LeadConversation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -189,6 +204,8 @@ model Business {
   identities       ContactIdentity[]
   contactFields    ContactField[]
   voiceChannels    VoiceChannel[]
+  leads            Lead[]
+  leadFields       LeadField[]
 
   @@index([ownerId])
 }
@@ -279,7 +296,9 @@ model Contact {
   identities    ContactIdentity[]
   conversations Conversation[]
   profileValues ContactProfileValue[]
+  leads         Lead[]
 
+  @@unique([businessId, id])
   @@index([businessId])
   @@index([businessId, phone])
 }
@@ -352,6 +371,106 @@ model ContactProfileValueHistory {
   profileValue ContactProfileValue @relation(fields: [contactProfileValueId], references: [id], onDelete: Cascade)
 
   @@index([contactProfileValueId, changedAt])
+}
+
+model Lead {
+  id         String @id @default(cuid())
+  businessId String
+  contactId  String
+
+  title       String
+  description String?
+  status      LeadStatus @default(NEW)
+  source      LeadSource
+
+  convertedAt DateTime?
+  lostAt      DateTime?
+  lostReason  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  contact  Contact  @relation(fields: [businessId, contactId], references: [businessId, id], onDelete: Cascade)
+
+  conversations LeadConversation[]
+  profileValues LeadProfileValue[]
+
+  @@unique([businessId, id])
+  @@index([businessId, status])
+  @@index([contactId])
+  @@index([businessId, createdAt])
+}
+
+model LeadConversation {
+  id             String @id @default(cuid())
+  leadId         String
+  conversationId String
+
+  createdAt DateTime @default(now())
+
+  lead         Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, conversationId])
+  @@index([conversationId])
+}
+
+model LeadField {
+  id          String           @id @default(cuid())
+  businessId  String
+  key         String
+  label       String
+  description String?
+  type        DatasetFieldType @default(TEXT)
+  isRequired  Boolean          @default(false)
+  isActive    Boolean          @default(true)
+  position    Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  business Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  values   LeadProfileValue[]
+
+  @@unique([businessId, id])
+  @@unique([businessId, key])
+  @@index([businessId, position])
+}
+
+model LeadProfileValue {
+  id          String   @id @default(cuid())
+  businessId  String
+  leadId      String
+  leadFieldId String
+  value       String?
+  source      String   @default("INFERRED")
+  evidence    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  history LeadProfileValueHistory[]
+
+  lead Lead @relation(fields: [businessId, leadId], references: [businessId, id], onDelete: Cascade)
+
+  field LeadField @relation(fields: [businessId, leadFieldId], references: [businessId, id], onDelete: Cascade)
+
+  @@unique([leadId, leadFieldId])
+  @@index([businessId, leadId])
+  @@index([businessId, leadFieldId])
+}
+
+model LeadProfileValueHistory {
+  id                 String   @id @default(cuid())
+  leadProfileValueId String
+  previousValue      String?
+  newValue           String?
+  source             String   @default("INFERRED")
+  evidence           String?
+  changedAt          DateTime @default(now())
+
+  profileValue LeadProfileValue @relation(fields: [leadProfileValueId], references: [id], onDelete: Cascade)
+
+  @@index([leadProfileValueId, changedAt])
 }
 
 model WhatsAppPendingStatus {
