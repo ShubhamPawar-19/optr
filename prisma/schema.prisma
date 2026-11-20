@@ -207,6 +207,9 @@ model Business {
   leads            Lead[]
   leadFields       LeadField[]
 
+  googleCalendarConnection  GoogleCalendarConnection?
+  googleCalendarOAuthStates GoogleCalendarOAuthState[]
+
   @@index([ownerId])
 }
 
@@ -489,16 +492,17 @@ model WhatsAppPendingStatus {
 }
 
 model User {
-  id            String     @id
-  name          String
-  email         String
-  emailVerified Boolean    @default(false)
-  image         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  businesses    Business[]
+  id                        String                     @id
+  name                      String
+  email                     String
+  emailVerified             Boolean                    @default(false)
+  image                     String?
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  sessions                  Session[]
+  accounts                  Account[]
+  googleCalendarOAuthStates GoogleCalendarOAuthState[]
+  businesses                Business[]
 
   @@unique([email])
   @@map("user")
@@ -635,4 +639,46 @@ model VoiceToolExecution {
   @@unique([callId, providerToolCallId])
   @@index([callId, createdAt])
   @@index([status, createdAt])
+}
+
+model GoogleCalendarConnection {
+  id         String @id @default(cuid())
+  businessId String @unique
+
+  googleAccountId    String
+  googleAccountEmail String
+
+  encryptedAccessToken  String?
+  encryptedRefreshToken String?
+  accessTokenExpiresAt  DateTime?
+  scope                 String?
+
+  calendarId   String?
+  calendarName String?
+  timezone     String?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([googleAccountId])
+}
+
+model GoogleCalendarOAuthState {
+  id         String    @id @default(cuid())
+  stateHash  String    @unique
+  businessId String
+  userId     String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, expiresAt])
+  @@index([userId, expiresAt])
 }
