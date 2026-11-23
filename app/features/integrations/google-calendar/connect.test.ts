@@ -189,13 +189,21 @@ describe("Google Calendar connect handler", () => {
         assert.equal(harness.calls.buildAuthorizationUrl, 0);
     });
 
-    it("creates OAuth state and redirects to Google for a valid request", async () => {
+    it("creates OAuth state and returns the Google authorization URL", async () => {
         const harness = createHarness();
 
         const response = await harness.handler(createRequest());
 
-        assert.equal(response.status, 303);
-        assert.equal(response.headers.get("location"), GOOGLE_URL);
+        assert.equal(response.status, 200);
+
+        assert.deepEqual(await response.json(), {
+            authorizationUrl: GOOGLE_URL,
+        });
+
+        assert.equal(
+            response.headers.get("cache-control"),
+            "no-store",
+        );
 
         assert.equal(harness.calls.findBusiness, 1);
         assert.equal(harness.calls.receivedBusinessId, BUSINESS_ID);

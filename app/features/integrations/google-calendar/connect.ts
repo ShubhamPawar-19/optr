@@ -130,17 +130,19 @@ export function createGoogleCalendarConnectHandler(
                     forceConsent: true,
                 });
 
-            return Response.redirect(
-                authorizationURL,
-                303,
+            return Response.json(
+                {
+                    authorizationUrl: authorizationURL,
+                },
+                {
+                    status: 200,
+                    headers: {
+                        "Cache-Control": "no-store",
+                    },
+                },
             );
         } catch (error) {
-            console.error(
-                "Google Calendar OAuth initiation failed:",
-                error instanceof Error
-                    ? error.message
-                    : "Unknown error",
-            );
+            console.error("Google Calendar OAuth initiation failed.");
 
             return Response.json(
                 {

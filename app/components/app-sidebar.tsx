@@ -1,9 +1,9 @@
-
 "use client";
 
 import {
   Activity,
   Bot,
+  CalendarDays,
   ChevronRight,
   Command,
   Database,
@@ -38,6 +38,11 @@ const settingsNavigation: NavigationItem[] = [
   { label: "Contact fields", href: "/contacts/fields", icon: Settings2 },
   { label: "WhatsApp", href: "/integrations/whatsapp", icon: Plug },
   { label: "Voice", href: "/integrations/voice", icon: Phone },
+  {
+    label: "Google Calendar",
+    href: "/integrations/google-calendar",
+    icon: CalendarDays,
+  },
 ];
 
 type NavigationItem = {
