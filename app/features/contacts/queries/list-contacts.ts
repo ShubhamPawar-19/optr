@@ -25,6 +25,7 @@ export async function listContacts() {
       _count: {
         select: {
           conversations: true,
+          leads: true,
         },
       },
     },

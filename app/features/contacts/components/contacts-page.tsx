@@ -1,8 +1,8 @@
-
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useMemo, useState, useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Users,
@@ -12,8 +12,13 @@ import {
   ArrowUpRight,
   X,
   ContactRound,
+  Trash2,
 } from "lucide-react";
 
+import {
+  deleteContactAction,
+  type ContactActionState,
+} from "../contact-actions";
 import { SidebarToggle } from "@/app/components/sidebar-toggle";
 
 type Contact = {
@@ -25,6 +30,7 @@ type Contact = {
   updatedAt: Date;
   _count: {
     conversations: number;
+    leads: number;
   };
 };
 
@@ -47,6 +53,67 @@ function getInitials(name: string) {
   if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
 
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+function DeleteContactButton({
+  contactId,
+  leadCount,
+}: {
+  contactId: string;
+  leadCount: number;
+}) {
+  const router = useRouter();
+
+  const [state, action, pending] = useActionState<
+    ContactActionState,
+    FormData
+  >(deleteContactAction, {});
+
+  useEffect(() => {
+    if (state.success) {
+      router.refresh();
+    }
+  }, [state.success, router]);
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <form
+        action={action}
+        onSubmit={(event) => {
+          if (
+            !window.confirm(
+              "Delete this contact? Conversations will be preserved, but contact identities and profile data will be deleted.",
+            )
+          ) {
+            event.preventDefault();
+          }
+        }}
+      >
+        <input type="hidden" name="contactId" value={contactId} />
+
+        <button
+          type="submit"
+          disabled={pending || leadCount > 0}
+          title={
+            leadCount > 0
+              ? "Delete or reassign associated leads first."
+              : "Delete contact"
+          }
+          aria-label="Delete contact"
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-red-200 bg-white px-3 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Trash2 size={14} />
+          {pending ? "Deleting..." : "Delete"}
+        </button>
+      </form>
+
+      {state.error && (
+        <p className="max-w-40 text-right text-xs text-red-600">
+          {state.error}
+        </p>
+      )}
+    </div>
+  );
 }
 
 export function ContactsPage({ contacts }: ContactsPageProps) {
@@ -356,11 +423,10 @@ export function ContactsPage({ contacts }: ContactsPageProps) {
                         {/* Conversation count */}
                         <td className="px-5 py-3.5">
                           <span
-                            className={`inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium ${
-                              contact._count.conversations > 0
+                            className={`inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium ${contact._count.conversations > 0
                                 ? "bg-teal-50 text-teal-700"
                                 : "bg-slate-50 text-slate-500"
-                            }`}
+                              }`}
                           >
                             <MessageCircle
                               size={14}
@@ -382,16 +448,23 @@ export function ContactsPage({ contacts }: ContactsPageProps) {
                           {formatDate(contact.updatedAt)}
                         </td>
 
-                        {/* Open profile */}
-                        <td className="px-3 py-3.5 text-right">
-                          <Link
-                            href={`/contacts/${contact.id}`}
-                            aria-label={`Open profile for ${displayName}`}
-                            title="Open contact"
-                            className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-slate-400 transition hover:border-slate-200 hover:bg-white hover:text-indigo-600 hover:shadow-sm sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
-                          >
-                            <ArrowUpRight size={16} />
-                          </Link>
+                        {/* Contact actions */}
+                        <td className="px-3 py-3.5">
+                          <div className="flex items-center justify-end gap-2">
+                            <Link
+                              href={`/contacts/${contact.id}`}
+                              aria-label={`Open profile for ${displayName}`}
+                              title="Open contact"
+                              className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-600"
+                            >
+                              <ArrowUpRight size={16} />
+                            </Link>
+
+                            <DeleteContactButton
+                              contactId={contact.id}
+                              leadCount={contact._count.leads}
+                            />
+                          </div>
                         </td>
                       </tr>
                     );

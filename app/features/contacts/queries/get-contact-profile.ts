@@ -27,6 +27,11 @@ export async function getContactProfile(contactId: string) {
       email: true,
       createdAt: true,
       updatedAt: true,
+      _count: {
+        select: {
+          leads: true,
+        },
+      },
       identities: {
         select: {
           id: true,
