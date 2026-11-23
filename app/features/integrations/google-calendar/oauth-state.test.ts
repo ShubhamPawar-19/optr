@@ -33,22 +33,21 @@ function createTestDependencies(options?: {
             });
         },
 
-        consumeState: async ({ stateHash, userId, businessId, now }) => {
+        consumeState: async ({ stateHash, userId, now }) => {
             const record = states.find(
                 (item) =>
                     item.stateHash === stateHash &&
                     item.userId === userId &&
-                    item.businessId === businessId &&
                     item.consumedAt === null &&
                     item.expiresAt > now,
             );
 
             if (!record) {
-                return 0;
+                return null;
             }
 
             record.consumedAt = now;
-            return 1;
+            return record.businessId;
         },
     };
 
@@ -104,7 +103,7 @@ describe("Google Calendar OAuth state", () => {
         assert.equal(states.length, 0);
     });
 
-    it("successfully consumes a valid state", async () => {
+    it("consumes a valid state and returns its business ID", async () => {
         const { dependencies } = createTestDependencies();
 
         const state = await createOAuthState(
@@ -113,14 +112,15 @@ describe("Google Calendar OAuth state", () => {
             dependencies,
         );
 
-        await assert.doesNotReject(
-            consumeOAuthState(
-                state,
-                "user-1",
-                "business-1",
-                dependencies,
-            ),
+        const result = await consumeOAuthState(
+            state,
+            "user-1",
+            dependencies,
         );
+
+        assert.deepEqual(result, {
+            businessId: "business-1",
+        });
     });
 
     it("rejects a state that does not exist", async () => {
@@ -130,7 +130,6 @@ describe("Google Calendar OAuth state", () => {
             consumeOAuthState(
                 "A".repeat(43),
                 "user-1",
-                "business-1",
                 dependencies,
             ),
             InvalidOAuthStateError,
@@ -146,25 +145,15 @@ describe("Google Calendar OAuth state", () => {
             dependencies,
         );
 
-        await consumeOAuthState(
-            state,
-            "user-1",
-            "business-1",
-            dependencies,
-        );
+        await consumeOAuthState(state, "user-1", dependencies);
 
         await assert.rejects(
-            consumeOAuthState(
-                state,
-                "user-1",
-                "business-1",
-                dependencies,
-            ),
+            consumeOAuthState(state, "user-1", dependencies),
             InvalidOAuthStateError,
         );
     });
 
-    it("rejects a state used by the wrong user or business", async () => {
+    it("rejects a state used by the wrong user", async () => {
         const { dependencies } = createTestDependencies();
 
         const state = await createOAuthState(
@@ -174,32 +163,18 @@ describe("Google Calendar OAuth state", () => {
         );
 
         await assert.rejects(
-            consumeOAuthState(
-                state,
-                "user-2",
-                "business-1",
-                dependencies,
-            ),
-            InvalidOAuthStateError,
-        );
-
-        await assert.rejects(
-            consumeOAuthState(
-                state,
-                "user-1",
-                "business-2",
-                dependencies,
-            ),
+            consumeOAuthState(state, "user-2", dependencies),
             InvalidOAuthStateError,
         );
 
         // The original owner must still be able to consume it.
-        await consumeOAuthState(
+        const result = await consumeOAuthState(
             state,
             "user-1",
-            "business-1",
             dependencies,
         );
+
+        assert.equal(result.businessId, "business-1");
     });
 
     it("rejects expired states", async () => {
@@ -214,12 +189,7 @@ describe("Google Calendar OAuth state", () => {
         states[0].expiresAt = new Date(Date.now() - 1000);
 
         await assert.rejects(
-            consumeOAuthState(
-                state,
-                "user-1",
-                "business-1",
-                dependencies,
-            ),
+            consumeOAuthState(state, "user-1", dependencies),
             InvalidOAuthStateError,
         );
     });
@@ -234,18 +204,8 @@ describe("Google Calendar OAuth state", () => {
         );
 
         const results = await Promise.allSettled([
-            consumeOAuthState(
-                state,
-                "user-1",
-                "business-1",
-                dependencies,
-            ),
-            consumeOAuthState(
-                state,
-                "user-1",
-                "business-1",
-                dependencies,
-            ),
+            consumeOAuthState(state, "user-1", dependencies),
+            consumeOAuthState(state, "user-1", dependencies),
         ]);
 
         const successes = results.filter(
@@ -258,6 +218,7 @@ describe("Google Calendar OAuth state", () => {
 
         assert.equal(successes.length, 1);
         assert.equal(failures.length, 1);
+
         assert.ok(
             failures[0].status === "rejected" &&
             failures[0].reason instanceof InvalidOAuthStateError,

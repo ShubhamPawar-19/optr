@@ -34,9 +34,8 @@ export type OAuthStateDependencies = {
     consumeState: (data: {
         stateHash: string;
         userId: string;
-        businessId: string;
         now: Date;
-    }) => Promise<number>;
+    }) => Promise<string | null>;
 };
 
 const defaultDependencies: OAuthStateDependencies = {
@@ -60,23 +59,49 @@ const defaultDependencies: OAuthStateDependencies = {
         });
     },
 
-    consumeState: async ({ stateHash, userId, businessId, now }) => {
-        const result = await db.googleCalendarOAuthState.updateMany({
-            where: {
-                stateHash,
-                userId,
-                businessId,
-                consumedAt: null,
-                expiresAt: {
-                    gt: now,
-                },
-            },
-            data: {
-                consumedAt: now,
-            },
-        });
+    consumeState: async ({ stateHash, userId, now }) => {
+        return db.$transaction(async (tx) => {
+            const pendingState =
+                await tx.googleCalendarOAuthState.findFirst({
+                    where: {
+                        stateHash,
+                        userId,
+                        consumedAt: null,
+                        expiresAt: {
+                            gt: now,
+                        },
+                    },
+                    select: {
+                        businessId: true,
+                    },
+                });
 
-        return result.count;
+            if (!pendingState) {
+                return null;
+            }
+
+            const result =
+                await tx.googleCalendarOAuthState.updateMany({
+                    where: {
+                        stateHash,
+                        userId,
+                        businessId: pendingState.businessId,
+                        consumedAt: null,
+                        expiresAt: {
+                            gt: now,
+                        },
+                    },
+                    data: {
+                        consumedAt: now,
+                    },
+                });
+
+            if (result.count !== 1) {
+                return null;
+            }
+
+            return pendingState.businessId;
+        });
     },
 };
 
@@ -121,27 +146,26 @@ export async function createOAuthState(
 export async function consumeOAuthState(
     state: string,
     userId: string,
-    businessId: string,
     dependencies: OAuthStateDependencies = defaultDependencies,
-): Promise<void> {
+): Promise<{ businessId: string }> {
     if (
         typeof state !== "string" ||
         state.length !== 43 ||
         !/^[A-Za-z0-9_-]+$/.test(state) ||
-        !userId.trim() ||
-        !businessId.trim()
+        !userId.trim()
     ) {
         throw new InvalidOAuthStateError();
     }
 
-    const count = await dependencies.consumeState({
+    const businessId = await dependencies.consumeState({
         stateHash: hashState(state),
         userId,
-        businessId,
         now: new Date(),
     });
 
-    if (count !== 1) {
+    if (!businessId) {
         throw new InvalidOAuthStateError();
     }
+
+    return { businessId };
 }
