@@ -4,7 +4,7 @@ import "server-only";
 const GOOGLE_AUTHORIZATION_ENDPOINT =
     "https://accounts.google.com/o/oauth2/v2/auth";
 
-const GOOGLE_CALENDAR_SCOPES = [
+export const GOOGLE_CALENDAR_SCOPES = [
     "openid",
     "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
