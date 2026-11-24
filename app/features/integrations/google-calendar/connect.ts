@@ -44,12 +44,14 @@ export function createGoogleCalendarConnectHandler(
                     { status: 403 },
                 );
             }
+
         } catch {
             return Response.json(
                 { error: "Invalid request origin." },
                 { status: 403 },
             );
         }
+
 
         if (
             !request.headers
@@ -142,7 +144,12 @@ export function createGoogleCalendarConnectHandler(
                 },
             );
         } catch (error) {
-            console.error("Google Calendar OAuth initiation failed.");
+            console.error("Google Calendar OAuth initiation failed:", {
+                errorType:
+                    error instanceof Error ? error.name : "UnknownError",
+                errorMessage:
+                    error instanceof Error ? error.message : "Unknown failure",
+            });
 
             return Response.json(
                 {
