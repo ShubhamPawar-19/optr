@@ -75,3 +75,48 @@ a {
   outline: 2px solid #9a7147;
   outline-offset: 3px;
 }
+
+.legal-content section {
+  margin-bottom: 2.5rem;
+}
+
+.legal-content h2 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.legal-content h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.legal-content p {
+  margin-bottom: 0.9rem;
+  color: rgb(41 41 35 / 72%);
+  font-size: 0.925rem;
+  line-height: 1.85;
+}
+
+.legal-content ul {
+  margin: 1rem 0 1.25rem;
+  padding-left: 1.4rem;
+  list-style: disc;
+}
+
+.legal-content li {
+  margin-bottom: 0.6rem;
+  padding-left: 0.25rem;
+  color: rgb(41 41 35 / 72%);
+  font-size: 0.925rem;
+  line-height: 1.8;
+}
+
+.legal-content a {
+  color: #292923;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

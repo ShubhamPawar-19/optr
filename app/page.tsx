@@ -1,4 +1,4 @@
-
+import { PublicFooter } from "@/app/components/public-footer";
 import Link from "next/link";
 import {
   ArrowDownRight,
@@ -76,9 +76,8 @@ const steps = [
 export function BrandMark({ light = false }: { light?: boolean }) {
   return (
     <span
-      className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${
-        light ? "bg-white text-[#191914]" : "bg-[#25251f] text-white"
-      }`}
+      className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${light ? "bg-white text-[#191914]" : "bg-[#25251f] text-white"
+        }`}
       aria-hidden="true"
     >
       <span className="text-lg font-black tracking-[-0.08em]">o.</span>
@@ -130,11 +129,10 @@ function ProductPreview() {
             ].map(({ icon: Icon, label, active }) => (
               <div
                 key={label}
-                className={`mb-1 flex items-center gap-2 rounded-lg px-2 py-2.5 text-[10px] sm:gap-2.5 sm:px-2.5 sm:text-[11px] ${
-                  active
+                className={`mb-1 flex items-center gap-2 rounded-lg px-2 py-2.5 text-[10px] sm:gap-2.5 sm:px-2.5 sm:text-[11px] ${active
                     ? "bg-[#292923] font-medium text-white"
                     : "text-[#77756c]"
-                }`}
+                  }`}
               >
                 <Icon size={14} strokeWidth={1.8} />
                 <span className="truncate">{label}</span>
@@ -174,7 +172,7 @@ function ProductPreview() {
                 <p className="text-[10px] text-[#8d8a80]">Conversations</p>
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <span className="text-2xl font-semibold tracking-tight text-[#292923]">
-                    — 
+                    —
                   </span>
                   <MessagesSquare size={16} className="text-[#a5a093]" />
                 </div>
@@ -631,35 +629,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-[#e8e4da]">
-        <div className="mx-auto flex max-w-[1240px] flex-col gap-5 px-5 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
-          <Link href="/" className="flex items-center gap-2.5">
-            <BrandMark />
-            <span className="text-[15px] font-bold tracking-[-0.06em]">
-              optr
-            </span>
-            <span className="ml-1 text-[11px] text-[#8d8a80]">
-              AI lead operations
-            </span>
-          </Link>
-
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 text-[11px] text-[#77756c]">
-            <Link href="#how-it-works" className="transition hover:text-black">
-              How it works
-            </Link>
-            <Link href="#capabilities" className="transition hover:text-black">
-              Capabilities
-            </Link>
-            <Link href="/login" className="transition hover:text-black">
-              Sign in
-            </Link>
-          </div>
-
-          <p className="text-[10px] text-[#99958a]">
-            © {new Date().getFullYear()} OPTR
-          </p>
-        </div>
-      </footer>
+      <PublicFooter />
     </main>
   );
 }

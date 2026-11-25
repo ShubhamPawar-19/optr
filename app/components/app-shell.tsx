@@ -1,19 +1,25 @@
-﻿"use client";
+﻿
+"use client";
 
 import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/app/components/app-sidebar";
 
-export function AppShell({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const publicRoutes = [
+  "/",
+  "/login",
+  "/signup",
+  "/privacy",
+  "/terms",
+  "/contact",
+  "/data-deletion",
+];
+
+export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  const isPublicPage =
-    pathname === "/" ||
-    pathname === "/login" ||
-    pathname === "/signup";
+  const isPublicPage = publicRoutes.some(
+    (route) => pathname === route || (route !== "/" && pathname.startsWith(`${route}/`)),
+  );
 
   if (isPublicPage) {
     return <>{children}</>;
